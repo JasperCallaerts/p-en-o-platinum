@@ -45,7 +45,7 @@ public class VectorTest {
 	@Test
 	public final void getSize(){
 		float size1 = vector1.getSize();
-		float size2 = vector3.getSize(); // size = sqrt(50)
+		float size2 = vector3.getSize(); // size = Math.sqrt(50)
 		
 		assert(size1 == 1);
 		assertEquals(size2, Math.sqrt(50.0), EPSILON);
