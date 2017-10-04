@@ -21,6 +21,14 @@ public class Vector {
 		this.zValue = zValue;
 	}
 	
+	/**
+	 * Default constructor for a vector, creates a null-vector
+	 */
+	public Vector(){
+		
+		this(0,0,0);
+	}
+	
 	
 	/**
 	 * returns a new vector containing the vector sum of this and other
@@ -32,6 +40,17 @@ public class Vector {
 		float z_part = this.getzValue() + other.getzValue();
 		
 		return new Vector(x_part, y_part, z_part);
+	}
+	
+	/**
+	 * Returns the vector difference: this - other
+	 * @param other the other vector
+	 * @return the difference between two vectors
+	 */
+	public Vector vectorDifference(Vector other){
+		Vector other_negative = other.scalarMult(-1);
+		return this.vectorSum(other_negative);
+		
 	}
 	
 	/**
@@ -177,8 +196,7 @@ public class Vector {
 		}
 	}
 
-
-
+	
 
 	/**
 	 * Getter for the x Value of the vector
