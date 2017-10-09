@@ -1,12 +1,12 @@
 package internal;
-import be.kuleuven.cs.som.annotate.*;
+//import be.kuleuven.cs.som.annotate.*;
 
 /**
  * A class of Immutable Vectors in 3D space
  * Each vector has a x, y and z coordinate
  * The size of each component is represented by a floating point number
  */
-@Value
+//@Value
 public class Vector {
 	
 	/**
