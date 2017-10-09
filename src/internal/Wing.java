@@ -3,55 +3,40 @@ import java.lang.Math;
 
 public abstract class Wing {
 
+    //Todo implement the binary relation between the wings and the drone
+
 	/**
 	 * Calculates the normal vector of the wing in the Drone's coordinate system
 	 */
-	public abstract Vector getNormal();
+	public abstract Vector getNormalInWorld();
 
 	/**
 	 * returns the attackVector
 	 */
 	public abstract Vector getAttackVector();
 
-	/**
-	 * @param leftWingIncl The left wing's inclination (in radians)
-	 * Returns the attack vector of the left wing
-	 */
-	public Vector leftWingAttackVector(float leftWingIncl){ 
-		Vector vec = new Vector(0, (float) Math.sin(leftWingIncl),(float) -Math.cos(leftWingIncl));
-		return vec;
-	}
+    /**
+     * prokects the vector onto the axis of the drone
+     * @return
+     */
+	public abstract Vector projectOnDrone(Vector vector);
 
-	/**
-	 * 
-	 * @param leftWingIncl The left wing's inclination (in radians)
-	 * @return the normal of the left wing
-	 */
-	public Vector leftWingNormal(float leftWingIncl){
-		return axisVectorWing.crossProduct(leftWingAttackVector(leftWingIncl));
-	}
-	
-	/**
-	 * @param rightWingIncl The right wing's inclination (in radians)
-	 * Returns the attack vector of the right wing
-	 */
-	public Vector rightWingAttackVector(float rightWingIncl){ 
-		Vector vec = new Vector(0, (float) Math.sin(rightWingIncl),(float) -Math.cos(rightWingIncl));
-		return vec;
-	}
+    public float getWingInclination() {
+        return wingInclination;
+    }
 
-	
-	/**
-	 * 
-	 * @param rightWingIncl The right wing's inclination (in radians)
-	 * @return the normal of the right wing
-	 */
-	public Vector rightWingNormal(float rightWingIncl){
-		return axisVectorWing.crossProduct(rightWingAttackVector(rightWingIncl));
-	}
-	
-	/**
-	 * Axis vector for both wings
-	 */
-	private Vector axisVectorWing = new Vector(1,0,0);
+    //Todo add checks
+    public void setWingInclination(float wingInclination) {
+        this.wingInclination = wingInclination;
+    }
+
+    //Todo implement canHaveAsWingInclination
+    public boolean canHaveAsWingInclintion(float inclination){
+        return true;
+    }
+
+    /**
+     * Variable that holds the inclination of the wing
+     */
+    private float wingInclination;
 }

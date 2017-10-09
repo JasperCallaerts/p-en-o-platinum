@@ -1,16 +1,18 @@
 package internal;
-import be.kuleuven.cs.som.annotate.*;
 
 /**
  * Whole class Made by Martijn
  */
+
+import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * A class of Immutable Vectors in 3D space
  * Each vector has a x, y and z coordinate
  * The size of each component is represented by a floating point number
  */
-@Value
+
 public class Vector {
 	
 	/**
@@ -200,9 +202,39 @@ public class Vector {
 		}
 	}
 
-	
+    /**
+     * Converts a vector to a 3*1MathMatrix
+     */
+    public MathMatrix<Float> convertToMatrix(){
+        float x_part = this.getxValue();
+        float y_part = this.getyValue();
+        float z_part = this.getzValue();
+
+        Float[] tempArray = new Float[]{x_part, y_part, z_part};
+		ArrayList<Float> tempList = new ArrayList<>();
+		tempList.addAll(Arrays.asList(tempArray));
+
+		return new MathMatrix<Float>(tempList, 3, 1);
+
+    }
 
 	/**
+	 * calculates a orthogonal Projection of the given vector against the normal vector
+	 */
+	public Vector orthogonalProjection(Vector normalVector){
+
+		Vector normalizedNormal = normalVector.normalizeVector();
+		float numerator = this.scalarProduct(normalizedNormal);
+		float denominator = normalizedNormal.scalarProduct(normalizedNormal);
+
+		Vector tempVector = normalizedNormal.scalarMult(numerator/denominator);
+
+		return this.vectorDifference(tempVector);
+
+
+	}
+
+    /**
 	 * Getter for the x Value of the vector
 	 */
 	public float getxValue() {

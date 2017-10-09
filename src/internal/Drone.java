@@ -11,8 +11,27 @@ public class Drone {
 	Drone(){
 		
 	}
-	
 
+	/**
+	 * transformationMatrix*Vector == projected vector
+	 * @param vector
+	 * @return
+	 */
+	public Vector projectOnWorld(Vector vector){
+		return getTransformationMatrix().matrixProduct(vector.convertToMatrix()).convertToVector();
+	}
+
+	/**
+	 * Calculated by Jasper Callaerts
+	 * @return
+	 */
+	private MathMatrix<Float> getTransformationMatrix(){
+		MathMatrix<Float> heading = MathMatrix.getHeadingTransformMatrix(this.getHeading());
+		MathMatrix<Float> pitch = MathMatrix.getPitchTransformMatrix(this.getPitch());
+		MathMatrix<Float> roll = MathMatrix.getRollTransformMatrix(this.getRoll());
+
+		return heading.matrixProduct(pitch).matrixProduct(roll);
+	}
 	
 	public void move(float time){
 		
@@ -106,7 +125,7 @@ public class Drone {
 	/**
 	 * Setter for the thrust of the drone
 	 * @param thrust the desired new thrust
-	 * @throws IllegalArgumentexception if the new thrust is not valid
+	 * @throws IllegalArgumentException if the new thrust is not valid
 	 * @Basic
 	 */
 	public void setThrust(float thrust) throws IllegalArgumentException {
@@ -128,7 +147,31 @@ public class Drone {
 		return thrust>=0 && thrust <= this.getMaxThrust();
 	}
 
+	//Todo: comment for happiness of profs
 
+	public Vector getOrientation() {
+		return Orientation;
+	}
+
+	public void setOrientation(Vector orientation) {
+		Orientation = orientation;
+	}
+
+	public void setOrientation(float heading, float pitch, float roll){
+		this.Orientation = new Vector(heading, pitch, roll);
+	}
+
+	public float getHeading(){
+		return this.getOrientation().getxValue();
+	}
+
+	public float getPitch(){
+		return this.getOrientation().getyValue();
+	}
+
+	public float getRoll(){
+		return this.getOrientation().getzValue();
+	}
 
 	/**
 	 * A variable containing the position of the drone
@@ -146,7 +189,7 @@ public class Drone {
 	private Vector acceleration;
 	
 	/**
-	 * A variable containing the orientation of the drone
+	 * A variable containing the orientation of the drone, (heading, pitch, roll)
 	 */
 	private Vector Orientation;
 	
