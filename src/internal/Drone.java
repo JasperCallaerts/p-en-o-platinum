@@ -361,7 +361,7 @@ public class Drone extends WorldObject{
 	/**
 	 * Getter of the right wing of the drone
 	 */
-	public HorizontalWing getRightWing() {
+	public HorizonalWing getRightWing() {
 		return rightWing;
 	}
 
@@ -370,7 +370,7 @@ public class Drone extends WorldObject{
 	 * the drone has no right wing yet or the wing is not attached to another drone
 	 * @param rightWing the right wing of the drone
 	 */
-	public void setRightWing(HorizontalWing rightWing) throws NullPointerException, IllegalArgumentException{
+	public void setRightWing(HorizonalWing rightWing) throws NullPointerException, IllegalArgumentException{
 		if(rightWing == null){
 			throw new NullPointerException();
 		}
@@ -391,14 +391,14 @@ public class Drone extends WorldObject{
 	 * @param rightWing the desired right wing
 	 * @return true if and only if no other right wing is attached
 	 */
-	public boolean canHaveAsRightWing(HorizontalWing rightWing){
+	public boolean canHaveAsRightWing(HorizonalWing rightWing){
 		return this.getRightWing() == null;
 	}
 
 	/**
 	 * Getter for the left wing of the drone
 	 */
-	public HorizontalWing getLeftWing() {
+	public HorizonalWing getLeftWing() {
 		return leftWing;
 	}
 
@@ -406,7 +406,7 @@ public class Drone extends WorldObject{
 	 * Setter for the left wing of the drone
 	 * @param leftWing the left wing of the drone
 	 */
-	public void setLeftWing(HorizontalWing leftWing) throws IllegalArgumentException, NullPointerException{
+	public void setLeftWing(HorizonalWing leftWing) throws IllegalArgumentException, NullPointerException{
 		if(leftWing == null){
 			throw new NullPointerException();
 		}
@@ -426,7 +426,7 @@ public class Drone extends WorldObject{
 	 * returns true if and only if there is no left wing attached to the drone
 	 * @param leftWing the left wing of the drone
 	 */
-	public boolean canHaveAsLeftWing(HorizontalWing leftWing){
+	public boolean canHaveAsLeftWing(HorizonalWing leftWing){
 		return this.getLeftWing() == null;
 	}
 
@@ -434,7 +434,7 @@ public class Drone extends WorldObject{
 	 * getter of the horizontal stabilizer
 	 * @return
 	 */
-	public HorizontalWing getHorizontalStab() {
+	public HorizonalWing getHorizontalStab() {
 		return horizontalStab;
 	}
 
@@ -442,7 +442,7 @@ public class Drone extends WorldObject{
 	 * setter for the horizontal stabilizer
 	 * @param horizontalStab the horizontal stabilizer to be attached to the drone
 	 */
-	public void setHorizontalStab(HorizontalWing horizontalStab) throws IllegalArgumentException, NullPointerException {
+	public void setHorizontalStab(HorizonalWing horizontalStab) throws IllegalArgumentException, NullPointerException {
 		if(horizontalStab == null){
 			throw new NullPointerException();
 		}
@@ -462,7 +462,7 @@ public class Drone extends WorldObject{
 	 * Returns true if and only if there is no horizontal stabilizer attached to the drone
 	 * @param horizontalStab the horizontal stabilizer
 	 */
-	public boolean canHaveAsHorizontalStab(HorizontalWing horizontalStab){
+	public boolean canHaveAsHorizontalStab(HorizonalWing horizontalStab){
 		return this.getHorizontalStab() == null;
 	}
 
@@ -510,17 +510,17 @@ public class Drone extends WorldObject{
 	/**
 	 * Variable containing the right wing of the drone
 	 */
-	private HorizontalWing rightWing;
+	private HorizonalWing rightWing;
 
 	/**
 	 * Variable containing the left wing of the drone
 	 */
-	private HorizontalWing leftWing;
+	private HorizonalWing leftWing;
 
 	/**
 	 * Variable containing the horizontal stabilizer of the drone
 	 */
-	private HorizontalWing horizontalStab;
+	private HorizonalWing horizontalStab;
 
 	/**
 	 * Variable containing the vertical stabilizer of the drone
