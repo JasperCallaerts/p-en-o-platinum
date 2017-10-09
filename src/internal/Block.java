@@ -2,10 +2,10 @@ package internal;
 
 /**
  * 
- * @author r0637882
+ * @author Anthony Rathé & ..
  *
  */
-public class Block {
+public class Block extends WorldObject{
 	/**
 	 * Constructor for a block
 	 * @param InitialX the X-Position of the block
@@ -137,6 +137,15 @@ public class Block {
 	
 	public static int[] getIndices() {
 		return indices;
+	}
+	
+	/**
+	 * Implementation of inherited method
+	 * @param duration
+	 * @author anthonyrathe
+	 */
+	public void evolve(float duration){
+		
 	}
 	
 	/**

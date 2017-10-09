@@ -4,10 +4,10 @@ import java.util.Map;
 
 /**
  * 
- * @author r0637882
+ * @author Anthony Rathé & ...
  *
  */
-public class Drone {
+public class Drone extends WorldObject{
 	Drone(Autopilot AP){
 		this.AP = AP;
 	}
