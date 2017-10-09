@@ -163,6 +163,11 @@ public abstract class Wing {
         return relativePosition;
     }
 
+    /**
+     * returns true if and only if the wing is located on the x axis xor the negative z axis
+     * @param position
+     * @return
+     */
     public static boolean canHaveAsRelativePosition(Vector position){
         float x_part = position.getxValue();
         float y_part = position.getyValue();
