@@ -331,6 +331,7 @@ public class Drone extends WorldObject{
 		return this.getOrientation().getxValue();
 	}
 
+	
 	public float getPitch(){
 		return this.getOrientation().getyValue();
 	}
