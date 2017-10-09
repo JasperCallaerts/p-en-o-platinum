@@ -10,7 +10,10 @@ import java.util.List;
  */
 public class World {
 	
-	World(){
+	public World(){
+		Xsize = 0;	//max groottes initialiseren
+		Ysize = 0;
+		Zsize = 0;
 		
 	}
 	
@@ -22,6 +25,22 @@ public class World {
 	 */
 	public void evolve(float time){
 		
+		
 	}
+	
+	private final int Xsize;
+	private final int Ysize;
+	private final int Zsize;
+	
+	public int getXsize(){
+		return Xsize;
+	}
+	public int getYsize() {
+		return Ysize;
+	}
+	public int getZsize(){
+		return Zsize;
+	}
+	
 	
 }
