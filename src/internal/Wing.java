@@ -1,9 +1,18 @@
 package internal;
 import java.lang.Math;
 
-class Wing {
+public abstract class Wing {
 
-	
+	/**
+	 * Calculates the normal vector of the wing in the Drone's coordinate system
+	 */
+	public abstract Vector getNormal();
+
+	/**
+	 * returns the attackVector
+	 */
+	public abstract Vector getAttackVector();
+
 	/**
 	 * @param leftWingIncl The left wing's inclination (in radians)
 	 * Returns the attack vector of the left wing
