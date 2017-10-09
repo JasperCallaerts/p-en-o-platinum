@@ -1,7 +1,7 @@
 package internal;
 /**
  * 
- * @author r0637882
+ * @author Anthony Rathé & ..
  *
  */
 public class Block extends WorldObject{

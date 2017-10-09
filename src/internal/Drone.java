@@ -4,7 +4,7 @@ import java.util.Map;
 
 /**
  * 
- * @author r0637882
+ * @author Anthony Rathé & ...
  *
  */
 public class Drone extends WorldObject{
