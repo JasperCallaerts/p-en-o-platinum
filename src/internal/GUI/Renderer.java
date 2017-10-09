@@ -65,7 +65,7 @@ public void init(Window window) throws Exception {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         }
 
-        public void render(Window window, Object[] objects) {
+        public void render(Window window, Mesh mesh) {
             clear();
 
             if ( window.isResized() ) {
@@ -79,15 +79,14 @@ public void init(Window window) throws Exception {
             Matrix projectionMatrix = transformation.getProjectionMatrix(FOV, window.getWidth(), window.getHeight(), Z_NEAR, Z_FAR);
             shaderProgram.setUniform("projectionMatrix", projectionMatrix);
             
-            // Render each object
-            for(Object object : objects) {
-                // Set world matrix for this item
-            	Matrix worldMatrix = new Matrix();
-            	worldMatrix.identity();
-                shaderProgram.setUniform("worldMatrix", worldMatrix);
-                // Render the mesh for this game item
-                object.getMesh().render();
-            }
+            
+            // Set world matrix for this mesh
+            Matrix worldMatrix = new Matrix();
+            worldMatrix.identity();
+            shaderProgram.setUniform("worldMatrix", worldMatrix);
+            // Render the mesh 
+            mesh.render();
+
 
             shaderProgram.unbind();
         }
