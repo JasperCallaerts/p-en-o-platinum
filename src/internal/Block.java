@@ -1,10 +1,11 @@
 package internal;
+
 /**
  * 
- * @author r0637882
+ * @author Anthony Rathé & ..
  *
  */
-public class Block {
+public class Block extends WorldObject{
 	/**
 	 * Constructor for a block
 	 * @param InitialX the X-Position of the block
@@ -31,6 +32,36 @@ public class Block {
 		this.Hue = H;
 		this.Saturation = S;
 		this.Value = V;
+	}
+	
+	public void addVertices() {
+		float[] newVertices = new float[]{
+				// VO
+	            -0.5f,  0.5f,  0.5f,
+	            // V1
+	            -0.5f, -0.5f,  0.5f,
+	            // V2
+	             0.5f, -0.5f,  0.5f,
+	            // V3
+	             0.5f,  0.5f,  0.5f,
+	            // V4
+	            -0.5f,  0.5f, -0.5f,
+	            // V5
+	             0.5f,  0.5f, -0.5f,
+	            // V6
+	            -0.5f, -0.5f, -0.5f,
+	            // V7
+	             0.5f, -0.5f, -0.5f,
+		};
+		vertices = (getVertices(), newVertices);
+	}
+	
+	public void addColours() {
+		
+	}
+	
+	public void addIndices() {
+		
 	}
 	
 	/**
@@ -96,6 +127,27 @@ public class Block {
 		return ((0 <= val) && (val <= 100));
 	}
 	
+	public static float[] getVertices() {
+		return vertices;
+	}
+	
+	public static float[] getColours() {
+		return colours;
+	}
+	
+	public static int[] getIndices() {
+		return indices;
+	}
+	
+	/**
+	 * Implementation of inherited method
+	 * @param duration
+	 * @author anthonyrathe
+	 */
+	public void evolve(float duration){
+		
+	}
+	
 	/**
 	 * Variables for the position of a block
 	 */
@@ -109,4 +161,12 @@ public class Block {
 	private int Hue;
 	private int Saturation;
 	private int Value;
+	
+	/**
+	 * Data from all blocks.
+	 * Will be given to the GUI.
+	 */
+	static float[] vertices;
+	static float[] colours;
+	static int[] indices;
 }

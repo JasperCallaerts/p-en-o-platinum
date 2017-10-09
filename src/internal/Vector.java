@@ -6,6 +6,7 @@ package internal;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+//import be.kuleuven.cs.som.annotate.*;
 
 /**
  * A class of Immutable Vectors in 3D space
@@ -13,6 +14,7 @@ import java.util.Arrays;
  * The size of each component is represented by a floating point number
  */
 
+//@Value
 public class Vector {
 	
 	/**
