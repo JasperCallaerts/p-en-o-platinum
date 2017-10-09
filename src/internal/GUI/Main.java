@@ -6,7 +6,7 @@ public class Main {
 	static int height = 720;
 	static GUI gui;
 	static Window window;
-    static float[] positions = new float[]{
+    static float[] vertices = new float[]{
             // VO
             -0.5f,  0.5f,  0.5f,
             // V1
@@ -64,7 +64,7 @@ public class Main {
 	
     protected static void init() throws Exception {
         window.init();
-        gui.init(window, positions, colours, indices);
+        gui.init(window, vertices, colours, indices);
     }
 
     protected static void loop() throws Exception {

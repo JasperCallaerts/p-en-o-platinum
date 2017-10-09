@@ -7,10 +7,10 @@ public class Transformation {
 
     private final Matrix projectionMatrix;
 
-    private final Matrix worldMatrix;
+    private final Matrix viewMatrix;
     
     public Transformation() {
-        worldMatrix = new Matrix();
+        viewMatrix = new Matrix();
         projectionMatrix = new Matrix();
     }
 
@@ -21,11 +21,8 @@ public class Transformation {
         return projectionMatrix;
     }
     
-    public Matrix getWorldMatrix(Vector offset, Vector rotation, float scale) {
-        worldMatrix.identity();
-        worldMatrix.translate(offset);
-        worldMatrix.rotate(rotation);
-        worldMatrix.scale(scale);
-        return worldMatrix;
+    public final Matrix getViewMatrix(Vector right, Vector front, Vector up) {
+    	viewMatrix.identity();
+    	return viewMatrix;
     }
 }

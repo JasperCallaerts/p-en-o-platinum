@@ -79,15 +79,13 @@ public void init(Window window) throws Exception {
             Matrix projectionMatrix = transformation.getProjectionMatrix(FOV, window.getWidth(), window.getHeight(), Z_NEAR, Z_FAR);
             shaderProgram.setUniform("projectionMatrix", projectionMatrix);
             
-            // Render each gameItem
+            // Render each object
             for(Object object : objects) {
                 // Set world matrix for this item
-                Matrix worldMatrix = transformation.getWorldMatrix(
-                        object.getPosition(),
-                        object.getRotation(),
-                        object.getScale());
+            	Matrix worldMatrix = new Matrix();
+            	worldMatrix.identity();
                 shaderProgram.setUniform("worldMatrix", worldMatrix);
-                // Render the mes for this game item
+                // Render the mesh for this game item
                 object.getMesh().render();
             }
 

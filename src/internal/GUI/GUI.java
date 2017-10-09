@@ -27,7 +27,6 @@ public class GUI {
         // Create the Mesh
         Mesh mesh = new Mesh(positions, colours, indices);
         Object object = new Object(mesh);
-        object.setPosition(0, 0, -2);
         objects = new Object[] { object };
     }
 
