@@ -4,7 +4,7 @@ package internal;
  * @author r0637882
  *
  */
-public class Block {
+public class Block extends WorldObject{
 	/**
 	 * Constructor for a block
 	 * @param InitialX the X-Position of the block
@@ -94,6 +94,15 @@ public class Block {
 	 */
 	public boolean isValidValue(int val){
 		return ((0 <= val) && (val <= 100));
+	}
+	
+	/**
+	 * Implementation of inherited method
+	 * @param duration
+	 * @author anthonyrathe
+	 */
+	public void evolve(float duration){
+		
 	}
 	
 	/**

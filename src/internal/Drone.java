@@ -7,7 +7,7 @@ import java.util.Map;
  * @author r0637882
  *
  */
-public class Drone {
+public class Drone extends WorldObject{
 	Drone(Autopilot AP){
 		this.AP = AP;
 	}
