@@ -126,7 +126,7 @@ public class Drone extends WorldObject{
 	/**
 	 * Setter for the thrust of the drone
 	 * @param thrust the desired new thrust
-	 * @throws IllegalArgumentexception if the new thrust is not valid
+	 * @throws IllegalArgumentException if the new thrust is not valid
 	 * @Basic
 	 */
 	public void setThrust(float thrust) throws IllegalArgumentException {
@@ -315,10 +315,19 @@ public class Drone extends WorldObject{
 
 	//Todo: comment for happiness of profs
 
+	/**
+	 * Getter for the orientation of the drone
+	 * @return a vector of the following format: (heading, pitch, roll)
+	 */
 	public Vector getOrientation() {
 		return Orientation;
 	}
 
+	/**
+	 * Setter for the orientation of the drone
+	 * @param orientation vector containing the orientation of the drone
+	 *                    structured (heading, pitch, roll)
+	 */
 	public void setOrientation(Vector orientation) {
 		Orientation = orientation;
 	}
@@ -327,18 +336,196 @@ public class Drone extends WorldObject{
 		this.Orientation = new Vector(heading, pitch, roll);
 	}
 
+	/**
+	 * @return the heading (rotation around the x-axis) of the drone
+	 */
 	public float getHeading(){
 		return this.getOrientation().getxValue();
 	}
 
-	
+	/**
+	 * @return the pitch (rotation around the y axis) of the drone
+	 */
 	public float getPitch(){
 		return this.getOrientation().getyValue();
 	}
 
+	/**
+	 * @return the roll (rotation around the z-axis) of the drone
+	 */
 	public float getRoll(){
 		return this.getOrientation().getzValue();
 	}
+
+
+	/**
+	 * Getter of the right wing of the drone
+	 */
+	public HorizontalWing getRightWing() {
+		return rightWing;
+	}
+
+	/**
+	 * Setter of the right wing of the drone, the binary relationship can only be created if
+	 * the drone has no right wing yet or the wing is not attached to another drone
+	 * @param rightWing the right wing of the drone
+	 */
+	public void setRightWing(HorizontalWing rightWing) throws NullPointerException, IllegalArgumentException{
+		if(rightWing == null){
+			throw new NullPointerException();
+		}
+		if(this.canHaveAsRightWing(rightWing))
+			try{
+				// first try to set the wing to the drone, if this fails it means that the wing
+				// cannot be attached to the drone
+				rightWing.setDrone(this);
+				this.rightWing = rightWing;
+
+			} catch (IllegalArgumentException e){
+				throw new IllegalArgumentException(e);
+			}
+
+	}
+
+	/**
+	 * @param rightWing the desired right wing
+	 * @return true if and only if no other right wing is attached
+	 */
+	public boolean canHaveAsRightWing(HorizontalWing rightWing){
+		return this.getRightWing() == null;
+	}
+
+	/**
+	 * Getter for the left wing of the drone
+	 */
+	public HorizontalWing getLeftWing() {
+		return leftWing;
+	}
+
+	/**
+	 * Setter for the left wing of the drone
+	 * @param leftWing the left wing of the drone
+	 */
+	public void setLeftWing(HorizontalWing leftWing) throws IllegalArgumentException, NullPointerException{
+		if(leftWing == null){
+			throw new NullPointerException();
+		}
+
+		if(canHaveAsLeftWing(leftWing)){
+			try{
+				leftWing.setDrone(this);
+				this.leftWing = leftWing;
+			}catch (IllegalArgumentException e){
+				throw new IllegalArgumentException(e);
+			}
+		}
+		this.leftWing = leftWing;
+	}
+
+	/**
+	 * returns true if and only if there is no left wing attached to the drone
+	 * @param leftWing the left wing of the drone
+	 */
+	public boolean canHaveAsLeftWing(HorizontalWing leftWing){
+		return this.getLeftWing() == null;
+	}
+
+	/**
+	 * getter of the horizontal stabilizer
+	 * @return
+	 */
+	public HorizontalWing getHorizontalStab() {
+		return horizontalStab;
+	}
+
+	/**
+	 * setter for the horizontal stabilizer
+	 * @param horizontalStab the horizontal stabilizer to be attached to the drone
+	 */
+	public void setHorizontalStab(HorizontalWing horizontalStab) throws IllegalArgumentException, NullPointerException {
+		if(horizontalStab == null){
+			throw new NullPointerException();
+		}
+		if(this.canHaveAsHorizontalStab(horizontalStab)) {
+			try {
+
+				horizontalStab.setDrone(this);
+				this.horizontalStab = horizontalStab;
+
+			}catch (IllegalArgumentException e){
+				throw new IllegalArgumentException(e);
+			}
+		}
+	}
+
+	/**
+	 * Returns true if and only if there is no horizontal stabilizer attached to the drone
+	 * @param horizontalStab the horizontal stabilizer
+	 */
+	public boolean canHaveAsHorizontalStab(HorizontalWing horizontalStab){
+		return this.getHorizontalStab() == null;
+	}
+
+	/**
+	 * Getter for the vertical stabilizer
+	 */
+	public VerticalWing getVerticalStab() {
+		return verticalStab;
+	}
+
+	/**
+	 * Setter for the vertical stabilizer
+	 * @param verticalStab the vertical stabilizer to be attached
+	 */
+	public void setVerticalStab(VerticalWing verticalStab) throws IllegalArgumentException, NullPointerException {
+		if(verticalStab == null){
+			throw new NullPointerException();
+		}
+		if(this.canHaveAsVerticalStab(verticalStab)){
+			try{
+				verticalStab.setDrone(this);
+				this.verticalStab = verticalStab;
+			} catch( IllegalArgumentException e){
+				throw new IllegalArgumentException(e);
+			}
+		}
+	}
+
+	/**
+	 * Getter for the rotation vector
+	 * @return
+	 */
+	public Vector getRotationVector() {
+		return rotationVector;
+	}
+
+	/**
+	 * setter for the rotation vector
+	 * @param rotationVector the desired rotation vector
+	 */
+	public void setRotationVector(Vector rotationVector) {
+		this.rotationVector = rotationVector;
+	}
+
+	/**
+	 * Variable containing the right wing of the drone
+	 */
+	private HorizontalWing rightWing;
+
+	/**
+	 * Variable containing the left wing of the drone
+	 */
+	private HorizontalWing leftWing;
+
+	/**
+	 * Variable containing the horizontal stabilizer of the drone
+	 */
+	private HorizontalWing horizontalStab;
+
+	/**
+	 * Variable containing the vertical stabilizer of the drone
+	 */
+	private VerticalWing verticalStab;
 
 	/**
 	 * A variable containing the position of the drone
@@ -361,7 +548,7 @@ public class Drone extends WorldObject{
 	private Vector Orientation;
 	
 	/**
-	 * A variable containing the rotation vector of the drone
+	 * A variable containing the rotation vector of the drone (given in the world axis)
 	 */
 	private Vector rotationVector;
 	
@@ -483,11 +670,6 @@ public class Drone extends WorldObject{
 	}
 
 	/**
-	 * A variable containing the current vertical stabilizer inclination of the drone
-	 */
-	private float verStabInclination;
-
-	/**
 	 * A variable containing the new vertical stabilizers inclination of the drone, after queueTime has elapsed, as calculated by the autopilot
 	 */
 	private float nextVerStabInclination;
@@ -521,4 +703,7 @@ public class Drone extends WorldObject{
 	private final static String INCLINATION_OUT_OF_RANGE = "The inclination is out of range: [0, 2.PI[";
 
 	private final static String VELOCITY_ERROR = "The velocity exceeds the upper limit";
+
+	private final static String WING_EXCEPTION = "the wings are null references or the drone has already wings" +
+			"attached to it";
 }
