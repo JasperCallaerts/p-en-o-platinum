@@ -4,13 +4,17 @@ package internal;
  * Created by Martijn & Jasper on 9/10/2017.
  */
 
-public class HorizonalWing extends Wing {
+public class HorizontalWing extends Wing {
 
-    //Todo implement the binary relation between the wings and the drone
+    public HorizontalWing(Vector relativePosition, float liftSlope, float mass, float maximumInclination, float wingInclination){
+        super(relativePosition, liftSlope,  mass, maximumInclination, wingInclination);
+    }
+
     @Override
     public Vector getNormalInWorld() {
         return null;
     }
+
 
     /**
      * (0, sin(leftWingInclination), -cos(leftWingInclination))

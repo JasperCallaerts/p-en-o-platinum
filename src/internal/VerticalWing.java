@@ -5,8 +5,11 @@ package internal;
  */
 public class VerticalWing extends Wing {
 
+    public VerticalWing(Vector relativePosition, float liftSlope, float mass, float maximumWingInclination, float wingInclination){
+        super(relativePosition, liftSlope, mass, maximumWingInclination, wingInclination);
 
-    //Todo implement the binary relation between the wings and the drone
+    }
+
     @Override
     public Vector getNormalInWorld() {
         return null;
