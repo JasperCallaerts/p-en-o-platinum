@@ -11,8 +11,8 @@ public class VerticalWing extends Wing {
     }
 
     @Override
-    public Vector getNormalInWorld() {
-        return null;
+    public Vector getNormal() {
+        return this.normal;
     }
 
     /**
@@ -43,6 +43,6 @@ public class VerticalWing extends Wing {
         return new Vector(x_part, y_part, z_part);
     }
 
-    public final Vector Normal = new Vector(1,0,0);
+    public final Vector normal = new Vector(1,0,0);
 
 }

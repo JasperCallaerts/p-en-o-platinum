@@ -9,11 +9,14 @@ public class HorizontalWing extends Wing {
     public HorizontalWing(Vector relativePosition, float liftSlope, float mass, float maximumInclination, float wingInclination){
         super(relativePosition, liftSlope,  mass, maximumInclination, wingInclination);
     }
-
+/*
     @Override
     public Vector getNormalInWorld() {
-        return null;
-    }
+        Vector normal = this.getNormal();
+        Drone drone = this.getDrone();
+        Vector normalOnDrone = this.projectOnDrone(normal);
+        return drone.droneOnWorld(normalOnDrone);
+    }*/
 
 
     /**
@@ -48,6 +51,10 @@ public class HorizontalWing extends Wing {
 
         return new Vector(x_part, y_part, z_part);
 
+    }
+
+    public Vector getNormal(){
+        return this.normal;
     }
 
     public final Vector normal = new Vector(0,1,0);
