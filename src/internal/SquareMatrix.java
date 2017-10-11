@@ -45,7 +45,7 @@ public class SquareMatrix {
      */
     public SquareMatrix matrixProduct(SquareMatrix other){
 
-        float[] newMatrixArray = new float[9];
+        float[] newMatrixArray = new float[arraySize];
 
         for( int rowIndex = 0; rowIndex !=nbRows; rowIndex++){
             float[] tempRow = this.getRow(rowIndex);
@@ -69,7 +69,7 @@ public class SquareMatrix {
     public SquareMatrix transpose(){
 
         float[] tempRow;
-        float[] newMatrixArray = new float[9];
+        float[] newMatrixArray = new float[arraySize];
 
         for(int i = 0; i != nbColumns; i++){
             tempRow = this.getColumn(i);
@@ -89,7 +89,7 @@ public class SquareMatrix {
      */
     public SquareMatrix scalarMult(float scalar){
 
-        float[] newMatrixArray = new float[9];
+        float[] newMatrixArray = new float[arraySize];
 
         for(int i = 0; i != arraySize; i++){
             newMatrixArray[i] =  this.getElementAt(i) * scalar;
@@ -105,7 +105,7 @@ public class SquareMatrix {
      */
     public SquareMatrix matrixSum(SquareMatrix other){
 
-        float[] newMatrixArray = new float[9];
+        float[] newMatrixArray = new float[arraySize];
 
         for(int index = 0; index != arraySize; index++){
             newMatrixArray[index] = this.getElementAt(index) + other.getElementAt(index);
@@ -120,13 +120,50 @@ public class SquareMatrix {
      * @return a new matrix containing the difference of the two provided matrices
      */
     public SquareMatrix matrixDiff(SquareMatrix other){
-        float[] newMatrixArray = new float[9];
+        float[] newMatrixArray = new float[arraySize];
 
         for(int index = 0; index != arraySize; index++){
             newMatrixArray[index] = this.getElementAt(index) - other.getElementAt(index);
         }
 
         return new SquareMatrix(newMatrixArray);
+    }
+
+    /**
+     * Calculates the inverse of a diagonal matrix
+     * @return a new matrix containing the inverse of the diagonal matrix
+     * note: the inverse of a diagonal matrix can be calculated by raising the
+     * diagonal elements to the power of -1
+     */
+    public SquareMatrix invertDiagonal(){
+        if(this.isDiagonal())
+            throw new IllegalArgumentException(NOT_DIAGONAL);
+        int jumpSize = nbRows + 1;
+        float[] newMatrixArray = new float[arraySize];
+
+        for(int index = 0; index != nbRows; index++){
+            newMatrixArray[index*5] = 1/this.getElementAt(index*5);
+        }
+
+        return new SquareMatrix(newMatrixArray);
+    }
+
+    /**
+     * checks if the given matrix is diagonal
+     * @return true if and only if the matrix is diagonal
+     * note an element is on the diagonal if the index is i*(nbRows + 1) with i the current row
+     * so in this case if the index is a multiple of 4, the element is one on the diagonal and thus
+     * modulus 4 of the index is 0
+     */
+    public boolean isDiagonal(){
+        for(int index = 0; index != arraySize; index++){
+            float elem = this.getElementAt(index);
+            if(elem != 0 && index%(nbRows+1) != 0){
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /*
@@ -213,7 +250,7 @@ public class SquareMatrix {
      * @return true if and only if the array has length 9
      */
     private boolean canHaveAsMatrixArray(float[] matrixArray){
-        return matrixArray.length == 9;
+        return matrixArray.length == arraySize;
     }
 
     /**
@@ -267,4 +304,5 @@ public class SquareMatrix {
     Error messages
      */
     public final static String OVERSIZED = "The array is not lenght 9";
+    public final static String NOT_DIAGONAL = "The provided matrix is not a diagonal matrix";
 }

@@ -1,34 +1,83 @@
 package internal;
 
-import java.util.List;
-
 /**
  * 
  * @author Anthony Rathé & ...
+ * Immutable variables: maxThrust, engineMass, enginePosition, droneMass, leftWing, rightWing,
+ * 						horizontalStab, verticalStab, inertiaTensor
  *
  */
-public class Drone extends WorldObject{
-	Drone(Autopilot AP){
+public class Drone extends WorldObject {
+
+	/**
+	 * Constructor for a drone class object
+	 * @param droneMass the mass of the drone itself (no wings & engine included)
+	 * @param engineMass the mass of the engine
+	 * @param maxThrust the maximum thrust the engine of the drone can generate
+	 * @param position the position of the drone in space
+	 * @param velocity the velocity of the drone
+	 * @param orientation the orientation of the drone (roll, pitch heading)
+	 * @param rotationVector the rotational vector of the drone
+	 * @param rightMainWing the right main wing to be attached to the drone
+	 * @param leftMainWing the left main wing to be attached to the drone
+	 * @param horizontalStab the horizontal stabilizer tail wing of the drone
+	 * @param verticalStab the vectical stabilizet tail wing of the drone
+	 * @param AP the autopilot of the drone
+	 */
+	Drone(float droneMass, float engineMass, float maxThrust, Vector position, Vector velocity, Vector orientation,
+		  Vector rotationVector, Wing rightMainWing, Wing leftMainWing, Wing horizontalStab, Wing verticalStab, Autopilot AP) {
+
+		if (!this.canHaveAsDroneMass(droneMass) ||
+				!this.canHaveAsEngineMass(engineMass) || !this.canHaveAsMaxThrust(maxThrust)) {
+			throw new IllegalArgumentException(ILLEGAL_CONFIG);
+		}
+
+		// set the immutable variables of the drone
 		this.AP = AP;
+		this.maxThrust = maxThrust;
+		this.engineMass = engineMass;
+		this.droneMass = droneMass;
+
+		// set variable variables of the drone
+		this.setPosition(position);
+		this.setVelocity(velocity);
+		this.setOrientation(orientation);
+		this.setRotationVector(rotationVector);
+
+		// attach the wings of the drone
+		try {
+			this.setRightWing((HorizontalWing) rightMainWing);
+			this.setLeftWing((HorizontalWing) leftMainWing);
+			this.setHorizontalStab((HorizontalWing) horizontalStab);
+			this.setVerticalStab((VerticalWing) verticalStab);
+		} catch (ClassCastException | NullPointerException e){
+			throw new IllegalArgumentException(ILLEGAL_CONFIG);
+		}
+
+		//these variables are calculated from the ones above
+		this.setEnginePosition();
+		this.setInertiatensor();
 	}
 
 	/**
 	 * projects a vector of the drone axis on the world axis
+	 *
 	 * @param vector the vector to project
 	 * @return a new vector containing the projection
 	 * @author Martijn Sauwens
 	 */
-	public Vector droneOnWorld(Vector vector){
+	public Vector droneOnWorld(Vector vector) {
 		return getDroneToWorldTransformMatrix().matrixVectorProduct(vector);
 	}
 
 	/**
 	 * projects a vector in the world axis to a vector in the drone axis
+	 *
 	 * @param vector the vector to project on the drone axis
 	 * @return a new vector containing the projection
 	 * @author Martijn Sauwens
 	 */
-	public Vector worldOnDrone(Vector vector){
+	public Vector worldOnDrone(Vector vector) {
 		SquareMatrix transform = this.getDroneToWorldTransformMatrix();
 		SquareMatrix transpose = transform.transpose();
 
@@ -37,10 +86,11 @@ public class Drone extends WorldObject{
 
 	/**
 	 * Calculates the transformation matrix for the drone to world axis
+	 *
 	 * @return a square matrix containing the transformation matrix for the current drone configuration;
-	 * @author  Jasper Callaerts & Martijn Sauwens
+	 * @author Jasper Callaerts & Martijn Sauwens
 	 */
-	private SquareMatrix getDroneToWorldTransformMatrix(){
+	private SquareMatrix getDroneToWorldTransformMatrix() {
 		SquareMatrix heading = SquareMatrix.getHeadingTransformMatrix(this.getHeading());
 		SquareMatrix pitch = SquareMatrix.getPitchTransformMatrix(this.getPitch());
 		SquareMatrix roll = SquareMatrix.getRollTransformMatrix(this.getRoll());
@@ -48,19 +98,90 @@ public class Drone extends WorldObject{
 		return heading.matrixProduct(pitch).matrixProduct(roll);
 	}
 
+	//Todo implement method, find way to express the change in roll, heading and pitch
+	public void nextState(float deltaTime){
+
+	}
+
+	public Vector getNextRotationVector(float deltaTime, Vector angularAcceleration){
+		Vector currentRotation = this.getRotationVector();
+		Vector deltaRotation = angularAcceleration.scalarMult(deltaTime);
+
+		return currentRotation.vectorSum(deltaRotation);
+	}
+
+	/**
+	 * Calculates the new velocity under the assumption that the acceleration remains constant
+	 * @param deltaTime the time between the steps
+	 * @param acceleration the (constant) acceleration between the steps
+	 * @return a vector containing the velocity of the next time step
+	 */
+	public Vector getNextVelocity(float deltaTime, Vector acceleration){
+		Vector currentVelocity = this.getVelocity();
+		Vector deltaVelocity = acceleration.scalarMult(deltaTime);
+		return currentVelocity.vectorSum(deltaVelocity);
+
+	}
+
+	/**
+	 * Calculates the next position under the assumption that the acceleration remains constant
+	 * @param deltaTime the time between the steps
+	 * @param acceleration the acceleration of the drone
+	 * @return a vector containing the position of the next time step
+	 */
+	public Vector getNextPosition(float deltaTime, Vector acceleration){
+		Vector currentPosition = this.getPosition();
+		Vector currentVelocity = this.getVelocity();
+		Vector deltaPosVelocityPart = currentVelocity.scalarMult(deltaTime);
+		Vector deltaPosAccelerationPart = acceleration.scalarMult(deltaTime*deltaTime/2.0f);
+
+		return currentPosition.vectorSum(deltaPosVelocityPart).vectorSum(deltaPosAccelerationPart);
+
+	}
+
+	/**
+	 * Calculates the angular acceleration based on the moment, moment of inertia and rotation vector
+	 * the resulting vector is projected onto the drone axis system
+	 *
+	 * @return a vector containing the angular acceleration of the drone
+	 * @author Martijn Sauwens
+	 */
+	public Vector calcAngularAcceleration() {
+		SquareMatrix inverseInertiaTensor = this.getInertiaTensor().invertDiagonal();
+		Vector moment = this.getTotalMomentDrone();
+		Vector rotationDrone = this.worldOnDrone(this.getRotationVector());
+		Vector rotationXImpulseMoment = rotationDrone.crossProduct(this.getImpulseMoment());
+
+		Vector momentDiff = moment.vectorDifference(rotationXImpulseMoment);
+		return inverseInertiaTensor.matrixVectorProduct(momentDiff);
+	}
+
+	/**
+	 * calculates the acceleration vector of the drone in the world axis system
+	 * @return a vector containing the acceleration of the drone in the world axis system
+	 */
+	public Vector calcAccelleration(){
+		Vector externalForce = getTotalExternalForcesWorld();
+		float totalMass = this.getTotalMass();
+
+		return externalForce.scalarMult(1/totalMass);
+
+	}
+
 	/**
 	 * Calculates the total external forces on the drone which are: lift, gravity and thrust
+	 *
 	 * @return the total external forces on the drone
 	 * @author Martijn Sauwens
 	 */
-	public Vector getTotalExternalForces(){
+	public Vector getTotalExternalForcesWorld() {
 
 		// calculate the force exerted on the wings
 		Wing[] wingArray = this.getWingArray();
 		int nbOfWings = wingArray.length;
 		Vector[] liftVectors = new Vector[nbOfWings];
 
-		for(int index = 0; index != nbOfWings; index++){
+		for (int index = 0; index != nbOfWings; index++) {
 			liftVectors[index] = wingArray[index].getLift();
 		}
 
@@ -72,14 +193,76 @@ public class Drone extends WorldObject{
 		Vector gravity = this.getGravity();
 
 		// create array containing all the forces exerted on the drone
-		Vector[] forceArray = { totalLift, thrust, gravity};
+		Vector[] forceArray = {totalLift, thrust, gravity};
 
 		return Vector.sumVectorArray(forceArray);
 
 	}
 
 	/**
+	 * Calculates the total moment exerted on the drone in the drone axis system
+	 *
+	 * @return a vector containing the total exerted moment on the drone in the drone axis system
+	 * @author Martijn Sauwens
+	 * note: the gravity and thrust force are ignored because they are parallel to their force arms
+	 */
+	public Vector getTotalMomentDrone() {
+		Wing[] wingArray = this.getWingArray();
+		int nbOfWings = wingArray.length;
+		//the array containing the lift vectors projected on the drone axis
+		Vector[] momentVectorsDrone = new Vector[nbOfWings];
+
+		for (int index = 0; index != nbOfWings; index++) {
+			Wing currentWing = wingArray[index];
+			Vector liftOnDrone = this.worldOnDrone(currentWing.getLift());
+			Vector positionWing = currentWing.getRelativePosition();
+			Vector momentOnDrone = positionWing.crossProduct(liftOnDrone);
+			momentVectorsDrone[index] = momentOnDrone;
+		}
+
+		return Vector.sumVectorArray(momentVectorsDrone);
+	}
+
+	/**
+	 * calculates the moment of inertia of the drone on a given point in time, the impulse moment is given in the
+	 * drone axis system
+	 *
+	 * @return a vector containing the moment of inertia
+	 * @throws NullPointerException thrown if the Inertia tensor is not initialized
+	 * @author Martijn Sauwens
+	 */
+	public Vector getImpulseMoment() throws NullPointerException {
+		SquareMatrix inertiaTensor = this.getInertiaTensor();
+		if (inertiaTensor == null) {
+			throw new NullPointerException();
+		}
+
+		//calculate the angular velocity of the drone in the drone axis system
+		Vector rotationDrone = this.worldOnDrone(this.getRotationVector());
+
+		return inertiaTensor.matrixVectorProduct(rotationDrone);
+
+	}
+
+	/**
+	 * Getter for the position variable
+	 * @return a vector containing the position
+	 */
+	public Vector getPosition() {
+		return position;
+	}
+
+	/**
+	 * Setter for the position of the drone
+	 * @param position the position of the drone
+	 */
+	public void setPosition(Vector position) {
+		this.position = position;
+	}
+
+	/**
 	 * Getter for the velocity of the drone
+	 *
 	 * @return
 	 */
 	public Vector getVelocity() {
@@ -89,33 +272,45 @@ public class Drone extends WorldObject{
 
 	/**
 	 * Setter for the velocity of the drone
+	 *
 	 * @param velocity the desired velocity of the drone
 	 * @throws IllegalArgumentException if the speed is invalid
 	 */
 	public void setVelocity(Vector velocity) throws IllegalArgumentException {
-		if(this.isValidVelocity(velocity)){
+		if (this.isValidVelocity(velocity)) {
 			this.velocity = velocity;
-		}else{
+		} else {
 			throw new IllegalArgumentException(VELOCITY_ERROR);
 		}
 	}
-	
-	public boolean isValidVelocity(Vector velocity){
+
+	public boolean isValidVelocity(Vector velocity) {
 		return velocity.getSize() <= LIGHTSPEED;
 	}
 
 
 	/**
 	 * getter for the maximum Thrust of the drone
+	 *
 	 * @return
 	 */
 	public float getMaxThrust() {
 		return maxThrust;
 	}
-	
-	
+
+	/**
+	 * Checks if the given max thrust can be assigned as maximum thrust of the drone
+	 *
+	 * @param maxThrust the desired maximum thrust of the drone
+	 * @return true if and only if the maxThrust > 0
+	 */
+	public boolean canHaveAsMaxThrust(float maxThrust) {
+		return maxThrust > 0;
+	}
+
 	/**
 	 * getter for the thrust of the drone
+	 *
 	 * @Basic
 	 */
 	public float getThrust() {
@@ -124,59 +319,63 @@ public class Drone extends WorldObject{
 
 	/**
 	 * Gets the thrust vector of the drone in the drone axis
+	 *
 	 * @return a vector containing the thrust of the drone in the drone axis
 	 * @author Martijn Sauwens
 	 */
-	public Vector getThrustVector(){
-		return new Vector(-this.getThrust(), 0,0);
+	public Vector getThrustVector() {
+		return new Vector(-this.getThrust(), 0, 0);
 	}
 
 	/**
 	 * Setter for the thrust of the drone
+	 *
 	 * @param thrust the desired new thrust
 	 * @throws IllegalArgumentException if the new thrust is not valid
 	 * @author Martijn Sauwens
 	 */
 	public void setThrust(float thrust) throws IllegalArgumentException {
-		if(this.canHaveAsThrust(thrust)){
+		if (this.canHaveAsThrust(thrust)) {
 			this.thrust = thrust;
-		}else{
+		} else {
 			throw new IllegalArgumentException(Drone.THRUST_OUT_OF_RANGE);
 		}
 	}
 
 	/**
 	 * Getter for the gravitational force exerted on the drone given in the world axis
+	 *
 	 * @return a vector containing the gravitational force exterted on the drone
 	 * @author Martijn Sauwens
 	 */
-	public Vector getGravity(){
+	public Vector getGravity() {
 		Wing[] wingArray = this.getWingArray();
 		float totalMass = this.getDroneMass() + getEngineMass();
 
-		for(Wing wing: wingArray){
-			totalMass +=  wing.getMass();
+		for (Wing wing : wingArray) {
+			totalMass += wing.getMass();
 		}
 
-		float scalarGravity = totalMass*GRAVITY;
+		float scalarGravity = totalMass * GRAVITY;
 
-		return new Vector(0.0f, - scalarGravity, 0.0f);
+		return new Vector(0.0f, -scalarGravity, 0.0f);
 	}
 
 
-	
 	/**
 	 * Checks if the new thrust is allowed
+	 *
 	 * @param thrust the thrust to be checked
 	 * @return true if and only if the thrust is in the range [0, this.getMaxThrust]
 	 */
-	public boolean canHaveAsThrust(float thrust){
-		
-		return thrust>=0 && thrust <= this.getMaxThrust();
+	public boolean canHaveAsThrust(float thrust) {
+
+		return thrust >= 0 && thrust <= this.getMaxThrust();
 	}
 
 	/**
 	 * Getter for the mass of the drone
+	 *
 	 * @return the mass of the drone
 	 */
 	public float getDroneMass() {
@@ -185,138 +384,150 @@ public class Drone extends WorldObject{
 
 	/**
 	 * Checkers if the drone mass is valid
+	 *
 	 * @param droneMass the mass of the drone
 	 * @return true if and only if the mass > 0
 	 */
-	public boolean canHaveAsDroneMass(float droneMass){
+	public boolean canHaveAsDroneMass(float droneMass) {
 		return droneMass > 0;
 	}
 
-	/** Method that checks if a suggested inclination is valid.
+	/**
+	 * Method that checks if a suggested inclination is valid.
+	 *
 	 * @param inclination the inclinaton of a wing
 	 * @author anthonyrathe
 	 */
-	private boolean canHaveAsInclination(float inclination){
-		return inclination >= 0 && inclination < 2*Math.PI;
+	private boolean canHaveAsInclination(float inclination) {
+		return inclination >= 0 && inclination < 2 * Math.PI;
 	}
 
 	/**
 	 * Method that sets the new left wing inclination.
+	 *
 	 * @param newLeftWingInclination the new inclination at which the left wing should be set
 	 * @author anthonyrathe
 	 */
-	private void setLeftWingInclination(float newLeftWingInclination){
-		if (this.canHaveAsInclination(newLeftWingInclination)){
+	private void setLeftWingInclination(float newLeftWingInclination) {
+		if (this.canHaveAsInclination(newLeftWingInclination)) {
 			this.leftWingInclination = newLeftWingInclination;
-		}else{
+		} else {
 			throw new IllegalArgumentException(Drone.INCLINATION_OUT_OF_RANGE);
 		}
 	}
 
 	/**
 	 * Method that gets the current left wing inclination.
+	 *
 	 * @author anthonyrathe
 	 */
-	public float getLeftWingInclination(){
+	public float getLeftWingInclination() {
 		return this.leftWingInclination;
 	}
 
 	/**
 	 * Method that sets the new right wing inclination.
+	 *
 	 * @param newRightWingInclination the new inclination at which the right wing should be set
 	 * @author anthonyrathe
 	 */
-	private void setRightWingInclination(float newRightWingInclination){
-		if (this.canHaveAsInclination(newRightWingInclination)){
+	private void setRightWingInclination(float newRightWingInclination) {
+		if (this.canHaveAsInclination(newRightWingInclination)) {
 			this.rightWingInclination = newRightWingInclination;
-		}else{
+		} else {
 			throw new IllegalArgumentException(Drone.INCLINATION_OUT_OF_RANGE);
 		}
 	}
 
 	/**
 	 * Method that gets the current right wing inclination.
+	 *
 	 * @author anthonyrathe
 	 */
-	public float getRightWingInclination(){
+	public float getRightWingInclination() {
 		return this.leftWingInclination;
 	}
 
 	/**
 	 * Method that sets the new horizontal stabilizer inclination.
+	 *
 	 * @param newHorStabInclination the new inclination at which the horizontal stabilizer should be set
 	 * @author anthonyrathe
 	 */
-	private void setHorStabInclination(float newHorStabInclination){
-		if (this.canHaveAsInclination(newHorStabInclination)){
+	private void setHorStabInclination(float newHorStabInclination) {
+		if (this.canHaveAsInclination(newHorStabInclination)) {
 			this.horStabInclination = newHorStabInclination;
-		}else{
+		} else {
 			throw new IllegalArgumentException(Drone.INCLINATION_OUT_OF_RANGE);
 		}
 	}
 
 	/**
 	 * Method that gets the current horizontal stabilizer inclination.
+	 *
 	 * @author anthonyrathe
 	 */
-	public float getHorStabInclination(){
+	public float getHorStabInclination() {
 		return this.horStabInclination;
 	}
 
 	/**
 	 * Method that sets the new vertical stabilizer inclination.
+	 *
 	 * @param newVerStabInclination the new inclination at which the vertical stabilizer should be set
 	 * @author anthonyrathe
 	 */
-	private void setVerStabInclination(float newVerStabInclination){
-		if (this.canHaveAsInclination(newVerStabInclination)){
+	private void setVerStabInclination(float newVerStabInclination) {
+		if (this.canHaveAsInclination(newVerStabInclination)) {
 			this.verStabInclination = newVerStabInclination;
-		}else{
+		} else {
 			throw new IllegalArgumentException(Drone.INCLINATION_OUT_OF_RANGE);
 		}
 	}
 
 	/**
 	 * Method that gets the current vertical stabilizer inclination.
+	 *
 	 * @author anthonyrathe
 	 */
-	public float getVerStabInclination(){
+	public float getVerStabInclination() {
 		return this.verStabInclination;
 	}
 
 	/**
 	 * Moves the drone for a given amount of time, taking in account autopilot input.
+	 *
 	 * @param duration the amount of time the drone should be moved
 	 * @author anthonyrathe
 	 */
-	public void evolve(float duration){
-		while (duration > 0){
-			if (this.nextStateAvailable()){
-				if (duration >= this.getQueueTime()){
+	public void evolve(float duration) {
+		while (duration > 0) {
+			if (this.nextStateAvailable()) {
+				if (duration >= this.getQueueTime()) {
 					this.move(this.getQueueTime());
 					this.nextState();
 					duration = duration - this.getQueueTime();
-					this.setQueueTime((float)0.0);
-				}else{
+					this.setQueueTime((float) 0.0);
+				} else {
 					this.move(duration);
-					this.setQueueTime(getQueueTime()-duration);
-					duration = (float)0.0;
+					this.setQueueTime(getQueueTime() - duration);
+					duration = (float) 0.0;
 				}
-			}else{
+			} else {
 				Autopilot AP = this.getAutopilot();
 				this.setNextThrust(AP.getThrust());
 				this.setNextLeftWingInclination(AP.getLeftWingInclination());
 				this.setNextRightWingInclination(AP.getRightWingInclination());
 				this.setNextHorStablInclination(AP.getHorStabInclination());
 				this.setNextVerStablInclination(AP.getVerStabInclination());
-				if (duration >= AP_CALC_TIME){
+				if (duration >= AP_CALC_TIME) {
 					duration = duration - AP_CALC_TIME;
 					this.move(AP_CALC_TIME);
 					this.nextState();
-				}else{
+				} else {
 					this.move(duration);
-					this.setQueueTime(AP_CALC_TIME-duration);
-					duration = (float)0.0;
+					this.setQueueTime(AP_CALC_TIME - duration);
+					duration = (float) 0.0;
 				}
 			}
 		}
@@ -324,9 +535,10 @@ public class Drone extends WorldObject{
 
 	/**
 	 * Moves the drone for a given amount of time, not taking in account any state changes.
+	 *
 	 * @param duration the amount of time the drone should be moved as it is in its current state
 	 */
-	public void move(float duration){
+	public void move(float duration) {
 
 	}
 
@@ -334,8 +546,8 @@ public class Drone extends WorldObject{
 	 * Changes the state of the drone to the next state, as calculated earlier by the autopilot.
 	 * State will remain the same if there is no queue-time.
 	 */
-	public void nextState(){
-		if (this.nextStateAvailable()){
+	public void nextState() {
+		if (this.nextStateAvailable()) {
 			this.setThrust(this.getNextThrust());
 			this.setLeftWingInclination(this.getNextLeftWingInclination());
 			this.setRightWingInclination(this.getNextRightWingInclination());
@@ -353,7 +565,7 @@ public class Drone extends WorldObject{
 	/**
 	 * Method returning the autopilot loaded onto the drone
 	 */
-	public Autopilot getAutopilot(){
+	public Autopilot getAutopilot() {
 		return this.AP;
 	}
 
@@ -361,6 +573,7 @@ public class Drone extends WorldObject{
 
 	/**
 	 * Getter for the orientation of the drone
+	 *
 	 * @return a vector of the following format: (heading, pitch, roll)
 	 */
 	public Vector getOrientation() {
@@ -369,6 +582,7 @@ public class Drone extends WorldObject{
 
 	/**
 	 * Setter for the orientation of the drone
+	 *
 	 * @param orientation vector containing the orientation of the drone
 	 *                    structured (heading, pitch, roll)
 	 */
@@ -376,28 +590,28 @@ public class Drone extends WorldObject{
 		Orientation = orientation;
 	}
 
-	public void setOrientation(float heading, float pitch, float roll){
+	public void setOrientation(float heading, float pitch, float roll) {
 		this.Orientation = new Vector(heading, pitch, roll);
 	}
 
 	/**
 	 * @return the heading (rotation around the x-axis) of the drone
 	 */
-	public float getHeading(){
+	public float getHeading() {
 		return this.getOrientation().getxValue();
 	}
 
 	/**
 	 * @return the pitch (rotation around the y axis) of the drone
 	 */
-	public float getPitch(){
+	public float getPitch() {
 		return this.getOrientation().getyValue();
 	}
 
 	/**
 	 * @return the roll (rotation around the z-axis) of the drone
 	 */
-	public float getRoll(){
+	public float getRoll() {
 		return this.getOrientation().getzValue();
 	}
 
@@ -413,20 +627,21 @@ public class Drone extends WorldObject{
 	 * Martijn Sauwens
 	 * Setter of the right wing of the drone, the binary relationship can only be created if
 	 * the drone has no right wing yet or the wing is not attached to another drone
+	 *
 	 * @param rightWing the right wing of the drone
 	 */
-	public void setRightWing(HorizontalWing rightWing) throws NullPointerException, IllegalArgumentException{
-		if(rightWing == null){
+	public void setRightWing(HorizontalWing rightWing) throws NullPointerException, IllegalArgumentException {
+		if (rightWing == null) {
 			throw new NullPointerException();
 		}
-		if(this.canHaveAsRightWing(rightWing))
-			try{
+		if (this.canHaveAsRightWing(rightWing))
+			try {
 				// first try to set the wing to the drone, if this fails it means that the wing
 				// cannot be attached to the drone
 				rightWing.setDrone(this);
 				this.rightWing = rightWing;
 
-			} catch (IllegalArgumentException e){
+			} catch (IllegalArgumentException e) {
 				throw new IllegalArgumentException(e);
 			}
 
@@ -436,7 +651,7 @@ public class Drone extends WorldObject{
 	 * @param rightWing the desired right wing
 	 * @return true if and only if no other right wing is attached
 	 */
-	public boolean canHaveAsRightWing(HorizontalWing rightWing){
+	public boolean canHaveAsRightWing(HorizontalWing rightWing) {
 		return this.getRightWing() == null;
 	}
 
@@ -450,18 +665,19 @@ public class Drone extends WorldObject{
 	/**
 	 * Martijn Sauwens
 	 * Setter for the left wing of the drone
+	 *
 	 * @param leftWing the left wing of the drone
 	 */
-	public void setLeftWing(HorizontalWing leftWing) throws IllegalArgumentException, NullPointerException{
-		if(leftWing == null){
+	public void setLeftWing(HorizontalWing leftWing) throws IllegalArgumentException, NullPointerException {
+		if (leftWing == null) {
 			throw new NullPointerException();
 		}
 
-		if(canHaveAsLeftWing(leftWing)){
-			try{
+		if (canHaveAsLeftWing(leftWing)) {
+			try {
 				leftWing.setDrone(this);
 				this.leftWing = leftWing;
-			}catch (IllegalArgumentException e){
+			} catch (IllegalArgumentException e) {
 				throw new IllegalArgumentException(e);
 			}
 		}
@@ -470,14 +686,16 @@ public class Drone extends WorldObject{
 
 	/**
 	 * returns true if and only if there is no left wing attached to the drone
+	 *
 	 * @param leftWing the left wing of the drone
 	 */
-	public boolean canHaveAsLeftWing(HorizontalWing leftWing){
+	public boolean canHaveAsLeftWing(HorizontalWing leftWing) {
 		return this.getLeftWing() == null;
 	}
 
 	/**
 	 * getter of the horizontal stabilizer
+	 *
 	 * @return
 	 */
 	public HorizontalWing getHorizontalStab() {
@@ -485,21 +703,22 @@ public class Drone extends WorldObject{
 	}
 
 	/**
-	 * Martijn Sauwens
 	 * setter for the horizontal stabilizer
+	 *
 	 * @param horizontalStab the horizontal stabilizer to be attached to the drone
+	 * @author Martijn Sauwens
 	 */
 	public void setHorizontalStab(HorizontalWing horizontalStab) throws IllegalArgumentException, NullPointerException {
-		if(horizontalStab == null){
+		if (horizontalStab == null) {
 			throw new NullPointerException();
 		}
-		if(this.canHaveAsHorizontalStab(horizontalStab)) {
+		if (this.canHaveAsHorizontalStab(horizontalStab)) {
 			try {
 
 				horizontalStab.setDrone(this);
 				this.horizontalStab = horizontalStab;
 
-			}catch (IllegalArgumentException e){
+			} catch (IllegalArgumentException e) {
 				throw new IllegalArgumentException(e);
 			}
 		}
@@ -507,9 +726,10 @@ public class Drone extends WorldObject{
 
 	/**
 	 * Returns true if and only if there is no horizontal stabilizer attached to the drone
+	 *
 	 * @param horizontalStab the horizontal stabilizer
 	 */
-	public boolean canHaveAsHorizontalStab(HorizontalWing horizontalStab){
+	public boolean canHaveAsHorizontalStab(HorizontalWing horizontalStab) {
 		return this.getHorizontalStab() == null;
 	}
 
@@ -521,19 +741,20 @@ public class Drone extends WorldObject{
 	}
 
 	/**
-	 * Martijn Sauwens
 	 * Setter for the vertical stabilizer
+	 *
 	 * @param verticalStab the vertical stabilizer to be attached
+	 * @author Martijn Sauwens
 	 */
 	public void setVerticalStab(VerticalWing verticalStab) throws IllegalArgumentException, NullPointerException {
-		if(verticalStab == null){
+		if (verticalStab == null) {
 			throw new NullPointerException();
 		}
-		if(this.canHaveAsVerticalStab(verticalStab)){
-			try{
+		if (this.canHaveAsVerticalStab(verticalStab)) {
+			try {
 				verticalStab.setDrone(this);
 				this.verticalStab = verticalStab;
-			} catch( IllegalArgumentException e){
+			} catch (IllegalArgumentException e) {
 				throw new IllegalArgumentException(e);
 			}
 		}
@@ -541,22 +762,25 @@ public class Drone extends WorldObject{
 
 	/**
 	 * Returns true if and only if there is no vertical stabilizer attached to the drone.
+	 *
 	 * @param vercticalStab the vertical stabilizer to be attached
 	 */
-	public boolean canHaveAsVerticalStab(VerticalWing vercticalStab){
+	public boolean canHaveAsVerticalStab(VerticalWing vercticalStab) {
 		return this.getVerticalStab() == null;
 	}
 
 	/**
-	 * Creates an array contianing all the wings of the drone
+	 * Creates an array containing all the wings of the drone
+	 *
 	 * @return an array containing all the wings of the drone
 	 */
-	public Wing[] getWingArray(){
+	public Wing[] getWingArray() {
 		return new Wing[]{this.getRightWing(), this.getLeftWing(), this.getHorizontalStab(), this.getVerticalStab()};
 	}
 
 	/**
 	 * Getter for the rotation vector
+	 *
 	 * @return
 	 */
 	public Vector getRotationVector() {
@@ -565,6 +789,7 @@ public class Drone extends WorldObject{
 
 	/**
 	 * setter for the rotation vector
+	 *
 	 * @param rotationVector the desired rotation vector
 	 */
 	public void setRotationVector(Vector rotationVector) {
@@ -580,27 +805,39 @@ public class Drone extends WorldObject{
 
 	/**
 	 * Checker for the mass of the engine
+	 *
 	 * @param engineMass the mass of the engine
 	 * @return true if and only if the mass is strictly positive
 	 */
-	public boolean canHaveAsEngineMass(float engineMass){
+	public boolean canHaveAsEngineMass(float engineMass) {
 		return engineMass > 0;
 	}
 
 	/**
-	 * Martijn Sauwens
-	 * sets the engine position based on the configuration of the drone
-	 * @post the center of mass is (0,0,0) in the drone's axis.
+	 * Getter for the engige position
+	 *
+	 * @return a vector containing the engine position
 	 */
-	private void setEnginePosition() throws NullPointerException{
+	public Vector getEnginePos() {
+		return this.enginePos;
+	}
+
+
+	/**
+	 * sets the engine position based on the configuration of the drone
+	 *
+	 * @post the center of mass is (0,0,0) in the drone's axis.
+	 * @author Martijn Sauwens
+	 */
+	private void setEnginePosition() throws NullPointerException {
 		HorizontalWing horizontalStab = this.getHorizontalStab();
 		VerticalWing verticalStab = this.getVerticalStab();
 		float engineMass = this.getEngineMass();
 
-		if(horizontalStab == null || verticalStab == null)
+		if (horizontalStab == null || verticalStab == null)
 			throw new NullPointerException();
 
-		if(this.getEngineMass() == 0.0f)
+		if (this.getEngineMass() == 0.0f)
 			throw new IllegalArgumentException(UNINITIALIZED_ENGINEMASS);
 
 		float horizontalStabPos = horizontalStab.getRelativePosition().getzValue();
@@ -608,7 +845,104 @@ public class Drone extends WorldObject{
 		float horizontalStabMass = horizontalStab.getMass();
 		float verticalStabMass = verticalStab.getMass();
 
-		this.enginePos = new Vector(0,0,-(horizontalStabMass*horizontalStabPos + verticalStabMass*verticalStabPos) / engineMass);
+		this.enginePos = new Vector(0, 0, -(horizontalStabMass * horizontalStabPos + verticalStabMass * verticalStabPos) / engineMass);
+	}
+
+	/**
+	 * Getter for the inertia tensor, the tensor is given in the drone axis system
+	 * @return a square (diagonal) matrix containing the inertia tensor of the drone
+	 */
+	public SquareMatrix getInertiaTensor() {
+		return this.inertiaTensor;
+	}
+
+	/**
+	 * Calculates the inertia tensor based on the point masses given to the system
+	 * The inertia tensor is calculated in the drone axis system.
+	 *
+	 * @throws IllegalArgumentException thrown if not all the parts of the drone are initialized
+	 * @Post new inertiaTensor == SquareMatrix({Ixx, 0.0f, 0.0f,
+	 * 0.0f, Iyy, 0.0f,
+	 * 0.0f, 0.0f, Izz});
+	 * with Ixx sum(mi*(yi^2 + zi^2), Iyy = mi*(xi^2 + zi^2), Izz = mi*(xi^2 + yi^2)
+	 * and  mi the mass of the selected point, xi, yi, zi the coordinate of the point mass
+	 * for more info: https://nl.wikipedia.org/wiki/Traagheidsmoment
+	 * @author Martijn Sauwens
+	 */
+	private void setInertiatensor() throws IllegalArgumentException {
+		float Ixx = 0;
+		float Iyy = 0;
+		float Izz = 0;
+
+		if (!this.canCalcInertiaTensor())
+			throw new IllegalArgumentException(UNINITIALIZED_POINTMASS);
+
+		Wing[] wingArray = this.getWingArray();
+
+		// calculate the inertia caused by the wings
+		for (Wing wing : wingArray) {
+			float mass = wing.getMass();
+			Vector wingPos = wing.getRelativePosition();
+			float xValue = wingPos.getxValue();
+			float yValue = wingPos.getyValue();
+			float zValue = wingPos.getzValue();
+
+			Ixx += mass * (yValue * yValue + zValue * zValue);
+			Iyy += mass * (xValue * xValue + zValue * zValue);
+			Izz += mass * (xValue * xValue + yValue * yValue);
+		}
+
+		//calculate the inertia caused by the engine
+		float engineMass = this.getEngineMass();
+		Vector enginePos = this.getEnginePos();
+		float zValueEngine = enginePos.getzValue();
+		//the engine is always located on the z axis
+		Ixx += engineMass * zValueEngine * zValueEngine;
+		Iyy += engineMass * zValueEngine * zValueEngine;
+
+		float[] inertiaArray = {Ixx, 0.0f, 0.0f,
+				0.0f, Iyy, 0.0f,
+				0.0f, 0.0f, Izz};
+		this.inertiaTensor = new SquareMatrix(inertiaArray);
+
+	}
+
+	/**
+	 * checks if the drone is in the right state to calculate the inertia tensor
+	 *
+	 * @return true if and only if all the point masses of the drone are initialized and the
+	 * inertia tensor hasn't been calculated before (immutable character of the tensor)
+	 * @author Martijn Sauwens
+	 */
+	private boolean canCalcInertiaTensor() {
+		if (this.inertiaTensor != null)
+			return false;
+		if (this.getEnginePos() == null)
+			return false;
+
+		for (Wing wing : this.getWingArray()) {
+			if (wing == null)
+				return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Calculates the total mass of the drone
+	 * @return the mass of the wings, the drone and the engine
+	 * @author Martijn Sauwens
+	 */
+	public float getTotalMass(){
+		float totalMass = 0;
+
+		Wing[] wingArray = this.getWingArray();
+		for(Wing wing: wingArray){
+			totalMass += wing.getMass();
+		}
+		totalMass += this.getEngineMass() + this.getDroneMass();
+
+		return totalMass;
 	}
 
 	/**
@@ -635,37 +969,31 @@ public class Drone extends WorldObject{
 	 * A variable containing the position of the drone
 	 */
 	private Vector position;
-	
+
 	/**
 	 * A variable containing the velocity of the drone
 	 */
 	private Vector velocity;
-	
+
 	/**
 	 * A variable containing the acceleration of the drone
 	 */
 	private Vector acceleration;
-	
+
 	/**
 	 * A variable containing the orientation of the drone, (heading, pitch, roll)
 	 */
 	private Vector Orientation;
-	
+
 	/**
 	 * A variable containing the rotation vector of the drone (given in the world axis)
 	 */
 	private Vector rotationVector;
-	
+
 	/**
 	 * A variable containing the angular acceleration of the drone
 	 */
 	private Vector angularAccelerationVector;
-
-
-	/**
-	 * A variable containing the inertia moment of the drone (immutable)
-	 */
-	private float inertiaMoment;
 
 	/**
 	 * A variable containing the mass of the drone (immutable)
@@ -681,17 +1009,22 @@ public class Drone extends WorldObject{
 	 * A variable containing the position of the engine of the drone (immutable)
 	 */
 	private Vector enginePos;
-	
+
 	/**
 	 * A variable containing the maximum thrust of the drone (immutable)
 	 */
 	private float maxThrust;
-	
+
 	/**
 	 * A variable containing the current thrust of the drone
 	 */
 	private float thrust;
-	
+
+	/**
+	 * A variable that stores the Inertia tensor of the drone
+	 */
+	private SquareMatrix inertiaTensor;
+
 	/**
 	 * A variable containing the amount of time (in seconds) the drone must wait before being able to call the autopilot
 	 */
@@ -700,23 +1033,24 @@ public class Drone extends WorldObject{
 	/**
 	 * A getter that returns the current queueTime
 	 */
-	private float getQueueTime(){
+	private float getQueueTime() {
 		return this.queueTime;
 	}
 
 	/**
 	 * A setter that sets the new queueTime
+	 *
 	 * @param newQueueTime the new amount of queue time (in seconds)
 	 * @author anthonyrathe
 	 */
-	private void setQueueTime(float newQueueTime){
+	private void setQueueTime(float newQueueTime) {
 		this.queueTime = newQueueTime;
 	}
 
 	/**
 	 * Method for telling whether or not a next state is available
 	 */
-	private boolean nextStateAvailable(){
+	private boolean nextStateAvailable() {
 		return this.getQueueTime() > 0;
 	}
 
@@ -728,7 +1062,7 @@ public class Drone extends WorldObject{
 	/**
 	 * A getter that returns the next amount of thrust
 	 */
-	private float getNextThrust(){
+	private float getNextThrust() {
 		return this.nextThrust;
 	}
 
@@ -745,9 +1079,10 @@ public class Drone extends WorldObject{
 	/**
 	 * A getter that returns the next left wing inclination
 	 */
-	private float getNextLeftWingInclination(){
+	private float getNextLeftWingInclination() {
 		return this.nextLeftWingInclination;
 	}
+
 	/**
 	 * A variable containing the current right wing inclination of the drone
 	 */
@@ -761,7 +1096,7 @@ public class Drone extends WorldObject{
 	/**
 	 * A getter that returns the next right wing inclination
 	 */
-	private float getNextRightWingInclination(){
+	private float getNextRightWingInclination() {
 		return this.nextRightWingInclination;
 	}
 
@@ -778,7 +1113,7 @@ public class Drone extends WorldObject{
 	/**
 	 * A getter that returns the next horizontal stabilizer inclination
 	 */
-	private float getNextHorStabInclination(){
+	private float getNextHorStabInclination() {
 		return this.nextHorStabInclination;
 	}
 
@@ -790,7 +1125,7 @@ public class Drone extends WorldObject{
 	/**
 	 * A getter that returns the next vertical stabilizer inclination
 	 */
-	private float getNextVerStabInclination(){
+	private float getNextVerStabInclination() {
 		return this.nextVerStabInclination;
 	}
 
@@ -801,7 +1136,7 @@ public class Drone extends WorldObject{
 	 * Constant: light speed, used in velocity check, maybe redundant
 	 */
 	private static float LIGHTSPEED = 300000000;
-	
+
 	/**
 	 * Constant: amount of seconds it takes for the autopilot to generate new state
 	 */
@@ -816,11 +1151,15 @@ public class Drone extends WorldObject{
 	/*
 	 * Error Messages:
 	 */
-	
+
 	private final static String THRUST_OUT_OF_RANGE = "The thrust is out of range: [0, this.maxThrust]";
 	private final static String INCLINATION_OUT_OF_RANGE = "The inclination is out of range: [0, 2.PI[";
 	private final static String VELOCITY_ERROR = "The velocity exceeds the upper limit";
 	private final static String WING_EXCEPTION = "the wings are null references or the drone has already wings" +
 			"attached to it";
 	private final static String UNINITIALIZED_ENGINEMASS = "The mass of the engine is uninitialized";
+	private final static String UNINITIALIZED_POINTMASS = "one or more of the point masses of the drone " +
+			"have not been initialized yet";
+	private final static String ILLEGAL_CONFIG = "The given configuration contains illegal values and or arguments";
+
 }
