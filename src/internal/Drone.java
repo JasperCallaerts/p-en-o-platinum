@@ -5,6 +5,7 @@ package internal;
  * @author Anthony Rathé & ...
  * Immutable variables: maxThrust, engineMass, enginePosition, droneMass, leftWing, rightWing,
  * 						horizontalStab, verticalStab, inertiaTensor
+ * 	note: Orientation = (heading, pitch, roll) (in that order)
  *
  */
 public class Drone extends WorldObject {
@@ -96,6 +97,82 @@ public class Drone extends WorldObject {
 		SquareMatrix roll = SquareMatrix.getRollTransformMatrix(this.getRoll());
 
 		return heading.matrixProduct(pitch).matrixProduct(roll);
+	}
+
+	/**
+	 *
+	 * @return
+	 * note: see https://en.wikipedia.org/wiki/Euler_angles & Mechanics II for more information
+	 */
+	public Vector getEulerRotations(){
+		float headingRotiation = this.getHeadingRotation();
+		float pitchRotation = this.getPitchRotation();
+		float rollRotation = this.getRollRotation();
+
+		return new Vector(headingRotiation, pitchRotation, rollRotation);
+	}
+
+	/**
+	 * Calculates the Heading rotation vector of the drone
+	 * @return the heading rotation
+	 * @author Martijn Sauwens
+	 */
+	public float getHeadingRotation(){
+		// the variables that will be used in the calculation
+		Vector rotation = this.getRotationVector();
+		float heading = this.getHeading(;
+		float pitch = this.getPitch();
+
+		// the parts of the numerator, split up for convenience
+		float partOne = rotation.getzValue() * (float)Math.sin(pitch);
+		float partTwo = -rotation.getxValue()*(float)Math.sin(heading)*(float)Math.cos(pitch);
+		float partThree = rotation.getyValue()*(float)Math.cos(heading)*(float)Math.cos(pitch);
+
+		// numerator and denominator
+		float numerator = partOne + partTwo + partThree;
+		float denominator = (float)Math.sin(pitch);
+
+		return numerator/denominator;
+	}
+
+	/**
+	 * Calculates the pitch rotation vector of the drone
+	 * @return the pitch rotation
+	 * @author Martijn Sauwens
+	 */
+	public float getPitchRotation(){
+		//the variables that will be used in the calculation
+		Vector rotation = this.getRotationVector();
+		float heading = this.getHeading();
+
+		//the parts of the calculation, split up for convenience
+		float partOne = rotation.getxValue()*(float)Math.cos(heading);
+		float partTwo = rotation.getyValue()*(float)Math.sin(heading);
+
+		return partOne + partTwo;
+
+	}
+
+	/**
+	 * Calculates the roll rotation vector of th drone
+	 * @return the roll rotation
+	 * @author Martijn Sauwens
+	 */
+	public float getRollRotation(){
+		//variables that will be used in the calculation
+		Vector rotation = this.getRotationVector();
+		float heading = this.getHeading();
+		float pitch = this.getPitch();
+
+		//the parts of the calculation, split up for convenience
+		float partOne = rotation.getxValue()*(float)Math.sin(heading);
+		float partTwo = - rotation.getyValue()*(float)Math.cos(heading);
+
+		// numerator and denominator
+		float numerator = partOne + partTwo;
+		float denominator = (float)Math.sin(pitch);
+
+		return numerator/denominator;
 	}
 
 	//Todo implement method, find way to express the change in roll, heading and pitch
