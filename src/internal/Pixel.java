@@ -9,10 +9,38 @@ import javax.swing.text.Position;
  * @author Martijn
  */
 public class Pixel {
+
+    /**
+     * Constructor for a pixel class object
+     * @param red the red value of the pixel
+     * @param green the green value of the pixel
+     * @param blue the blue value of the pixel
+     */
     public Pixel(byte red, byte green, byte blue){
         this.setRed(red);
         this.setGreen(green);
         this.setBlue(blue);
+    }
+
+    /**
+     * Constructor for a pixel class object
+     * @param pixelArray array containing the RGB values (red, green, blue) in that specific order
+     */
+    public Pixel(byte[] pixelArray){
+        if(!canBeConvertedToPixel(pixelArray))
+            throw new IllegalArgumentException(INVALID_ARRAY_SIZE);
+
+        byte red = pixelArray[0];
+        byte green = pixelArray[1];
+        byte blue = pixelArray[2];
+
+        this.red = red;
+        this.green = green;
+        this.blue = blue;
+    }
+
+    private boolean canBeConvertedToPixel(byte[] byteArray){
+        return byteArray.length == NB_OF_BYTES_IN_PIXEL;
     }
 
     /**
@@ -30,8 +58,21 @@ public class Pixel {
         return new Pixel(red, green, blue);
     }
 
+    /**
+     * Converts a pixel to gray scale
+     * @return the gray scale pixel based on luminosity
+     */
     public byte getGrayscale(){
-        return 0;
+        int red = this.getRed() + BIAS;
+        int green  = this.getGreen() + BIAS;
+        int blue = this.getBlue() + BIAS;
+
+        float tempFloat = 0.21f*red + 0.72f*green + 0.07f*blue;
+        int tempInt = Math.round(tempFloat);
+
+        tempInt = roundInt(tempInt);
+
+        return (byte)(tempInt - BIAS);
     }
 
     /**
@@ -49,13 +90,26 @@ public class Pixel {
         int result = firstInt + secondInt;
 
         //set the calculations within bounds
-        if(result > MAX)
-            result = MAX;
-        //probably redundant
-        if(result < MIN)
-            result = MIN;
+        result = roundInt(result);
 
         return (byte)(result - BIAS);
+    }
+
+    /**
+     * round the integer to the range [0, 255]
+     * @param integer the integer to be rounded
+     * @return an integer between 0 and 255, numbers smaller than zero are set to 0
+     * and number larger than 255 are set to 255
+     */
+    private static int roundInt(int integer){
+        int result = integer;
+        if(integer > MAX)
+            result = MAX;
+        //probably redundant
+        if(integer < MIN)
+            result = MIN;
+
+        return result;
     }
 
     /**
@@ -206,9 +260,11 @@ public class Pixel {
     public final static int BIAS = 128;
     public final static int MAX = 255;
     public final static int MIN = 0;
+    public final static int NB_OF_BYTES_IN_PIXEL = 3;
 
     /*
     Error Messages
      */
     private final static String ILLEGAL_VALUE = "The supplied integer value is not between 0 and 255";
+    private final static String INVALID_ARRAY_SIZE = "The supplied array is not size 3";
 }
