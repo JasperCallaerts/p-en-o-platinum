@@ -57,7 +57,7 @@ public class Drone extends WorldObject {
 
 		//these variables are calculated from the ones above
 		this.setEnginePosition();
-		this.setInertiatensor();
+		this.setInertiaTensor();
 	}
 
 	/**
@@ -100,16 +100,18 @@ public class Drone extends WorldObject {
 	}
 
 	/**
-	 *
-	 * @return
+	 * Calculates the euler rotations of the drone
+	 * @return a vector containing the rotation for each component of the orientation
+	 * 		   (HeadingRotation, PitchRotation, RollRotation)
+	 * @author Martijn Sauwens
 	 * note: see https://en.wikipedia.org/wiki/Euler_angles & Mechanics II for more information
 	 */
-	public Vector getEulerRotations(){
-		float headingRotiation = this.getHeadingRotation();
-		float pitchRotation = this.getPitchRotation();
-		float rollRotation = this.getRollRotation();
+	public Vector getEulerRotations(Vector rotationVector){
+		float headingRotation = this.getHeadingRotation(rotationVector);
+		float pitchRotation = this.getPitchRotation(rotationVector);
+		float rollRotation = this.getRollRotation(rotationVector);
 
-		return new Vector(headingRotiation, pitchRotation, rollRotation);
+		return new Vector(headingRotation, pitchRotation, rollRotation);
 	}
 
 	/**
@@ -117,16 +119,15 @@ public class Drone extends WorldObject {
 	 * @return the heading rotation
 	 * @author Martijn Sauwens
 	 */
-	public float getHeadingRotation(){
+	public float getHeadingRotation(Vector rotationVector){
 		// the variables that will be used in the calculation
-		Vector rotation = this.getRotationVector();
-		float heading = this.getHeading(;
+		float heading = this.getHeading();
 		float pitch = this.getPitch();
 
 		// the parts of the numerator, split up for convenience
-		float partOne = rotation.getzValue() * (float)Math.sin(pitch);
-		float partTwo = -rotation.getxValue()*(float)Math.sin(heading)*(float)Math.cos(pitch);
-		float partThree = rotation.getyValue()*(float)Math.cos(heading)*(float)Math.cos(pitch);
+		float partOne = rotationVector.getzValue() * (float)Math.sin(pitch);
+		float partTwo = -rotationVector.getxValue()*(float)Math.sin(heading)*(float)Math.cos(pitch);
+		float partThree = rotationVector.getyValue()*(float)Math.cos(heading)*(float)Math.cos(pitch);
 
 		// numerator and denominator
 		float numerator = partOne + partTwo + partThree;
@@ -140,14 +141,13 @@ public class Drone extends WorldObject {
 	 * @return the pitch rotation
 	 * @author Martijn Sauwens
 	 */
-	public float getPitchRotation(){
+	public float getPitchRotation(Vector rotationVector){
 		//the variables that will be used in the calculation
-		Vector rotation = this.getRotationVector();
 		float heading = this.getHeading();
 
 		//the parts of the calculation, split up for convenience
-		float partOne = rotation.getxValue()*(float)Math.cos(heading);
-		float partTwo = rotation.getyValue()*(float)Math.sin(heading);
+		float partOne = rotationVector.getxValue()*(float)Math.cos(heading);
+		float partTwo = rotationVector.getyValue()*(float)Math.sin(heading);
 
 		return partOne + partTwo;
 
@@ -158,15 +158,14 @@ public class Drone extends WorldObject {
 	 * @return the roll rotation
 	 * @author Martijn Sauwens
 	 */
-	public float getRollRotation(){
+	public float getRollRotation(Vector rotationVector){
 		//variables that will be used in the calculation
-		Vector rotation = this.getRotationVector();
 		float heading = this.getHeading();
 		float pitch = this.getPitch();
 
 		//the parts of the calculation, split up for convenience
-		float partOne = rotation.getxValue()*(float)Math.sin(heading);
-		float partTwo = - rotation.getyValue()*(float)Math.cos(heading);
+		float partOne = rotationVector.getxValue()*(float)Math.sin(heading);
+		float partTwo = - rotationVector.getyValue()*(float)Math.cos(heading);
 
 		// numerator and denominator
 		float numerator = partOne + partTwo;
@@ -175,11 +174,63 @@ public class Drone extends WorldObject {
 		return numerator/denominator;
 	}
 
-	//Todo implement method, find way to express the change in roll, heading and pitch
-	public void nextState(float deltaTime){
+	//Todo find way to represent the angular acceleration in terms of the euler angles
 
+	/**
+	 * advances the drone for a given time step, it changes the position, velocity, orientation and rotation
+	 * variables
+	 * @param deltaTime the time step
+	 */
+	public void nextState(float deltaTime){
+		//set the next state of the position & velocity of the center of mass of the drone
+		Vector acceleration = this.calcAcceleration();
+		Vector velocity = this.getNextVelocity(deltaTime, acceleration);
+		Vector position = this.getNextPosition(deltaTime, acceleration);
+
+		this.setVelocity(velocity);
+		this.setPosition(position);
+
+		//set the next state of the orientation & rotation of the drone
+		Vector angularAcceleration = this.calcAngularAcceleration();
+		Vector angularAccelerationWorld = this.droneOnWorld(angularAcceleration);
+		Vector rotation = this.getNextRotationVector(deltaTime, angularAccelerationWorld);
+		Vector orientation = this.getNextOrientation(deltaTime, rotation);
+
+		this.setRotationVector(rotation);
+		this.setOrientation(orientation);
 	}
 
+	/**
+	 * calculates the next orientation based on the current orientation and the next orientation
+	 * @param deltaTime the time step taken
+	 * @param nextRotation the rotation vector for the next step given in the world axis
+	 * @return a vector containing the orientation for the next step
+	 * note: we may change the nextRotation parameter to angularAcceleration, but then we need to find
+	 * another formula to convert angular acceleration to euler acceleration vectors, the fault lies in the
+	 * way the nextRotation is converted to Euler rotations, it is based on the current orientation of the drone,
+	 * not the next one --> see formula for converting the normal rotation to euler rotations
+	 */
+	public Vector getNextOrientation(float deltaTime, Vector nextRotation){
+		//set up the needed variables
+		Vector currentOrientation = this.getOrientation();
+		Vector currentRotation = this.getRotationVector();
+		Vector currentRotationEuler = this.getEulerRotations(currentRotation);
+		Vector nextRotationEuler = this.getEulerRotations(nextRotation);
+
+		//set up the next rotations
+		Vector rotationCurrent = currentRotationEuler.scalarMult(deltaTime/2.0f);
+		Vector rotationNext = nextRotationEuler.scalarMult(deltaTime/2.0f);
+
+		//return the next Orientation
+		return currentOrientation.vectorSum(rotationCurrent).vectorSum(rotationNext);
+	}
+
+	/**
+	 * Calculates the rotation vector for the next time interval expressed in the world axis
+	 * @param deltaTime the time step to be taken
+	 * @param angularAcceleration the angular acceleration given in the world axis
+	 * @return a vector containing the next rotation vector given in the world axis
+	 */
 	public Vector getNextRotationVector(float deltaTime, Vector angularAcceleration){
 		Vector currentRotation = this.getRotationVector();
 		Vector deltaRotation = angularAcceleration.scalarMult(deltaTime);
@@ -237,7 +288,7 @@ public class Drone extends WorldObject {
 	 * calculates the acceleration vector of the drone in the world axis system
 	 * @return a vector containing the acceleration of the drone in the world axis system
 	 */
-	public Vector calcAccelleration(){
+	public Vector calcAcceleration(){
 		Vector externalForce = getTotalExternalForcesWorld();
 		float totalMass = this.getTotalMass();
 
@@ -946,7 +997,7 @@ public class Drone extends WorldObject {
 	 * for more info: https://nl.wikipedia.org/wiki/Traagheidsmoment
 	 * @author Martijn Sauwens
 	 */
-	private void setInertiatensor() throws IllegalArgumentException {
+	private void setInertiaTensor() throws IllegalArgumentException {
 		float Ixx = 0;
 		float Iyy = 0;
 		float Izz = 0;
@@ -973,6 +1024,8 @@ public class Drone extends WorldObject {
 		float engineMass = this.getEngineMass();
 		Vector enginePos = this.getEnginePos();
 		float zValueEngine = enginePos.getzValue();
+
+
 		//the engine is always located on the z axis
 		Ixx += engineMass * zValueEngine * zValueEngine;
 		Iyy += engineMass * zValueEngine * zValueEngine;

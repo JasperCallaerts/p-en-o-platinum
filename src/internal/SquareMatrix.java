@@ -1,5 +1,5 @@
 package internal;
-
+import tests.SquareMatrixTest;
 
 /**
  * Created by Martijn on 11/10/2017.
@@ -265,11 +265,31 @@ public class SquareMatrix {
             throw new IndexOutOfBoundsException();
     }
 
+    /**
+     * Sets the element at the given index to the given value
+     * @param index the index of the element in the matrixArray
+     * @param elem the desired value of the element
+     */
     private void setElementAt(int index, float elem){
         if(index < this.getArraySize() && index >= 0)
             this.matrixArray[index] = elem;
         else
             throw new IndexOutOfBoundsException();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(obj == this)
+            return true;
+        if(obj == null)
+            return false;
+
+        for(int index = 0; index != arraySize; index++){
+            if(((SquareMatrix)obj).getElementAt(index) != this.getElementAt(index))
+                return false;
+        }
+
+        return true;
     }
 
     /**
@@ -299,6 +319,13 @@ public class SquareMatrix {
      * constant that holds the number of columns
      */
     final static int nbColumns = 3;
+
+    /*
+    Constants
+     */
+    public final static SquareMatrix IDENTITY = new SquareMatrix(new float[] {1.0f, 0.0f, 0.0f,
+                                                                              0.0f, 1.0f, 0.0f,
+                                                                              0.0f, 0.0f, 1.0f});
 
     /*
     Error messages
