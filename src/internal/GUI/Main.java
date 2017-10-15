@@ -10,7 +10,7 @@ import internal.Drone;
 import internal.World;
 
 public class Main {
-	static String windowTitle = "Test";
+	static String windowTitle = "Beste PenO Team";
 	static int width = 1280;
 	static int height = 720;
 	static GUI gui;

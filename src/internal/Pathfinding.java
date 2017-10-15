@@ -12,8 +12,8 @@ import java.util.PriorityQueue;
  * 
  * A class of the A* pathfinding algorithm
  * 
- * @author Bart Jacobs en Jordy Heusdens
- * @version 1.0
+ * @author r0630364
+ * @version 2.0
  *
  */
 public class Pathfinding {
@@ -138,14 +138,11 @@ public class Pathfinding {
 				&&(((me[0]-other[0]) != 0)||((me[1]-other[1]) != 0)||((me[2]-other[2]) != 0))
 				&&((Math.abs(me[2]-other[2]) == 1)||(me[2]-other[2]) == 0));
 	}
-	/**
-	 * The unit who is searching a new path
-	 */
-	//public static Unit unit;
+
 	/**
 	 * A class of nodes
 	 * 
-	 * @author Bart Jacobs en Jordy Heusdens
+	 * @author r0630364
 	 * @version 1.0
 	 *
 	 */

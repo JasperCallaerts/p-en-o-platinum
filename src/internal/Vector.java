@@ -1,4 +1,12 @@
 package internal;
+
+/**
+ * Whole class Made by Martijn
+ */
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 //import be.kuleuven.cs.som.annotate.*;
 
 /**
@@ -6,6 +14,7 @@ package internal;
  * Each vector has a x, y and z coordinate
  * The size of each component is represented by a floating point number
  */
+
 //@Value
 public class Vector {
 	
@@ -27,6 +36,24 @@ public class Vector {
 	public Vector(){
 		
 		this(0,0,0);
+	}
+
+	/**
+	 * Contructor for a vector given a length 3 array
+	 * @param vectorArray a length 3 array contianing the values for the vector
+	 */
+	public Vector(float[] vectorArray){
+		if(!isValidArray(vectorArray))
+			throw new IllegalArgumentException(INVALID_ARRAY);
+
+		this.xValue = vectorArray[0];
+		this.yValue = vectorArray[1];
+		this.zValue = vectorArray[2];
+
+	}
+
+	public boolean isValidArray(float[] array){
+		return array.length == 3;
 	}
 	
 	
@@ -196,9 +223,82 @@ public class Vector {
 		}
 	}
 
-	
+	/**
+	 * calculates a orthogonal Projection of the given vector against the normal vector
+	 */
+	public Vector orthogonalProjection(Vector normalVector){
+
+		Vector normalizedNormal = normalVector.normalizeVector();
+		float numerator = this.scalarProduct(normalizedNormal);
+		float denominator = normalizedNormal.scalarProduct(normalizedNormal);
+
+		Vector tempVector = normalizedNormal.scalarMult(numerator/denominator);
+
+		return this.vectorDifference(tempVector);
+
+
+	}
+
 
 	/**
+	 * selects the element at a given index of the vector
+	 * @param index the index of the element to be obtained
+	 * @return the element at position of the index
+	 */
+	public float getElementAt(int index){
+		switch(index) {
+			case 0:
+				return this.getxValue();
+			case 1:
+				return this.getyValue();
+			case 2:
+				return this.getzValue();
+			default:
+				throw new IndexOutOfBoundsException();
+		}
+	}
+
+
+	/*
+	Static methods
+	 */
+
+	/**
+	 * Sums  all the vectors in the given array
+	 * @param vectorArray the array containing all the vectors
+	 * @return a vector containing the sum of all the vectors in the array
+	 */
+	public static Vector sumVectorArray(Vector[] vectorArray){
+		Vector tempVector = new Vector();
+		for(Vector vector: vectorArray){
+
+			tempVector = tempVector.vectorSum(vector);
+		}
+
+		return tempVector;
+	}
+
+	/**
+	 * Sums  all the vectors in the given list
+	 * @param vectorList the list containing all the vectors
+	 * @return a vector containing the sum of all the vectors in the list
+	 */
+	public static Vector sumVectorList(List<Vector> vectorList){
+		Vector tempVector = new Vector();
+
+		for(Vector vector: vectorList){
+			tempVector = tempVector.vectorSum(vector);
+		}
+
+		return tempVector;
+	}
+
+
+	/*
+	Getters and Setters
+	 */
+
+    /**
 	 * Getter for the x Value of the vector
 	 */
 	public float getxValue() {
@@ -235,5 +335,11 @@ public class Vector {
 	 * The variable containing the z-coordinate for the vector
 	 */
 	private float zValue;
+
+	/*
+	Error Messages
+	 */
+
+	public final static String INVALID_ARRAY = "The provided array is not of length 3";
 
 }
