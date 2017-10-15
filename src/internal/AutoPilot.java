@@ -32,4 +32,50 @@ public class AutoPilot implements Autopilot{
 		
 	}
 
+	private float thrust;
+	private float leftWingInclination;
+	private float rightWingInclination;
+	private float horStabInclination;
+	private float verStabInclination;
+	
+	
+
+	public float getThrust() {
+		return thrust;
+	}
+	public void setThrust(float thrust){
+		this.thrust = thrust;
+	}
+	
+	
+	public float getLeftWingInclination() {
+		return leftWingInclination;
+	}
+	private void setLeftWingInclination(float inclination){
+		leftWingInclination = inclination;
+	}
+
+
+	public float getRightWingInclination() {
+		return rightWingInclination;
+	}
+	private void setRightWingInclination(float inclination){
+		rightWingInclination = inclination;
+	}
+	
+	public float getHorStabInclination() {
+		return horStabInclination;
+	}
+	public void setHorStabInclination(float inclination){
+		horStabInclination = inclination;
+	}
+
+	public float getVerStabInclination() {
+		return verStabInclination;
+	}
+	public void setVerStabInclination(float inclination){
+		verStabInclination = inclination;
+	}
+
 }
+
