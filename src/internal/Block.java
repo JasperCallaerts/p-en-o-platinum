@@ -15,8 +15,8 @@ public class Block extends WorldObject{
 	 * @param S the saturation of a block
 	 * @param V the value of a block
 	 */
-	Block(float InitialX, float InitialY, float InitialZ,
-			int H, int S, int V){
+	public Block(float InitialX, float InitialY, float InitialZ,
+			float H, float S, float V){
 		if (!isValidHue(H)){
 			throw new IllegalArgumentException();
 		}
@@ -109,22 +109,22 @@ public class Block extends WorldObject{
 	/**
 	 * Checks if the given hue is valid (360 >= hue >= 0)
 	 */
-	public boolean isValidHue(int hue){
+	public boolean isValidHue(float hue){
 		return ((0 <= hue) && (hue <= 360));
 	}
 	
 	/**
-	 * Checks if the given saturation is valid (100 >= S >= 0)
+	 * Checks if the given saturation is valid (1 >= S >= 0)
 	 */
-	public boolean isValidSaturation(int sat){
-		return ((0 <= sat) && (sat <= 100));
+	public boolean isValidSaturation(float sat){
+		return ((0 <= sat) && (sat <= 1));
 	}
 	
 	/**
-	 * Checks if the given value is valid (100 >= S >= 0)
+	 * Checks if the given value is valid (1 >= S >= 0)
 	 */
-	public boolean isValidValue(int val){
-		return ((0 <= val) && (val <= 100));
+	public boolean isValidValue(float val){
+		return ((0 <= val) && (val <= 1));
 	}
 	
 	public static float[] getVertices() {
@@ -158,9 +158,9 @@ public class Block extends WorldObject{
 	/**
 	 * Variables for the HSV (colour) of a block
 	 */
-	private int Hue;
-	private int Saturation;
-	private int Value;
+	private float Hue;
+	private float Saturation;
+	private float Value;
 	
 	/**
 	 * Data from all blocks.

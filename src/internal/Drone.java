@@ -8,7 +8,8 @@ import java.util.Map;
  *
  */
 public class Drone extends WorldObject{
-	Drone(Autopilot AP){
+	
+	public Drone(Autopilot AP){
 		this.AP = AP;
 	}
 	
