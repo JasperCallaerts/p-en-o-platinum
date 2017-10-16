@@ -1,18 +1,15 @@
-package internal;
-
-public class Datastreams {
 	package internal;
 
 	import java.io.DataOutputStream;
 	import java.io.FileOutputStream;
 	import java.io.IOException;
 	import internal.Drone;
-	import AutoPilot.AutopilotConfig;
-	import AutoPilot.AutopilotConfigWriter;
-	import AutoPilot.AutopilotInputs;
-	import AutoPilot.AutopilotInputsWriter;
-	import AutoPilot.AutopilotOutputs;
-	import AutoPilot.AutopilotOutputsWriter;
+	import Autopilot.AutopilotConfig;
+	import Autopilot.AutopilotConfigWriter;
+	import Autopilot.AutopilotInputs;
+	import Autopilot.AutopilotInputsWriter;
+	import Autopilot.AutopilotOutputs;
+	import Autopilot.AutopilotOutputsWriter;
 
 	public class Datastreams {
 		 /**
@@ -159,4 +156,4 @@ public class Datastreams {
 	     */
 	    private int nbRows = 200;
 	}
-}
+
