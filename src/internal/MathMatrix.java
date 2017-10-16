@@ -293,6 +293,7 @@ public class MathMatrix<T> {
 
     }
 
+
     //Todo: implement this one
     public Boolean canBeConvertedToVector(){
         return true;
@@ -326,7 +327,7 @@ public class MathMatrix<T> {
         }
     }
 
-    public void transpose(){
+    public MathMatrix<T> transpose(){
         int matrixSize = this.getMatrixList().size();
         MathMatrix<T> tempMatrix = new MathMatrix<T>();
         List<T> tempColumn;
@@ -334,10 +335,8 @@ public class MathMatrix<T> {
             tempColumn = this.getRowAtIndex(index);
             tempMatrix.insertColumnAtIndex(tempColumn, index);
         }
-        this.matrixList = tempMatrix.getMatrixList();
-        this.setnRows(tempMatrix.getnRows());
-        this.setnColumns(tempMatrix.getnColumns());
 
+        return tempMatrix;
     }
 
     /**

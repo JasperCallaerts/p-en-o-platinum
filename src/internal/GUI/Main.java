@@ -1,12 +1,27 @@
 package internal.GUI;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import internal.AutoPilot;
+import internal.Block;
+import internal.Drone;
+import internal.HorizontalWing;
+import internal.Vector;
+import internal.VerticalWing;
+import internal.World;
+
 public class Main {
 	static String windowTitle = "Beste PenO Team";
 	static int width = 1280;
 	static int height = 720;
 	static GUI gui;
 	static Window window;
-    static float[] vertices = new float[]{
+	
+	
+	static float[] vertices = new float[]{
             // VO
             -0.5f,  0.5f,  0.5f,
             // V1
@@ -23,9 +38,9 @@ public class Main {
             -0.5f, -0.5f, -0.5f,
             // V7
              0.5f, -0.5f, -0.5f,
-        };
-        static float[] colours = new float[]{
-            0.5f, 0.0f, 0.0f,
+	};
+	static float[] colours = new float[]{
+			0.5f, 0.0f, 0.0f,
             0.0f, 0.5f, 0.0f,
             0.0f, 0.0f, 0.5f,
             0.0f, 0.5f, 0.5f,
@@ -33,9 +48,9 @@ public class Main {
             0.0f, 0.5f, 0.0f,
             0.0f, 0.0f, 0.5f,
             0.0f, 0.5f, 0.5f,
-        };
-       static int[] indices = new int[]{
-            // Front face
+	};
+	static int[] indices = new int[]{
+			// Front face
             0, 1, 3, 3, 1, 2,
             // Top Face
             4, 0, 3, 5, 4, 3,
@@ -47,7 +62,9 @@ public class Main {
             2, 1, 6, 2, 6, 7,
             // Back face
             7, 6, 4, 7, 4, 5,
-        };
+	};
+       
+    
 
        public static void main(String[] args) {
 		gui = new GUI();
@@ -62,9 +79,48 @@ public class Main {
 	    }
 	}
 	
+	/**
+	 * @author 
+	 * @throws Exception
+	 */
     protected static void init() throws Exception {
         window.init();
         gui.init(window, vertices, colours, indices);
+        
+        // Create World
+    	World world = new World();
+    	// Create world objects
+    	Block redBlock = new Block(0f, 0f, 0f, 0f, 0f, 0f);
+    	HorizontalWing leftWing = new HorizontalWing(new Vector(0f, 0f, 0f), 1f, 1f, 1f, 1f);
+    	HorizontalWing rightWing = new HorizontalWing(new Vector(0f, 0f, 0f), 1f, 1f, 1f, 1f);
+    	HorizontalWing horizontalStab = new HorizontalWing(new Vector(0f, 0f, 0f), 1f, 1f, 1f, 1f);
+    	VerticalWing verticalStab = new VerticalWing(new Vector(0f, 0f, 0f), 1f, 1f, 1f, 1f);
+    	Drone drone = new Drone(
+    			1f, 
+    			1f, 
+    			20f, 
+    			new Vector(0f,0f,0f), 
+    			new Vector(0f,0f,0f), 
+    			new Vector(0f,0f,0f), 
+    			new Vector(0f,0f,0f), 
+    			rightWing, 
+    			leftWing, 
+    			horizontalStab, 
+    			verticalStab, 
+    			new AutoPilot());
+    	// Add world objects
+    	world.addWorldObject(redBlock);
+    	world.addWorldObject(drone);
+    	
+    	// Create vertices array
+    	float[] vertices = new float[world.getBlockSet().size()];
+    	int i = 0;
+    	for(Block block : world.getBlockSet()){
+    		for (Float coord : Block.getVertices()){
+    			vertices[i++] = coord;
+    		}
+    	}
+    	
     }
 
     protected static void loop() throws Exception {

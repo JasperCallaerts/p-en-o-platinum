@@ -3,6 +3,8 @@ package internal;
 /**
  * Implmented by Martijn (r0623847)
  */
+
+//Todo optimize the calculations by storing and reusing computational heavy variables like absolute velocity
 public abstract class Wing {
 
     /**
@@ -34,7 +36,9 @@ public abstract class Wing {
      */
 
     /**
-     * Calculates the absolute velocity of the drone
+     * Calculates the absolute velocity of the drone in the world axis
+     * @return a vector containing the absolute velocity of the wing in the world axis
+     * note: in next parts of the project there is need to account for airspeed caused by the wind
      */
     public Vector getAbsoluteVelocity(){
         Drone attachedDrone = this.getDrone();
@@ -46,7 +50,7 @@ public abstract class Wing {
         //the relative position vector of the wing to the mass center of the drone
         Vector relativePos = this.getRelativePosition();
         //calculate the absolute position vector of the wing to the center of mass
-        Vector radiusVector = attachedDrone.projectOnWorld(relativePos);
+        Vector radiusVector = attachedDrone.droneOnWorld(relativePos);
         //calculate the rotational velocity component of the wing
         Vector rotationVelocity = radiusVector.crossProduct(absoluteRotation);
 
@@ -54,6 +58,27 @@ public abstract class Wing {
         return centerVelocity.vectorSum(rotationVelocity);
 
     }
+
+    /**
+     * Calculates the lift of the Airfoil expressed in world axis
+     * @return N*liftSlope*AOA*s^2
+     */
+    public Vector getLift(){
+        Vector normal = this.projectOnWorld(this.getNormal());
+        Vector airspeed = this.getAbsoluteVelocity();
+        float angleOfAttack = this.getAngleOfAttack();
+        float liftSlope = this.getLiftSlope();
+
+        // calculate s^2
+        float airspeedSquared = airspeed.scalarProduct(airspeed);
+
+        float scalarPart = airspeedSquared*angleOfAttack*liftSlope;
+
+        Vector lift = normal.scalarMult(scalarPart);
+
+        return lift;
+    }
+
 
     /*
     getters, setters and checkers for the drone
@@ -90,7 +115,7 @@ public abstract class Wing {
     /**
 	 * Calculates the normal vector of the wing in the Drone's coordinate system
 	 */
-	public abstract Vector getNormalInWorld();
+	public abstract Vector getNormal();
 
 	/**
 	 * returns the attackVector
@@ -98,10 +123,45 @@ public abstract class Wing {
 	public abstract Vector getAttackVector();
 
     /**
-     * prokects the vector onto the axis of the drone
+     * projects the vector onto the axis of the drone
      * @return
      */
 	public abstract Vector projectOnDrone(Vector vector);
+
+    /**
+     * project the given vector on the world axis
+     */
+    public Vector projectOnWorld(Vector vector){
+        Drone drone = this.getDrone();
+        Vector droneVector = this.projectOnDrone(vector);
+        return drone.droneOnWorld(droneVector);
+    }
+
+    /**
+     * Getter for the angle of attack
+     */
+    public float getAngleOfAttack(){
+        return this.angleOfAttack;
+    }
+
+    /**
+     * Calculates the angle of attack and stores it in the designated variable
+     * @post new angleOfAttack = -atan2(Airspeed*Normal, Airspeed*attackvector)
+     */
+    public void calcAngleOfAttack(){
+        //need for the projected version of all the vectors because the airspeed is in the world axis
+        Vector airspeed = this.getAbsoluteVelocity();
+        Vector normal = this.projectOnWorld(this.getNormal());
+        Vector attackVector = this.projectOnWorld(this.getAttackVector());
+
+
+        Vector projectedAirspeed = airspeed.orthogonalProjection(normal);
+
+        float numerator = projectedAirspeed.scalarProduct(normal);
+        float denominator = projectedAirspeed.scalarProduct(attackVector);
+
+        this.angleOfAttack = (float)Math.atan2(numerator, denominator);
+    }
 
     /**
      * Basic getter for the wing inclination
@@ -130,7 +190,7 @@ public abstract class Wing {
      */
     public boolean canHaveAsWingInclintion(float inclination){
 
-        return inclination >=0 && inclination <= this.getMaximumInclination();
+        return inclination >= this.getMaximumInclination() && inclination <= this.getMaximumInclination();
     }
 
     /**
@@ -228,9 +288,14 @@ public abstract class Wing {
 
 
     /**
-     * Variable that stores the lift slope of the wing (immutable)
+     * Variable that holds the lift slope of the wing (immutable)
      */
     private float liftSlope;
+
+    /**
+     * Variable that holds the angle of attack of the drone
+     */
+    private float angleOfAttack;
 
     /**
      * Variable that holds the associated drone
