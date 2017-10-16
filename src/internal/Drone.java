@@ -1,5 +1,15 @@
 package internal;
 
+import java.io.DataOutputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
+import Autopilot.AutopilotConfig;
+import Autopilot.AutopilotConfigWriter;
+import Autopilot.AutopilotInputs;
+import Autopilot.AutopilotInputsWriter;
+import Autopilot.AutopilotOutputs;
+
 /**
  * 
  * @author Anthony Rathé & ...
@@ -58,6 +68,99 @@ public class Drone extends WorldObject {
 		//these variables are calculated from the ones above
 		this.setEnginePosition();
 		this.setInertiaTensor();
+		this.autopilotConfig = new AutopilotConfig() {
+			
+			@Override
+			public float getWingX() {
+				// TODO Auto-generated method stub
+				return 0;
+			}
+			
+			@Override
+			public float getWingMass() {
+				// TODO Auto-generated method stub
+				return 0;
+			}
+			
+			@Override
+			public float getWingLiftSlope() {
+				// TODO Auto-generated method stub
+				return 0;
+			}
+			
+			@Override
+			public float getVerticalAngleOfView() {
+				// TODO Auto-generated method stub
+				return 0;
+			}
+			
+			@Override
+			public float getVerStabLiftSlope() {
+				// TODO Auto-generated method stub
+				return 0;
+			}
+			
+			@Override
+			public float getTailSize() {
+				// TODO Auto-generated method stub
+				return 0;
+			}
+			
+			@Override
+			public float getTailMass() {
+				// TODO Auto-generated method stub
+				return 0;
+			}
+			
+			@Override
+			public int getNbRows() {
+				// TODO Auto-generated method stub
+				return 0;
+			}
+			
+			@Override
+			public int getNbColumns() {
+				// TODO Auto-generated method stub
+				return 0;
+			}
+			
+			@Override
+			public float getMaxThrust() {
+				// TODO Auto-generated method stub
+				return 0;
+			}
+			
+			@Override
+			public float getMaxAOA() {
+				// TODO Auto-generated method stub
+				return 0;
+			}
+			
+			@Override
+			public float getHorizontalAngleOfView() {
+				// TODO Auto-generated method stub
+				return 0;
+			}
+			
+			@Override
+			public float getHorStabLiftSlope() {
+				// TODO Auto-generated method stub
+				return 0;
+			}
+			
+			@Override
+			public float getGravity() {
+				// TODO Auto-generated method stub
+				return 0;
+			}
+			
+			@Override
+			public float getEngineMass() {
+				// TODO Auto-generated method stub
+				return 0;
+			}
+		};
+		// TODO config stream
 	}
 	
 	//------- Drone Controlling Methods -------
@@ -699,8 +802,9 @@ public class Drone extends WorldObject {
 	 *
 	 * @param duration the amount of time the drone should be moved
 	 * @author anthonyrathe
+	 * @throws IOException 
 	 */
-	public void evolve(float duration) {
+	public void evolve(float duration) throws IOException {
 		while (duration > 0) {
 			if (this.nextStateAvailable()) {
 				if (duration >= this.getQueueTime()) {
@@ -714,12 +818,14 @@ public class Drone extends WorldObject {
 					duration = (float) 0.0;
 				}
 			} else {
+				AutopilotInputs input = updateAutopilotInput(duration);// TODO input stream
 				AutoPilot AP = this.getAutopilot();
-				this.setNextThrust(AP.getThrust());
-				this.setNextLeftWingInclination(AP.getLeftWingInclination());
-				this.setNextRightWingInclination(AP.getRightWingInclination());
-				this.setNextHorStabInclination(AP.getHorStabInclination());
-				this.setNextVerStabInclination(AP.getVerStabInclination());
+				AutopilotOutputs APO = AP.simulationStarted(autopilotConfig, input);
+				this.setNextThrust(APO.getThrust());
+				this.setNextLeftWingInclination(APO.getLeftWingInclination());
+				this.setNextRightWingInclination(APO.getRightWingInclination());
+				this.setNextHorStabInclination(APO.getHorStabInclination());
+				this.setNextVerStabInclination(APO.getVerStabInclination());
 				if (duration >= AP_CALC_TIME) {
 					duration = duration - AP_CALC_TIME;
 					this.move(AP_CALC_TIME);
@@ -769,6 +875,61 @@ public class Drone extends WorldObject {
 	public AutoPilot getAutopilot() {
 		return this.AP;
 	}
+	/**
+	 * @author Bart
+	 * @param duration
+	 * @return autopilotinput for autopilot
+	 */
+	private AutopilotInputs updateAutopilotInput(float duration){
+		
+		AutopilotInputs input;
+		return  input = new AutopilotInputs() {
+			
+			@Override
+			public float getZ() {
+				return getPosition().getElementAt(2);
+			}
+			
+			@Override
+			public float getY() {
+				return getPosition().getElementAt(1);
+			}
+			
+			@Override
+			public float getX() {
+				return getPosition().getElementAt(0);
+			}
+			
+			@Override
+			public float getRoll() {
+				return getOrientation().getElementAt(2);
+			}
+			
+			@Override
+			public float getPitch() {
+				return getOrientation().getElementAt(1);
+			}
+			
+			@Override
+			public byte[] getImage() {
+				// TODO Auto-generated method stub
+				return null;
+			}
+			
+			@Override
+			public float getHeading() {
+				return getOrientation().getElementAt(0);
+			}
+			
+			@Override
+			public float getElapsedTime() {
+				return duration;
+			}
+		};
+		
+	
+	}
+	
 
 	//Todo: comment for happiness of profs
 
@@ -1370,7 +1531,82 @@ public class Drone extends WorldObject {
 	 * Constant: the gravity zone constant for Belgium (simulation place)
 	 */
 	private static float GRAVITY = 9.81060f;
+	private static float Wingx = 1f;
+	private static float Tailsize = 1f;
+	private AutopilotConfig autopilotConfig;
 
+	 public void setupAutopilotConfig()throws IOException{
+	    	DataOutputStream dataOutputStream =
+	                new DataOutputStream(new FileOutputStream(dataStreamLocationConfig));
+	    	
+
+	        AutopilotConfig value = new AutopilotConfig() {
+	            public float getGravity() { return Drone.GRAVITY; }
+	            public float getWingX() { return Wingx; }
+	            public float getTailSize() { return Tailsize; }
+	            public float getEngineMass() { return getEngineMass(); }
+	            public float getWingMass() { return getLeftWing().getMass(); }
+	            public float getTailMass() { return getLeftWing().getMass(); }
+	            public float getMaxThrust() { return getMaxThrust(); }
+	            public float getMaxAOA() { return getLeftWing().getAngleOfAttack(); }
+	            public float getWingLiftSlope() { return getLeftWing().getLiftSlope(); }
+	            public float getHorStabLiftSlope() { return getHorizontalStab().getLiftSlope(); }
+	            public float getVerStabLiftSlope() { return getVerticalStab().getLiftSlope(); }
+	            public float getHorizontalAngleOfView() { return getHorizontalAngleOfView(); }
+	            public float getVerticalAngleOfView() { return getVerticalAngleOfView(); }
+	            public int getNbColumns() { return getNbColumns(); }
+	            public int getNbRows() { return getNbRows(); }
+	        };
+	        AutopilotConfigWriter.write(dataOutputStream, value);    	
+	    	dataOutputStream.close();
+	    }
+		/**
+		 * 
+		 * @throws IOException
+		 */
+	    public void setupAutopilotInputs()throws IOException{
+	    	DataOutputStream dataOutputStream =
+	                new DataOutputStream(new FileOutputStream(dataStreamLocationInputs));
+	    	
+	    	Vector pos = getPosition();
+	    	Vector posOnWorld = droneOnWorld(pos);
+	    	float x = posOnWorld.getxValue();
+	    	float y = posOnWorld.getyValue();
+	    	float z = posOnWorld.getzValue();
+	    	
+	    	float heading = getOrientation().getxValue();
+	    	float pitch = getOrientation().getyValue();
+	    	float roll = getOrientation().getzValue();
+	    	
+	    	
+	    	AutopilotInputs value = new AutopilotInputs() {
+	            public byte[] getImage() { // TODO 
+					return null; }
+	            public float getX() { return x; }
+	            public float getY() { return y; }
+	            public float getZ() { return z; }
+	            public float getHeading() { return heading; }
+	            public float getPitch() { return pitch; }
+	            public float getRoll() { return roll; }
+	            public float getElapsedTime() { // TODO
+	    				return (Float) null; }
+	        };
+
+	        AutopilotInputsWriter.write(dataOutputStream, value);
+	        
+	    	dataOutputStream.close();
+	    }
+	    /**
+	     * Variable for the filename that's created when making the AutopilotConfig datastream 
+	     */
+	    private String dataStreamLocationConfig = "APConfig.txt";
+	    
+	    /**
+	     * Variable for the filename that's created when making the AutopilotInputs datastream 
+	     */
+	    private String dataStreamLocationInputs = "APInputs.txt";
+	    
+	    
 	/*
 	 * Error Messages:
 	 */
