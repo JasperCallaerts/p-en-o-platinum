@@ -1,5 +1,7 @@
 package internal;
 
+import sun.awt.util.IdentityLinkedList;
+
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
@@ -12,10 +14,23 @@ import java.io.IOException;
 public class AutoPilotCamera {
 
     public AutoPilotCamera(byte[] image, float horizontalAngleOfView, float verticalAngleOfView, int nbRows, int nbColumns,
-                           String pixelTag){
+                           String pixelTag) throws IllegalArgumentException{
 
+        if(!isValidAngleOfView(horizontalAngleOfView) || ! isValidAngleOfView(verticalAngleOfView))
+            throw new IllegalArgumentException(VIEWINGANGLE_EXCEPTION);
+
+        this.nbRows = nbRows;
+        this.nbColumns = nbColumns;
+        this.horizAngleOfView = horizontalAngleOfView;
+        this.verticalAngleOfView = verticalAngleOfView;
+        this.imageArray = this.convertToPixel2DArray(image, nbRows, nbColumns);
     }
 
+    public void loadNextImage(byte[] newImageArray){
+        if(! canHaveAsImageArray(newImageArray))
+            throw new IllegalArgumentException(ILLEGAL_SIZE);
+        //Todo finish implementation
+    }
 
     /**
      * Converts an array of bytes containing the RGB color scheme to an array consisting of pixels
@@ -44,14 +59,68 @@ public class AutoPilotCamera {
         return pixelArray;
     }
 
-    /*
-    Variables
+    /**
+     * Converts an image byte array to a 2D array containing the pixels of the image
+     * @param byteImage the bytes containing the pixels of the image
+     * @param nbRows the number of rows of the pixel array
+     * @param nbColumns the number cf columns of the pixel array
+     * @return a 2D array containing the pixels of the image
      */
-    private byte[] imageBytes;
+    public Array2D<Pixel> convertToPixel2DArray(byte[] byteImage, int nbRows, int nbColumns){
+        Pixel[] pixelArray = this.convertToPixelArray(byteImage);
+        return new Array2D<Pixel>(pixelArray, nbRows, nbColumns);
+    }
 
+    public boolean isValidAngleOfView(float angle){
+        return angle > 0.0f && angle <= Math.PI;
+    }
+
+    public Array2D<Pixel> getImageArray(){
+        return this.imageArray;
+    }
+
+    public void setImageArray(Array2D<Pixel> imageArray){
+
+    }
+
+    /**
+     * Checks if the given image array can be set as as image array?
+     * @param imageArray the imageArray to be checked
+     * @return true if and only if the imageArray is the right size
+     */
+    public boolean canHaveAsImageArray(byte[] imageArray){
+       return this.getNbRows()*this.getNbColumns() == imageArray.length/NB_OF_BYTES_IN_PIXEL;
+    }
+
+    public int getNbRows() {
+        return nbRows;
+    }
+
+    public int getNbColumns() {
+        return nbColumns;
+    }
+
+    /*
+        Variables
+         */
+    private Array2D<Pixel> imageArray;
+
+    /**
+     * The number of pixel rows the pixel image contains (immutable)
+     */
     private int nbRows;
-
+    /**
+     * The number of pixel columns the image contains (immutable)
+     */
     private int nbColumns;
+    /**
+     * horizontal viewing angle of the drone (immutable)
+     */
+    private float horizAngleOfView;
+    /**
+     * vertical viewing angle of the drone (immutable)
+     */
+    private float verticalAngleOfView;
 
 
     /*
@@ -69,4 +138,6 @@ public class AutoPilotCamera {
     Error Messages
      */
     public final static String IO_EXCEPTION = "Something went wrong reading the image";
+    public final static String VIEWINGANGLE_EXCEPTION = "the viewing angle is out of range (0, PI]";
+    public final static String ILLEGAL_SIZE = "The byte array cannot be converted to a 2D pixel array";
 }
