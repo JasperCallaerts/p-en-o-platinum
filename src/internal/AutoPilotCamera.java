@@ -26,6 +26,7 @@ public class AutoPilotCamera {
         this.horizAngleOfView = horizontalAngleOfView;
         this.verticalAngleOfView = verticalAngleOfView;
         this.imageArray = this.convertToPixel2DArray(image, nbRows, nbColumns);
+        this.world = new World();
     }
 
     public Vector locateRedCube(){
@@ -141,6 +142,33 @@ public class AutoPilotCamera {
      * vertical viewing angle of the drone (immutable)
      */
     private float verticalAngleOfView;
+    
+    /**
+     * @author anthonyrathe
+     * @return
+     */
+    public World getWorld(){
+    	return this.world;
+    }
+    
+    /**
+     * @author anthonyrathe
+     * @return
+     */
+    public Vector getDestination(){
+    	return this.destination;
+    }
+    
+    /**
+     * @author anthonyrathe
+     * @return
+     */
+    public void setDestination(Vector destination){
+    	this.destination = destination;
+    }
+    
+    private World world;
+    private Vector destination;
 
 
     /*

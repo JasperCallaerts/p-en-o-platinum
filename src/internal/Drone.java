@@ -60,77 +60,7 @@ public class Drone extends WorldObject {
 		this.setInertiaTensor();
 	}
 	
-	//------- Drone Controlling Methods -------
-	/**
-	 * @author anthonyrathe
-	 */
-	private void clockRollStart(){
-		this.getLeftWing().setWingInclination(-this.getLeftWing().getMaximumInclination());
-		this.getRightWing().setWingInclination(this.getRightWing().getMaximumInclination());
-	}
 	
-	/**
-	 * @author anthonyrathe
-	 */
-	private void counterClockRollStart(){
-		this.getLeftWing().setWingInclination(this.getLeftWing().getMaximumInclination());
-		this.getRightWing().setWingInclination(-this.getRightWing().getMaximumInclination());
-	}
-	
-	/**
-	 * @author anthonyrathe
-	 */
-	private void stopRoll(){
-		this.getLeftWing().setWingInclination(0f);
-		this.getRightWing().setWingInclination(0f);
-	}
-	
-	/**
-	 * @author anthonyrathe
-	 */
-	private void startTurnLeft(){
-		this.getVerticalStab().setWingInclination(this.getVerticalStab().getMaximumInclination());
-	}
-	
-	/**
-	 * @author anthonyrathe
-	 */
-	private void startTurnRight(){
-		this.getVerticalStab().setWingInclination(-this.getVerticalStab().getMaximumInclination());
-	}
-	
-	/**
-	 * @author anthonyrathe
-	 */
-	private void stopTurn(){
-		this.getVerticalStab().setWingInclination(0f);
-	}
-	
-	/**
-	 * @author anthonyrathe
-	 */
-	private void startAscend(){
-		this.getHorizontalStab().setWingInclination(this.getHorizontalStab().getMaximumInclination());
-	}
-	
-	/**
-	 * @author anthonyrathe
-	 */
-	private void startDescend(){
-		this.getHorizontalStab().setWingInclination(-this.getHorizontalStab().getMaximumInclination());
-		
-	}
-	
-	/**
-	 * @author anthonyrathe
-	 */
-	private void stopAscendDescend(){
-		this.getHorizontalStab().setWingInclination(0f);
-	}
-	
-	
-	
-	//------- END Drone Controlling Methods -------
 
 	/**
 	 * projects a vector of the drone axis on the world axis
@@ -715,6 +645,7 @@ public class Drone extends WorldObject {
 				}
 			} else {
 				AutoPilot AP = this.getAutopilot();
+				AP.update();
 				this.setNextThrust(AP.getThrust());
 				this.setNextLeftWingInclination(AP.getLeftWingInclination());
 				this.setNextRightWingInclination(AP.getRightWingInclination());
