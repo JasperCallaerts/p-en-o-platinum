@@ -84,10 +84,8 @@ public class Mesh {
 
         glDrawElements(GL_TRIANGLES, getVertexCount(), GL_UNSIGNED_INT, 0);
         
-        System.out.println("hallo");
-        float[] pixels = new float[]{};
-        glReadPixels(0, 0, 1280, 720, GL_RGB, GL_FLOAT, pixels);
-        System.out.println(pixels);
+//        float[] pixels = new float[]{};
+//        glReadPixels(0, 0, 1280, 720, GL_RGB, GL_FLOAT, pixels);
 
         // Restore state
         glDisableVertexAttribArray(0);

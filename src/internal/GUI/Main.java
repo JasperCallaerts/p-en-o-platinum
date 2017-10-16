@@ -49,7 +49,7 @@ public class Main {
             7, 6, 4, 7, 4, 5,
         };
 
-	public static void main(String[] args) {
+       public static void main(String[] args) {
 		gui = new GUI();
 		window = new Window(windowTitle, width, height);
 	    try {
