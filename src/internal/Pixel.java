@@ -59,6 +59,17 @@ public class Pixel {
     }
 
     /**
+     * Converts the pixel's RGB value to HSV values
+     * @return an array Containing the (H, S, V);
+     */
+    public float[] convertToHSV(){
+        int R = this.getRedInt();
+        int G = this.getGreenInt();
+        int B = this.getBlueInt();
+        return HSVconverter.RGBtoHSV(R, G, B);
+    }
+
+    /**
      * Converts a pixel to gray scale
      * @return the gray scale pixel based on luminosity
      */
@@ -110,6 +121,18 @@ public class Pixel {
             result = MIN;
 
         return result;
+    }
+
+    /**
+     * checks if a floating point value is equal to the other within the margin of error
+     * @param value1 the first value
+     * @param value2 the second value
+     * @param errorMargin the margin of error for the floating point values
+     * @return returns true if and only if.
+     *         value1 >= value2 - errorMargin && value1 <= value2 + errorMargin
+     */
+    public static boolean isEqualFloat(float value1, float value2, float errorMargin){
+        return value1 >= value2 - errorMargin && value1 <= value2 + errorMargin;
     }
 
     /**

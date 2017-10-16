@@ -6,6 +6,8 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Martijn on 14/10/2017.
@@ -26,10 +28,28 @@ public class AutoPilotCamera {
         this.imageArray = this.convertToPixel2DArray(image, nbRows, nbColumns);
     }
 
+    public Vector locateRedCube(){
+
+        List<Integer> redXCoordinates = new ArrayList<Integer>();
+        List<Integer> redYCoordinates = new ArrayList<Integer>();
+
+        List<Pixel> pixelList = this.getImageArray().getArray2DList();
+
+        for(Pixel pixel: pixelList){
+            Vector HSV = new Vector(pixel.convertToHSV());
+
+        }
+    }
+
+    /**
+     * Sets the image array variable to the
+     * @param newImageArray the byte array containing the next image
+     */
     public void loadNextImage(byte[] newImageArray){
         if(! canHaveAsImageArray(newImageArray))
             throw new IllegalArgumentException(ILLEGAL_SIZE);
-        //Todo finish implementation
+        Array2D<Pixel> newImage = this.convertToPixel2DArray(newImageArray, this.getNbRows(), this.getNbColumns());
+        this.setImageArray(newImage);
     }
 
     /**

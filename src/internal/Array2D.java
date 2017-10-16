@@ -2,6 +2,7 @@ package internal;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * A class of immutable 2D arrays
@@ -140,6 +141,14 @@ public class Array2D<T> {
     private boolean isValid2DArray(T[] array2DArray, int nbRows, int nbColumns){
         int length = array2DArray.length;
         return length == nbColumns*nbRows;
+    }
+
+    /**
+     * gets a list version of the array containing the 2D array list
+     * @return  a list containing the 1D array containing the 2D array elements
+     */
+    public List<T> getArray2DList(){
+        return Arrays.asList(this.getArray2DArray());
     }
 
     /*
