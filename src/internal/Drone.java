@@ -25,8 +25,8 @@ public class Drone extends WorldObject {
 	 * @param verticalStab the vectical stabilizet tail wing of the drone
 	 * @param AP the autopilot of the drone
 	 */
-	Drone(float droneMass, float engineMass, float maxThrust, Vector position, Vector velocity, Vector orientation,
-		  Vector rotationVector, Wing rightMainWing, Wing leftMainWing, Wing horizontalStab, Wing verticalStab, Autopilot AP) {
+	public Drone(float droneMass, float engineMass, float maxThrust, Vector position, Vector velocity, Vector orientation,
+		  Vector rotationVector, Wing rightMainWing, Wing leftMainWing, Wing horizontalStab, Wing verticalStab, AutoPilot AP) {
 
 		if (!this.canHaveAsDroneMass(droneMass) ||
 				!this.canHaveAsEngineMass(engineMass) || !this.canHaveAsMaxThrust(maxThrust)) {
@@ -59,6 +59,78 @@ public class Drone extends WorldObject {
 		this.setEnginePosition();
 		this.setInertiaTensor();
 	}
+	
+	//------- Drone Controlling Methods -------
+	/**
+	 * @author anthonyrathe
+	 */
+	private void clockRollStart(){
+		this.getLeftWing().setWingInclination(-this.getLeftWing().getMaximumInclination());
+		this.getRightWing().setWingInclination(this.getRightWing().getMaximumInclination());
+	}
+	
+	/**
+	 * @author anthonyrathe
+	 */
+	private void counterClockRollStart(){
+		this.getLeftWing().setWingInclination(this.getLeftWing().getMaximumInclination());
+		this.getRightWing().setWingInclination(-this.getRightWing().getMaximumInclination());
+	}
+	
+	/**
+	 * @author anthonyrathe
+	 */
+	private void stopRoll(){
+		this.getLeftWing().setWingInclination(0f);
+		this.getRightWing().setWingInclination(0f);
+	}
+	
+	/**
+	 * @author anthonyrathe
+	 */
+	private void startTurnLeft(){
+		this.getVerticalStab().setWingInclination(this.getVerticalStab().getMaximumInclination());
+	}
+	
+	/**
+	 * @author anthonyrathe
+	 */
+	private void startTurnRight(){
+		this.getVerticalStab().setWingInclination(-this.getVerticalStab().getMaximumInclination());
+	}
+	
+	/**
+	 * @author anthonyrathe
+	 */
+	private void stopTurn(){
+		this.getVerticalStab().setWingInclination(0f);
+	}
+	
+	/**
+	 * @author anthonyrathe
+	 */
+	private void startAscend(){
+		this.getHorizontalStab().setWingInclination(this.getHorizontalStab().getMaximumInclination());
+	}
+	
+	/**
+	 * @author anthonyrathe
+	 */
+	private void startDescend(){
+		this.getHorizontalStab().setWingInclination(-this.getHorizontalStab().getMaximumInclination());
+		
+	}
+	
+	/**
+	 * @author anthonyrathe
+	 */
+	private void stopAscendDescend(){
+		this.getHorizontalStab().setWingInclination(0f);
+	}
+	
+	
+	
+	//------- END Drone Controlling Methods -------
 
 	/**
 	 * projects a vector of the drone axis on the world axis
@@ -642,12 +714,12 @@ public class Drone extends WorldObject {
 					duration = (float) 0.0;
 				}
 			} else {
-				Autopilot AP = this.getAutopilot();
+				AutoPilot AP = this.getAutopilot();
 				this.setNextThrust(AP.getThrust());
 				this.setNextLeftWingInclination(AP.getLeftWingInclination());
 				this.setNextRightWingInclination(AP.getRightWingInclination());
-				this.setNextHorStablInclination(AP.getHorStabInclination());
-				this.setNextVerStablInclination(AP.getVerStabInclination());
+				this.setNextHorStabInclination(AP.getHorStabInclination());
+				this.setNextVerStabInclination(AP.getVerStabInclination());
 				if (duration >= AP_CALC_TIME) {
 					duration = duration - AP_CALC_TIME;
 					this.move(AP_CALC_TIME);
@@ -673,14 +745,15 @@ public class Drone extends WorldObject {
 	/**
 	 * Changes the state of the drone to the next state, as calculated earlier by the autopilot.
 	 * State will remain the same if there is no queue-time.
+	 * @author anthonyrathe
 	 */
 	public void nextState() {
 		if (this.nextStateAvailable()) {
 			this.setThrust(this.getNextThrust());
-			this.setLeftWingInclination(this.getNextLeftWingInclination());
-			this.setRightWingInclination(this.getNextRightWingInclination());
-			this.setHorStabInclination(this.getNextHorStabInclination());
-			this.setVerStabInclination(this.getNextVerStabInclination());
+			this.getLeftWing().setWingInclination(this.getNextLeftWingInclination());
+			this.getRightWing().setWingInclination(this.getNextRightWingInclination());
+			this.getHorizontalStab().setWingInclination(this.getNextHorStabInclination());
+			this.getVerticalStab().setWingInclination(this.getNextVerStabInclination());
 		}
 	}
 
@@ -688,12 +761,12 @@ public class Drone extends WorldObject {
 	/**
 	 * A variable containing the autopilot loaded onto the drone
 	 */
-	private final Autopilot AP;
+	private final AutoPilot AP;
 
 	/**
 	 * Method returning the autopilot loaded onto the drone
 	 */
-	public Autopilot getAutopilot() {
+	public AutoPilot getAutopilot() {
 		return this.AP;
 	}
 
@@ -1195,6 +1268,10 @@ public class Drone extends WorldObject {
 	private float getNextThrust() {
 		return this.nextThrust;
 	}
+	
+	private void setNextThrust(float thrust){
+		this.nextThrust = thrust;
+	}
 
 	/**
 	 * A variable containing the current left wing inclination of the drone
@@ -1211,6 +1288,10 @@ public class Drone extends WorldObject {
 	 */
 	private float getNextLeftWingInclination() {
 		return this.nextLeftWingInclination;
+	}
+	
+	private void setNextLeftWingInclination(float leftWingInclination){
+		this.nextLeftWingInclination = leftWingInclination;
 	}
 
 	/**
@@ -1229,6 +1310,10 @@ public class Drone extends WorldObject {
 	private float getNextRightWingInclination() {
 		return this.nextRightWingInclination;
 	}
+	
+	private void setNextRightWingInclination(float rightWingInclination){
+		this.nextRightWingInclination = rightWingInclination;
+	}
 
 	/**
 	 * A variable containing the current horizontal stabilizer inclination of the drone
@@ -1239,6 +1324,10 @@ public class Drone extends WorldObject {
 	 * A variable containing the new horizontal stabilizers inclination of the drone, after queueTime has elapsed, as calculated by the autopilot
 	 */
 	private float nextHorStabInclination;
+	
+	private void setNextHorStabInclination(float horStabInclination){
+		this.nextHorStabInclination = horStabInclination;
+	}
 
 	/**
 	 * A getter that returns the next horizontal stabilizer inclination
@@ -1257,6 +1346,10 @@ public class Drone extends WorldObject {
 	 */
 	private float getNextVerStabInclination() {
 		return this.nextVerStabInclination;
+	}
+	
+	private void setNextVerStabInclination(float verStabInclination){
+		this.nextVerStabInclination = verStabInclination;
 	}
 
 	/*
