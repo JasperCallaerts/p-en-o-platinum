@@ -152,6 +152,27 @@ public class Vector {
 	}
 	
 	/**
+	 * get angle between this vector and the plane, defined by other1 and other2
+	 * @author anthonyrathe
+	 */
+	public float getAngleBetween(Vector other1, Vector other2){
+		
+	}
+	
+	/**
+	 * @author anthonyrathe
+	 */
+	public float distanceBetween(Vector other) throws NullPointerException{
+		
+		if(other == null){
+			throw new NullPointerException();
+		}
+		else{
+			return (float)Math.sqrt(Math.pow(this.getxValue()-other.getxValue(), 2) + Math.pow(this.getyValue()-other.getyValue(), 2) + Math.pow(this.getzValue()-other.getzValue(), 2));
+		}
+	}
+	
+	/**
 	 * calculates the cross product of two vectors and returns a new vector
 	 * object containing the cross product results.
 	 * @param other
@@ -291,6 +312,23 @@ public class Vector {
 		}
 
 		return tempVector;
+	}
+	
+	/**
+	 * @author anthonyrathe
+	 * @return
+	 */
+	public float[] toArray(){
+		 float[] array = {getxValue(), getyValue(), getzValue()};
+		 return array;
+	}
+	
+	/**
+	 * @author anthonyrathe
+	 */
+	public int[] toIntArray(){
+		int[] array = {(int)getxValue(), (int)getyValue(), (int)getzValue()};
+		return array;
 	}
 
 

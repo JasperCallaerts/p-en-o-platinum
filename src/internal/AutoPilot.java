@@ -1,5 +1,8 @@
 package internal;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import Autopilot.*;
 
 /**
@@ -116,15 +119,103 @@ public class AutoPilot implements Autopilot{
 	//------- END Drone Controlling Methods -------
 	
 	//------- Pathfinding -------
+	/**
+	 * @author anthonyrathe
+	 */
+	private void updatePath(){
+		int[] start = this.getPosition().toIntArray();
+		int[] end = this.getDestinationPosition().toIntArray();
+		List<int[]> pathInt = getPathfinding().searchPath(start, end);
+		List<Vector> newPath = new ArrayList<Vector>();
+		for (int[] position : pathInt){
+			newPath.add(new Vector(position[0], position[1], position[2]));
+		}
+		this.currentPath = newPath;
+	}
 	
-	private int[] 
+	/**
+	 * @author anthonyrathe
+	 * @return
+	 */
+	private List<Vector> getPath(){
+		return this.currentPath;
+	}
+	
+	/**
+	 * @author anthonyrathe
+	 * @return
+	 */
+	private Vector getPosition(){
+		return new Vector(getX(), getY(), getZ());
+	}
+	
+	/**
+	 * @author anthonyrathe
+	 * @return
+	 */
+	private Vector getDestinationPosition(){
+		return getAPCamera().getDestination();
+	}
+	
+	/**
+	 * @author anthonyrathe
+	 * @return
+	 */
+	private World getWorld(){
+		return getAPCamera().getWorld();
+	}
+	//------- END Pathfinding -------
+	
+	//------- Actual Autopilot -------
+	/**
+	 * @author anthonyrathe
+	 * @return the node that currently is closest to the drone
+	 */
+	private Vector getNextNode(){
+		updatePath();
+		Vector nextNode = getDestinationPosition();
+		float smallestDistance = this.getPosition().distanceBetween(getDestinationPosition());
+		for (Vector node : this.getPath()){
+			if (node.distanceBetween(this.getPosition()) < smallestDistance){
+				smallestDistance = node.distanceBetween(this.getPosition());
+				nextNode = node;
+			}
+		}
+		return nextNode;
+	}
+	
+	/**
+	 * Method that updates the desired inclinations and thrust
+	 * Strategy applied:
+	 * 	- find the closest node
+	 * 	- determine if node lies in the left or right half-space in relation to the drone (and the horizontal angle it makes with the orientationvector of the drone, ranging from -PI to 0 if node is to the left, and from 0 to +PI if node is to the right) 
+	 * 	- determine if node lies in the upper or lower half-space in relation to the drone (and the vertical angle it makes with the orientationvector of the drone, ranging from -PI to 0 if node is underneath the drone, and from 0 to +PI if node is above the drone)
+	 * 	- determine whether to roll clockwise, counterclockwise or not at all (based on previously determined angles)
+	 *  - determine whether to climb, descend or do nothing at all (based on previously determined angles)
+	 * @author anthonyrathe
+	 */
+	public void update(){
+		Vector longitudinalAxis = Vector();
+		Vector perpendicularAxis = Vector();
+		Vector lateralAxis = Vector();
+		
+		Vector directionToNode = getPosition().vectorDifference(getNextNode());
+		
+		float horizontalAngle = longitudinal
+	}
+	
+	
+	
+	//------- END Actual Autopilot -------
 
 	private float thrust;
 	private float leftWingInclination;
 	private float rightWingInclination;
 	private float horStabInclination;
 	private float verStabInclination;
-	
+	private AutoPilotCamera APCamera = new AutoPilotCamera();
+	private Pathfinding pathfinding = new Pathfinding(getAPCamera().getWorld());
+	private List<Vector> currentPath;
 	
 
 	public float getThrust() {
@@ -163,6 +254,15 @@ public class AutoPilot implements Autopilot{
 	public void setVerStabInclination(float inclination){
 		verStabInclination = inclination;
 	}
+	
+	private AutoPilotCamera getAPCamera(){
+		return this.APCamera;
+	}
+	
+	private Pathfinding getPathfinding(){
+		return this.pathfinding;
+	}
 
 }
+
 
