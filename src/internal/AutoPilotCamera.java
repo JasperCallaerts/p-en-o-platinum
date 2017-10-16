@@ -6,7 +6,9 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.text.CollationElementIterator;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -34,11 +36,50 @@ public class AutoPilotCamera {
         List<Integer> redXCoordinates = new ArrayList<Integer>();
         List<Integer> redYCoordinates = new ArrayList<Integer>();
 
-        List<Pixel> pixelList = this.getImageArray().getArray2DList();
+        findRedPixels(redXCoordinates, redYCoordinates);
 
-        for(Pixel pixel: pixelList){
-            Vector HSV = new Vector(pixel.convertToHSV());
+        int maxXCoordinate = Collections.max(redXCoordinates);
+        int maxYCoordinate = Collections.max(redYCoordinates);
 
+        int meanXCoordinate = getMean(redXCoordinates);
+        int meanYCoordinate = getMean(redYCoordinates);
+
+        return null;
+
+    }
+
+    public static int getMean(List<Integer> integerList){
+        int sum = 0;
+        int lengthList = integerList.size();
+
+        for(Integer element: integerList){
+            sum += element;
+        }
+
+        return sum/lengthList;
+
+    }
+
+    private void findRedPixels(List<Integer> redXCoordinates, List<Integer> redYCoordinates) {
+        int nbRows = this.getNbRows();
+        int nbColumns = this.getNbColumns();
+
+        for(int rowIndex = 0; rowIndex != nbRows; rowIndex++){
+            for(int columnIndex = 0; columnIndex != nbColumns; columnIndex++){
+                //select the pixel
+                Pixel currentPixel = this.getImageArray().getElementAtIndex(rowIndex, columnIndex);
+                //convert to HSV
+                Vector HSV = new Vector(currentPixel.convertToHSV());
+                float hValue = HSV.getxValue();
+                float sValue = HSV.getyValue();
+                float vValue = HSV.getzValue();
+                //check if the HSV value is within range, if so, add pixel coordinates to the lists
+                if(Pixel.isEqualFloat(hValue, RED_H_VALUE, EPSILON)&&Pixel.isEqualFloat(sValue, RED_S_VALUE, EPSILON)
+                        &&Pixel.isEqualFloat(vValue, Z_AXIS_V_VALUE)) {
+                    redXCoordinates.add(rowIndex);
+                    redYCoordinates.add(columnIndex);
+                }
+            }
         }
     }
 
@@ -181,6 +222,10 @@ public class AutoPilotCamera {
     Constants
      */
     private final static int NB_OF_BYTES_IN_PIXEL = 3;
+    private final static float RED_H_VALUE = 0.0f;
+    private final static float RED_S_VALUE = 1.0f;
+    private final static float Z_AXIS_V_VALUE = 0.7f;
+    private final static float EPSILON  = 1E-5f;
 
     /*
     Error Messages
