@@ -1,12 +1,23 @@
 package internal.GUI;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import internal.Block;
+import internal.Drone;
+import internal.World;
+
 public class Main {
 	static String windowTitle = "Beste PenO Team";
 	static int width = 1280;
 	static int height = 720;
 	static GUI gui;
 	static Window window;
-    static float[] vertices = new float[]{
+	
+	
+	static float[] vertices = new float[]{
             // VO
             -0.5f,  0.5f,  0.5f,
             // V1
@@ -23,9 +34,9 @@ public class Main {
             -0.5f, -0.5f, -0.5f,
             // V7
              0.5f, -0.5f, -0.5f,
-        };
-        static float[] colours = new float[]{
-            0.5f, 0.0f, 0.0f,
+	};
+	static float[] colours = new float[]{
+			0.5f, 0.0f, 0.0f,
             0.0f, 0.5f, 0.0f,
             0.0f, 0.0f, 0.5f,
             0.0f, 0.5f, 0.5f,
@@ -33,9 +44,9 @@ public class Main {
             0.0f, 0.5f, 0.0f,
             0.0f, 0.0f, 0.5f,
             0.0f, 0.5f, 0.5f,
-        };
-       static int[] indices = new int[]{
-            // Front face
+	};
+	static int[] indices = new int[]{
+			// Front face
             0, 1, 3, 3, 1, 2,
             // Top Face
             4, 0, 3, 5, 4, 3,
@@ -47,7 +58,9 @@ public class Main {
             2, 1, 6, 2, 6, 7,
             // Back face
             7, 6, 4, 7, 4, 5,
-        };
+	};
+       
+    
 
 	public static void main(String[] args) {
 		gui = new GUI();
@@ -65,6 +78,24 @@ public class Main {
     protected static void init() throws Exception {
         window.init();
         gui.init(window, vertices, colours, indices);
+        
+        // Create World
+    	World world = new World();
+    	// Create world objects
+    	Block redBlock = new Block((float)0, (float)0, (float)0, (float)0, (float)1, (float)1);
+    	Drone drone = new Drone(new Autopilot());
+    	// Add world objects
+    	world.addWorldObject(redBlock);
+    	world.addWorldObject(drone);
+    	
+    	// Create vertices array
+    	List<Float> verticesList = new ArrayList<Float>();
+    	for(Block block : world.getBlockSet()){
+    		for (Float coord : block.getVertices()){
+    			verticesList.add(coord);
+    		}
+    	}
+    	float[] vertices = verticesList.toArray();
     }
 
     protected static void loop() throws Exception {
