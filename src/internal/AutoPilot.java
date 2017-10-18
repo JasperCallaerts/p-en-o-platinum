@@ -195,13 +195,13 @@ public class AutoPilot implements Autopilot{
 	 * @author anthonyrathe
 	 */
 	public void update(){
-		Vector longitudinalAxis = Vector();
-		Vector perpendicularAxis = Vector();
-		Vector lateralAxis = Vector();
+		Vector longitudinalAxis = new Vector();
+		Vector perpendicularAxis = new Vector();
+		Vector lateralAxis = new Vector();
 		
 		Vector directionToNode = getPosition().vectorDifference(getNextNode());
 		
-		float horizontalAngle = longitudinal
+		//float horizontalAngle = longitudinal;
 	}
 	
 	

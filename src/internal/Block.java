@@ -53,7 +53,7 @@ public class Block extends WorldObject{
 	            // V7
 	             0.5f, -0.5f, -0.5f,
 		};
-		vertices = (getVertices(), newVertices);
+		//vertices = (getVertices(), newVertices);
 	}
 	
 	public void addColours() {
@@ -88,22 +88,22 @@ public class Block extends WorldObject{
 	/**
 	 * Returns the Hue of a block
 	 */
-	public int getHue(){
+	public float getHue(){
 		return this.Hue;
 	}
 	
 	/**
 	 * Returns the Saturation of a block
 	 */
-	public int getSaturation(){
-		return this.Saturation;
+	public float getSaturation(){
+		return (float)this.Saturation;
 	}
 	
 	/**
 	 * Returns the Value of a block
 	 */
-	public int getValue(){
-		return this.Value;
+	public float getValue(){
+		return (float)this.Value;
 	}
 	
 	/**

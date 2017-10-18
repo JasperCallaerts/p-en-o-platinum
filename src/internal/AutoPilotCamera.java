@@ -49,6 +49,10 @@ public class AutoPilotCamera {
         this.world = new World();
     }
 
+    public AutoPilotCamera(){
+
+    }
+
     public Vector locateRedCube(){
 
         List<Integer> xRedCoordinates = new ArrayList<Integer>();
@@ -60,31 +64,37 @@ public class AutoPilotCamera {
         int meanYCoordinate = getMean(yRedCoordinates);
 
 
-        return null;
+        int nbPixels = xRedCoordinates.size();
+        float pixelsPerMeter= (float)Math.sqrt(nbPixels);
+
+        float rangeLineOfView = nbPixels/pixelsPerMeter;
+
+        float xCoordinate = meanXCoordinate/pixelsPerMeter - rangeLineOfView/2.0f;
+        float yCoordinate = meanYCoordinate/pixelsPerMeter - rangeLineOfView/2.0f;
+        return new Vector(xCoordinate, yCoordinate, 0);
 
     }
 
-    private float getDistanceToCube(List<Integer> xRedCoordinates, List<Integer> yRedCoordinates){
-        List<Integer> xLeftEdges = new ArrayList<>();
-        List<Integer> xRightEdges = new ArrayList<>();
-
-        findVerticalEdge(xRedCoordinates, yRedCoordinates, xLeftEdges, xRightEdges);
+    /*
+    private int getPixelBreadthCube(List<Integer>xLeftEdges, List<Integer> xRightEdges){
 
         int leftMean = getMean(xLeftEdges);
-        int rigthMean = getMean(xRightEdges);
+        int rightMean = getMean(xRightEdges);
 
-        return 0.0f;
+        return rightMean - leftMean;
 
 
     }
+    */
 
-    /**
+
+   /*/**
      * Searches for the vertical edges in the given coordinate list
      * @param xCoordList the x Coordinates of the red pixels
      * @param yCoordList the y Coordinates of the red pixels
      * @param xLeftEdges the list where all the x coordinates of the left edges are stored
      * @param xRightEdges the list where all the x coordinates of the right edges are stored
-     */
+     *//*
     private void findVerticalEdge(List<Integer> xCoordList, List<Integer> yCoordList,
                                   List<Integer> xLeftEdges, List<Integer> xRightEdges){
 
@@ -115,7 +125,7 @@ public class AutoPilotCamera {
 
         //add the final right edge
         xRightEdges.add(xCoordList.get(listSize-1));
-    }
+    }*/
 
 
     public static int getMean(List<Integer> integerList){
@@ -302,6 +312,7 @@ public class AutoPilotCamera {
     private final static float RED_S_VALUE = 1.0f;
     private final static float Z_AXIS_V_VALUE = 0.7f;
     private final static float EPSILON  = 1E-5f;
+    private final static float CUBE_BREADTH = 1.0f;
 
     /*
     Error Messages

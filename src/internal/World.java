@@ -1,6 +1,7 @@
 package internal;
 import internal.Drone;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -108,7 +109,7 @@ public class World {
 	/**
 	 * Method that evolves the world for a given amount of time
 	 */
-	public void evolve(float duration){
+	public void evolve(float duration) throws IOException {
 		for(WorldObject object : this.getObjectSet()){
 			object.evolve(duration);
 		}

@@ -79,7 +79,7 @@ public class SquareMatrix {
             }
         }
 
-        return new SquareMatrix(matrixArray);
+        return new SquareMatrix(newMatrixArray);
     }
 
     /**
@@ -136,13 +136,13 @@ public class SquareMatrix {
      * diagonal elements to the power of -1
      */
     public SquareMatrix invertDiagonal(){
-        if(this.isDiagonal())
+        if(!this.isDiagonal())
             throw new IllegalArgumentException(NOT_DIAGONAL);
         int jumpSize = nbRows + 1;
         float[] newMatrixArray = new float[arraySize];
 
         for(int index = 0; index != nbRows; index++){
-            newMatrixArray[index*5] = 1/this.getElementAt(index*5);
+            newMatrixArray[index*(nbRows + 1)] = 1/this.getElementAt(index*(nbRows + 1));
         }
 
         return new SquareMatrix(newMatrixArray);
@@ -290,6 +290,19 @@ public class SquareMatrix {
         }
 
         return true;
+    }
+
+    @Override
+    public String toString(){
+        String total = "";
+        for(int index = 0; index != nbRows; index++){
+            for(float elem: this.getRow(index)){
+                total += " "+ Float.toString(elem);
+            }
+            total += "\n";
+        }
+
+        return total;
     }
 
     /**

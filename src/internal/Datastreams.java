@@ -38,7 +38,7 @@
 	            public int getNbColumns() { return getNbOfColumns(); }
 	            public int getNbRows() { return getNbOfRows(); }
 	        };
-	        AutopilotConfigWriter.write(dataOutputStream, value);    	
+	        AutopilotConfigWriter.write(dataOutputStream, value);
 	    	dataOutputStream.close();
 	    }
 		/**
@@ -72,7 +72,7 @@
 	        };
 
 	        AutopilotInputsWriter.write(dataOutputStream, value);
-	        
+
 	    	dataOutputStream.close();
 	    }
 	    
