@@ -1,5 +1,6 @@
 package internal;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -122,7 +123,7 @@ public class AutoPilot implements Autopilot{
 	/**
 	 * @author anthonyrathe
 	 */
-	private void updatePath(){
+	private void updatePath() throws IOException {
 		int[] start = this.getPosition().toIntArray();
 		int[] end = this.getDestinationPosition().toIntArray();
 		List<int[]> pathInt = getPathfinding().searchPath(start, end);

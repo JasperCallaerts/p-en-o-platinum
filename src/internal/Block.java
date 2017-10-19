@@ -63,6 +63,19 @@ public class Block extends WorldObject{
 	public void addIndices() {
 		
 	}
+
+	@Override
+	public void toNextState(float deltaTime){
+		//do nothing, cube cannot change state
+	}
+
+
+	/**
+	 * returns the position of the cube in vector format
+	 */
+	public Vector getPosition(){
+		return new Vector(this.getPositionX(), this.getPositionY(), this.getPositionZ());
+	}
 	
 	/**
 	 * Returns the X-Position of a cube in the world

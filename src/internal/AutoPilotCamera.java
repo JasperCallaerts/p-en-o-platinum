@@ -1,14 +1,6 @@
 package internal;
 
-import sun.awt.util.IdentityLinkedList;
-
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.text.CollationElementIterator;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -45,7 +37,7 @@ public class AutoPilotCamera {
         this.nbColumns = nbColumns;
         this.horizAngleOfView = horizontalAngleOfView;
         this.verticalAngleOfView = verticalAngleOfView;
-        this.imageArray = this.convertToPixel2DArray(image, nbRows, nbColumns);
+        this.image2DArray = this.convertToPixel2DArray(image, nbRows, nbColumns);
         this.world = new World();
     }
 
@@ -75,57 +67,6 @@ public class AutoPilotCamera {
 
     }
 
-    /*
-    private int getPixelBreadthCube(List<Integer>xLeftEdges, List<Integer> xRightEdges){
-
-        int leftMean = getMean(xLeftEdges);
-        int rightMean = getMean(xRightEdges);
-
-        return rightMean - leftMean;
-
-
-    }
-    */
-
-
-   /*/**
-     * Searches for the vertical edges in the given coordinate list
-     * @param xCoordList the x Coordinates of the red pixels
-     * @param yCoordList the y Coordinates of the red pixels
-     * @param xLeftEdges the list where all the x coordinates of the left edges are stored
-     * @param xRightEdges the list where all the x coordinates of the right edges are stored
-     *//*
-    private void findVerticalEdge(List<Integer> xCoordList, List<Integer> yCoordList,
-                                  List<Integer> xLeftEdges, List<Integer> xRightEdges){
-
-        //add the first edge
-        xLeftEdges.add(xCoordList.get(0));
-
-        int previousX = xCoordList.get(0);
-        int previousY = yCoordList.get(0);
-
-        // only add the indices if they are on an edge
-        // meaning the previous coordinates had a different y value (other row)
-        int listSize = xCoordList.size();
-        for(int index = 1; index != listSize; index++){
-
-            int currentX = xCoordList.get(index);
-            int currentY = yCoordList.get(index);
-
-            if(currentY != previousY){
-                xLeftEdges.add(currentX);
-                xRightEdges.add(previousX);
-
-
-            }
-
-            previousX = currentX;
-            previousY = currentY;
-        }
-
-        //add the final right edge
-        xRightEdges.add(xCoordList.get(listSize-1));
-    }*/
 
 
     public static int getMean(List<Integer> integerList){
@@ -153,7 +94,7 @@ public class AutoPilotCamera {
         for(int rowIndex = 0; rowIndex != nbRows; rowIndex++){
             for(int columnIndex = 0; columnIndex != nbColumns; columnIndex++){
                 //select the pixel
-                Pixel currentPixel = this.getImageArray().getElementAtIndex(rowIndex, columnIndex);
+                Pixel currentPixel = this.getImage2DArray().getElementAtIndex(rowIndex, columnIndex);
                 //convert to HSV
                 Vector HSV = new Vector(currentPixel.convertToHSV());
                 float hValue = HSV.getxValue();
@@ -177,7 +118,9 @@ public class AutoPilotCamera {
         if(! canHaveAsImageArray(newImageArray))
             throw new IllegalArgumentException(ILLEGAL_SIZE);
         Array2D<Pixel> newImage = this.convertToPixel2DArray(newImageArray, this.getNbRows(), this.getNbColumns());
-        this.setImageArray(newImage);
+        this.setImage2DArray(newImage);
+
+        this.setDestination(this.locateRedCube());
     }
 
     /**
@@ -223,18 +166,18 @@ public class AutoPilotCamera {
         return angle > 0.0f && angle <= Math.PI;
     }
 
-    public Array2D<Pixel> getImageArray(){
-        return this.imageArray;
+    public Array2D<Pixel> getImage2DArray(){
+        return this.image2DArray;
     }
 
-    public void setImageArray(Array2D<Pixel> imageArray){
+    public void setImage2DArray(Array2D<Pixel> image2DArray){
 
     }
 
     /**
      * Checks if the given image array can be set as as image array?
-     * @param imageArray the imageArray to be checked
-     * @return true if and only if the imageArray is the right size
+     * @param imageArray the image2DArray to be checked
+     * @return true if and only if the image2DArray is the right size
      */
     public boolean canHaveAsImageArray(byte[] imageArray){
        return this.getNbRows()*this.getNbColumns() == imageArray.length/NB_OF_BYTES_IN_PIXEL;
@@ -248,10 +191,36 @@ public class AutoPilotCamera {
         return nbColumns;
     }
 
+
+    /**
+     * @author anthonyrathe
+     * @return
+     */
+    public World getWorld(){
+        return this.world;
+    }
+
+    /**
+     * @author anthonyrathe
+     * @return
+     */
+    public Vector getDestination(){
+        return this.destination;
+    }
+
+    /**
+     * @author anthonyrathe
+     * @return
+     */
+    public void setDestination(Vector destination){
+        this.destination = destination;
+    }
+
+
     /*
         Variables
          */
-    private Array2D<Pixel> imageArray;
+    private Array2D<Pixel> image2DArray;
 
     /**
      * The number of pixel rows the pixel image contains (immutable)
@@ -269,31 +238,7 @@ public class AutoPilotCamera {
      * vertical viewing angle of the drone (immutable)
      */
     private float verticalAngleOfView;
-    
-    /**
-     * @author anthonyrathe
-     * @return
-     */
-    public World getWorld(){
-    	return this.world;
-    }
-    
-    /**
-     * @author anthonyrathe
-     * @return
-     */
-    public Vector getDestination(){
-    	return this.destination;
-    }
-    
-    /**
-     * @author anthonyrathe
-     * @return
-     */
-    public void setDestination(Vector destination){
-    	this.destination = destination;
-    }
-    
+
     private World world;
     private Vector destination;
 
@@ -312,7 +257,7 @@ public class AutoPilotCamera {
     private final static float RED_S_VALUE = 1.0f;
     private final static float Z_AXIS_V_VALUE = 0.7f;
     private final static float EPSILON  = 1E-5f;
-    private final static float CUBE_BREADTH = 1.0f;
+
 
     /*
     Error Messages

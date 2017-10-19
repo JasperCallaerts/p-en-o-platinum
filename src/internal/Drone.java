@@ -12,11 +12,11 @@ import Autopilot.AutopilotOutputs;
 
 /**
  * 
- * @author Anthony Rathé & ...
+ * @author Anthony Rathé & MartijnSauwens
  * Immutable variables: maxThrust, engineMass, enginePosition, droneMass, leftWing, rightWing,
  * 						horizontalStab, verticalStab, inertiaTensor
  * 	note: Orientation = (heading, pitch, roll) (in that order)
- *
+ * 	the orientation has always values in the range [-PI, PI]
  */
 public class Drone extends WorldObject {
 
@@ -435,7 +435,10 @@ public class Drone extends WorldObject {
 	 * variables
 	 * @param deltaTime the time step
 	 */
-	public void nextState(float deltaTime){
+	@Override
+	public void toNextState(float deltaTime){
+		if(!isValidTimeStep(deltaTime))
+			throw new IllegalArgumentException(INVALID_TIMESTEP);
 		//set the next state of the position & velocity of the center of mass of the drone
 		Vector acceleration = this.calcAcceleration();
 		Vector velocity = this.getNextVelocity(deltaTime, acceleration);
@@ -1029,16 +1032,45 @@ public class Drone extends WorldObject {
 
 	/**
 	 * Setter for the orientation of the drone
-	 *
 	 * @param orientation vector containing the orientation of the drone
 	 *                    structured (heading, pitch, roll)
 	 */
 	public void setOrientation(Vector orientation) {
-		Orientation = orientation;
+		Vector tempOrientation = normalizeOrientation(orientation);
+		Orientation = tempOrientation;
 	}
 
+	/**
+	 * Setter for the orientation of the drone
+	 * @param heading the heading value of the rotation
+	 * @param pitch the pitch value of the rotation
+	 * @param roll the roll value of the rotation
+	 */
 	public void setOrientation(float heading, float pitch, float roll) {
-		this.Orientation = new Vector(heading, pitch, roll);
+		this.Orientation = normalizeOrientation(new Vector(heading, pitch, roll));
+	}
+
+	/**
+	 * Normalizes the given orientation, with normalization meaning setting
+	 * the range of the orientation elements to the range [-PI, PI]
+	 * @param orientation the vector containing the orientation of the drone (heading, pitch, roll)
+	 * @return a new vector with all elements rescaled to the range [-PI, PI]
+	 */
+	public Vector normalizeOrientation(Vector orientation){
+		float[] vectorArray = new float[Vector.VECTOR_SIZE];
+		for(int index = 0; index != Vector.VECTOR_SIZE; index++){
+			float tempValue = orientation.getElementAt(index);
+			//first set the value between the range [0, 2PI]
+			tempValue = (float) (tempValue%(2*Math.PI));
+			//then if the value is larger than PI subtract PI*2
+			//so the range becomes [-PI, PI]
+			if(tempValue > Math.PI){
+				tempValue = (float) (tempValue-Math.PI*2);
+			}
+			vectorArray[index] = tempValue;
+		}
+
+		return new Vector(vectorArray);
 	}
 
 	/**
@@ -1705,6 +1737,7 @@ public class Drone extends WorldObject {
 	private final static String UNINITIALIZED_POINTMASS = "one or more of the point masses of the drone " +
 			"have not been initialized yet";
 	private final static String ILLEGAL_CONFIG = "The given configuration contains illegal values and or arguments";
+	private final static String INVALID_TIMESTEP = "The provided time needs to be strictly positive";
 
 }
 

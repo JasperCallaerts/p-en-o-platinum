@@ -30,6 +30,7 @@ public class VerticalWing extends Wing {
         return new Vector(x_part, y_part, z_part);
     }
 
+    @Override
     public Vector projectOnDrone(Vector vector){
 
         float inclination = this.getWingInclination();
