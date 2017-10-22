@@ -14,6 +14,24 @@ import java.util.List;
 /**
  * Created by Martijn on 14/10/2017.
  * @author Martijn Sauwens
+ *
+ * note:
+ * _____________________________________> (0, n: columns or x values)
+ * |
+ * |
+ * |
+ * |
+ * |
+ * |
+ * |
+ * |
+ * |
+ * |
+ * |
+ * |
+ * |
+ * |/
+ * (0, m : the rows or y values)
  */
 public class AutoPilotCamera {
 
@@ -33,20 +51,72 @@ public class AutoPilotCamera {
 
     public Vector locateRedCube(){
 
-        List<Integer> redXCoordinates = new ArrayList<Integer>();
-        List<Integer> redYCoordinates = new ArrayList<Integer>();
+        List<Integer> xRedCoordinates = new ArrayList<Integer>();
+        List<Integer> yRedCoordinates = new ArrayList<Integer>();
 
-        findRedPixels(redXCoordinates, redYCoordinates);
+        findRedPixels(xRedCoordinates, yRedCoordinates);
 
-        int maxXCoordinate = Collections.max(redXCoordinates);
-        int maxYCoordinate = Collections.max(redYCoordinates);
+        int meanXCoordinate = getMean(xRedCoordinates);
+        int meanYCoordinate = getMean(yRedCoordinates);
 
-        int meanXCoordinate = getMean(redXCoordinates);
-        int meanYCoordinate = getMean(redYCoordinates);
 
         return null;
 
     }
+
+    private float getDistanceToCube(List<Integer> xRedCoordinates, List<Integer> yRedCoordinates){
+        List<Integer> xLeftEdges = new ArrayList<>();
+        List<Integer> xRightEdges = new ArrayList<>();
+
+        findVerticalEdge(xRedCoordinates, yRedCoordinates, xLeftEdges, xRightEdges);
+
+        int leftMean = getMean(xLeftEdges);
+        int rigthMean = getMean(xRightEdges);
+
+        return 0.0f;
+
+
+    }
+
+    /**
+     * Searches for the vertical edges in the given coordinate list
+     * @param xCoordList the x Coordinates of the red pixels
+     * @param yCoordList the y Coordinates of the red pixels
+     * @param xLeftEdges the list where all the x coordinates of the left edges are stored
+     * @param xRightEdges the list where all the x coordinates of the right edges are stored
+     */
+    private void findVerticalEdge(List<Integer> xCoordList, List<Integer> yCoordList,
+                                  List<Integer> xLeftEdges, List<Integer> xRightEdges){
+
+        //add the first edge
+        xLeftEdges.add(xCoordList.get(0));
+
+        int previousX = xCoordList.get(0);
+        int previousY = yCoordList.get(0);
+
+        // only add the indices if they are on an edge
+        // meaning the previous coordinates had a different y value (other row)
+        int listSize = xCoordList.size();
+        for(int index = 1; index != listSize; index++){
+
+            int currentX = xCoordList.get(index);
+            int currentY = yCoordList.get(index);
+
+            if(currentY != previousY){
+                xLeftEdges.add(currentX);
+                xRightEdges.add(previousX);
+
+
+            }
+
+            previousX = currentX;
+            previousY = currentY;
+        }
+
+        //add the final right edge
+        xRightEdges.add(xCoordList.get(listSize-1));
+    }
+
 
     public static int getMean(List<Integer> integerList){
         int sum = 0;
@@ -60,6 +130,12 @@ public class AutoPilotCamera {
 
     }
 
+    /**
+     * Searches for red pixels having the right HSV value specified in the function itself.
+     * the coordinates of the pixels are stores in the provided arrays.
+     * @param redXCoordinates the list to contain the column coordinate if a match is found
+     * @param redYCoordinates the list to contain the row coordinate if a match is found
+     */
     private void findRedPixels(List<Integer> redXCoordinates, List<Integer> redYCoordinates) {
         int nbRows = this.getNbRows();
         int nbColumns = this.getNbColumns();
@@ -75,9 +151,9 @@ public class AutoPilotCamera {
                 float vValue = HSV.getzValue();
                 //check if the HSV value is within range, if so, add pixel coordinates to the lists
                 if(Pixel.isEqualFloat(hValue, RED_H_VALUE, EPSILON)&&Pixel.isEqualFloat(sValue, RED_S_VALUE, EPSILON)
-                        &&Pixel.isEqualFloat(vValue, Z_AXIS_V_VALUE)) {
-                    redXCoordinates.add(rowIndex);
-                    redYCoordinates.add(columnIndex);
+                        &&Pixel.isEqualFloat(vValue, Z_AXIS_V_VALUE, EPSILON)) {
+                    redXCoordinates.add(columnIndex);
+                    redYCoordinates.add(rowIndex);
                 }
             }
         }

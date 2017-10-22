@@ -2,7 +2,7 @@ package internal;
 
 /**
  * 
- * @author Anthony Rathé & ..
+ * @author Anthony Rathé & Jonathan Craessaerts &..
  *
  */
 public class Block extends WorldObject{
@@ -88,21 +88,21 @@ public class Block extends WorldObject{
 	/**
 	 * Returns the Hue of a block
 	 */
-	public int getHue(){
+	public float getHue(){
 		return this.Hue;
 	}
 	
 	/**
 	 * Returns the Saturation of a block
 	 */
-	public int getSaturation(){
+	public float getSaturation(){
 		return this.Saturation;
 	}
 	
 	/**
 	 * Returns the Value of a block
 	 */
-	public int getValue(){
+	public float getValue(){
 		return this.Value;
 	}
 	

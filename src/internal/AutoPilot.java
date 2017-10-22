@@ -1,7 +1,11 @@
 package internal;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 import Autopilot.*;
 
@@ -12,28 +16,107 @@ import Autopilot.*;
 public class AutoPilot implements Autopilot{
 
 	@Override
-	public AutopilotOutputs simulationStarted(AutopilotConfig config, AutopilotInputs inputs) {
-
-		// TODO Auto-generated method stub
-		//bereken output naar drone en gebruik stream om in outputfile te plaatsen
-		//geef config info door aan drone
-		//AutopilotOutputsWriter.write(stream, value);
-		return null;
+	public AutopilotOutputs simulationStarted(AutopilotConfig config, AutopilotInputs inputs) throws IOException {
+		return calculate(inputs);
 	}
 
 
 	@Override
-	public AutopilotOutputs timePassed(AutopilotInputs inputs) {
-		//update output drone
-		// TODO Auto-generated method stub
-		return null;
+	public AutopilotOutputs timePassed(AutopilotInputs inputs) throws IOException {
+		return calculate(inputs);
 	}
 
 	@Override
 	public void simulationEnded() {
-		// TODO Auto-generated method stub
+		// TODO close world?
+		
 		
 	}
+	/**
+	 * 
+	 * @param inputs
+	 * @return Autopilotoutputs {Thrust, L/Rwinginclination, hor/verstabinclination}
+	 * 
+	 * @throws IOException
+	 */
+	private AutopilotOutputs calculate(AutopilotInputs inputs) throws IOException{
+		AutopilotOutputs output = new AutopilotOutputs() {
+
+			@Override
+			public float getThrust() {
+				return calculateThrust(inputs);
+			}
+
+			@Override
+			public float getLeftWingInclination() {
+				return calculateLeftWingInclination(inputs);
+			}
+
+			@Override
+			public float getRightWingInclination() {
+				return calculateRightWingInclination(inputs);
+			}
+
+			@Override
+			public float getHorStabInclination() {
+				return calculateHorStabInclination(inputs);
+			}
+
+			@Override
+			public float getVerStabInclination() {
+				return calculateVerStabInclination(inputs);
+			}
+		};
+		DataOutputStream dataInputStream = new DataOutputStream(new FileOutputStream(dataStreamLocationOutputs));
+		AutopilotOutputsWriter.write(dataInputStream,output);
+		return output;
+	}
+	
+	private float calculateThrust(AutopilotInputs inputs){
+		return 0; //TODO
+	}
+	private float calculateLeftWingInclination(AutopilotInputs inputs){
+		return 0; //TODO
+	}
+	private float calculateRightWingInclination(AutopilotInputs inputs){
+		return 0; //TODO
+	}
+	private float calculateHorStabInclination(AutopilotInputs inputs){
+		return 0; //TODO
+	}
+	private float calculateVerStabInclination(AutopilotInputs inputs){
+		return 0; //TODO
+	}
+	/**
+	 * 
+	 * @throws IOException
+	 */
+    public void setupAutopilotOutputs()throws IOException{
+    	DataOutputStream dataOutputStream =
+                new DataOutputStream(new FileOutputStream(dataStreamLocationOutputs));
+    	
+    	 AutopilotOutputs value = new AutopilotOutputs() {
+             public float getThrust() { return getThrustOut(); }
+             public float getLeftWingInclination() { return getLeftWingInclinationOut(); }
+             public float getRightWingInclination() { return getRightWingInclinationOut(); }
+             public float getHorStabInclination() { return getHorStabInclinationOut(); }
+             public float getVerStabInclination() { return getVerStabInclinationOut(); }
+         };
+
+        AutopilotOutputsWriter.write(dataOutputStream, value);
+        
+    	dataOutputStream.close();
+    } 
+    
+    /**
+     * Variable for the filename that's created when making the AutopilotOutputs datastream 
+     */
+    private String dataStreamLocationOutputs = "APOutputs.txt";
+	private float thrust;
+	private float leftWingInclination;
+	private float rightWingInclination;
+	private float horStabInclination;
+	private float verStabInclination;
 	
 	//------- Simple Controlling Methods -------
 	/**
@@ -208,62 +291,44 @@ public class AutoPilot implements Autopilot{
 	
 	
 	//------- END Actual Autopilot -------
-
-	private float thrust;
-	private float leftWingInclination;
-	private float rightWingInclination;
-	private float horStabInclination;
-	private float verStabInclination;
-	private AutoPilotCamera APCamera = new AutoPilotCamera();
-	private Pathfinding pathfinding = new Pathfinding(getAPCamera().getWorld());
-	private List<Vector> currentPath;
 	
 
-	public float getThrust() {
+	public float getThrustOut() {
 		return thrust;
 	}
-	public void setThrust(float thrust){
+	public void setThrustOut(float thrust){
 		this.thrust = thrust;
 	}
 	
 	
-	public float getLeftWingInclination() {
+	public float getLeftWingInclinationOut() {
 		return leftWingInclination;
 	}
-	private void setLeftWingInclination(float inclination){
+	private void setLeftWingInclinationOut(float inclination){
 		leftWingInclination = inclination;
 	}
 
 
-	public float getRightWingInclination() {
+	public float getRightWingInclinationOut() {
 		return rightWingInclination;
 	}
-	private void setRightWingInclination(float inclination){
+	private void setRightWingInclinationOut(float inclination){
 		rightWingInclination = inclination;
 	}
 	
-	public float getHorStabInclination() {
+	public float getHorStabInclinationOut() {
 		return horStabInclination;
 	}
-	public void setHorStabInclination(float inclination){
+	public void setHorStabInclinationOut(float inclination){
 		horStabInclination = inclination;
 	}
 
-	public float getVerStabInclination() {
+	public float getVerStabInclinationOut() {
 		return verStabInclination;
 	}
-	public void setVerStabInclination(float inclination){
+	public void setVerStabInclinationOut(float inclination){
 		verStabInclination = inclination;
-	}
-	
-	private AutoPilotCamera getAPCamera(){
-		return this.APCamera;
-	}
-	
-	private Pathfinding getPathfinding(){
-		return this.pathfinding;
 	}
 
 }
-
 
