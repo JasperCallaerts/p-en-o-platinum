@@ -194,6 +194,7 @@ public class AutoPilot implements Autopilot{
 	 *  - determine whether to climb, descend or do nothing at all (based on previously determined angles)
 	 * @author anthonyrathe
 	 */
+	//TODO Max angle of attack error uitwerken
 	public void update(){
 		Vector longitudinalAxis = Vector();
 		Vector perpendicularAxis = Vector();
