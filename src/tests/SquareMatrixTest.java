@@ -91,5 +91,50 @@ public class SquareMatrixTest {
         SquareMatrix testMatrix = matrix1.matrixProduct(matrix2);
         assertEquals(testMatrix, matrix1);
     }
-
+    /**
+     * @author Jonathan 
+     */
+    @Test
+    public final void getHeadingTransformMatTest(){
+    	float angle = (float) Math.PI;
+    	float cos = (float) Math.cos(angle);
+    	float sin = (float) Math.sin(angle);
+    	SquareMatrix a = SquareMatrix.getHeadingTransformMatrix((float)Math.PI);
+    	float[] r = new float[] {cos,0.0f,sin,
+    							0.0f,1.0f,0.0f,
+    							-sin,0.0f,cos};
+    	assertEquals(a, new SquareMatrix(r));
+    	assertEquals(cos, -1.0f,0);
+    	
+    }
+    
+    /**
+     * @author Jonathan 
+     */
+    @Test
+    public final void getPitchTransformMatTest(){
+    	float angle = (float) Math.PI;
+    	float cos = (float) Math.cos(angle);
+    	float sin = (float) Math.sin(angle);
+    	SquareMatrix a = SquareMatrix.getPitchTransformMatrix((float)Math.PI);
+    	float[] r = new float[] {1.0f,0.0f,0.0f,
+    							0.0f,cos,-sin,
+    							0.0f,sin,cos};
+    	assertEquals(a, new SquareMatrix(r));    	
+    }
+    
+    /**
+     * @author Jonathan 
+     */
+    @Test
+    public final void getRollTransformMatTest(){
+    	float angle = (float) Math.PI;
+    	float cos = (float) Math.cos(angle);
+    	float sin = (float) Math.sin(angle);
+    	SquareMatrix a = SquareMatrix.getRollTransformMatrix((float)Math.PI);
+    	float[] r = new float[] {cos,-sin,0.0f,
+    							sin,cos,0f,
+    							0.0f,0f,1f};
+    	assertEquals(a, new SquareMatrix(r));    	
+    }
 }

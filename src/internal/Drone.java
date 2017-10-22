@@ -2329,7 +2329,7 @@ public class Drone extends WorldObject {
 			} catch (IllegalArgumentException e) {
 				throw new IllegalArgumentException(e);
 			}
-
+		this.rightWing = rightWing;
 	}
 
 	/**
