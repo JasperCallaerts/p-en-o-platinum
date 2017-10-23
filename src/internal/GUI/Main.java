@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import internal.AutoPilot;
+import internal.AutoPilotCamera;
 import internal.Block;
 import internal.Drone;
 import internal.HorizontalWing;
@@ -80,7 +81,7 @@ public class Main {
 	}
 	
 	/**
-	 * @author 
+	 * @author Anthony Rathé & ...
 	 * @throws Exception
 	 */
     protected static void init() throws Exception {
@@ -95,6 +96,8 @@ public class Main {
     	HorizontalWing rightWing = new HorizontalWing(new Vector(0f, 0f, 0f), 1f, 1f, 1f, 1f);
     	HorizontalWing horizontalStab = new HorizontalWing(new Vector(0f, 0f, 0f), 1f, 1f, 1f, 1f);
     	VerticalWing verticalStab = new VerticalWing(new Vector(0f, 0f, 0f), 1f, 1f, 1f, 1f);
+    	AutoPilot AP = new AutoPilot();
+    	AP.setAPCamera(new AutoPilotCamera());
     	Drone drone = new Drone(
     			1f, 
     			1f, 
@@ -107,7 +110,7 @@ public class Main {
     			leftWing, 
     			horizontalStab, 
     			verticalStab, 
-    			new AutoPilot());
+    			AP);
     	// Add world objects
     	world.addWorldObject(redBlock);
     	world.addWorldObject(drone);

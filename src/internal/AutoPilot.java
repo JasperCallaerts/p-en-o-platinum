@@ -18,6 +18,10 @@ import Autopilot.*;
  */
 public class AutoPilot implements Autopilot{
 
+	public AutoPilot(){
+		
+	}
+	
 	@Override
 	public AutopilotOutputs simulationStarted(AutopilotConfig config, AutopilotInputs inputs) throws IOException {
 		return calculate(inputs);
@@ -43,31 +47,33 @@ public class AutoPilot implements Autopilot{
 	 * @throws IOException
 	 */
 	private AutopilotOutputs calculate(AutopilotInputs inputs) throws IOException{
+		update(inputs);
 		AutopilotOutputs output = new AutopilotOutputs() {
+			
 
 			@Override
 			public float getThrust() {
-				return calculateThrust(inputs);
+				return getThrustOut();
 			}
 
 			@Override
 			public float getLeftWingInclination() {
-				return calculateLeftWingInclination(inputs);
+				return getLeftWingInclinationOut();
 			}
 
 			@Override
 			public float getRightWingInclination() {
-				return calculateRightWingInclination(inputs);
+				return getRightWingInclinationOut();
 			}
 
 			@Override
 			public float getHorStabInclination() {
-				return calculateHorStabInclination(inputs);
+				return getHorStabInclinationOut();
 			}
 
 			@Override
 			public float getVerStabInclination() {
-				return calculateVerStabInclination(inputs);
+				return getVerStabInclinationOut();
 			}
 		};
 		DataOutputStream dataInputStream = new DataOutputStream(new FileOutputStream(dataStreamLocationOutputs));
@@ -75,21 +81,6 @@ public class AutoPilot implements Autopilot{
 		return output;
 	}
 	
-	private float calculateThrust(AutopilotInputs inputs){
-		return 0; //TODO
-	}
-	private float calculateLeftWingInclination(AutopilotInputs inputs){
-		return 0; //TODO
-	}
-	private float calculateRightWingInclination(AutopilotInputs inputs){
-		return 0; //TODO
-	}
-	private float calculateHorStabInclination(AutopilotInputs inputs){
-		return 0; //TODO
-	}
-	private float calculateVerStabInclination(AutopilotInputs inputs){
-		return 0; //TODO
-	}
 	/**
 	 * 
 	 * @throws IOException
@@ -188,7 +179,7 @@ public class AutoPilot implements Autopilot{
 	 * @author anthonyrathe
 	 */
 	private void stopAscendDescend(){
-		this.setHorStabInclinationOut(0f);
+		this.setHorStabInclinationOut((float)Math.PI/12);
 	}
 	
 	/**
@@ -211,8 +202,8 @@ public class AutoPilot implements Autopilot{
 	/**
 	 * @author anthonyrathe
 	 */
-	private void updatePath() throws IOException{
-		int[] start = this.getPosition().toIntArray();
+	private void updatePath(AutopilotInputs inputs) throws IOException{
+		int[] start = this.getPosition(inputs).toIntArray();
 		int[] end = this.getDestinationPosition().toIntArray();
 		List<int[]> pathInt = Pathfinding.searchPath(start, end);
 		List<Vector> newPath = new ArrayList<Vector>();
@@ -241,8 +232,8 @@ public class AutoPilot implements Autopilot{
 	 * @author anthonyrathe
 	 * @return
 	 */
-	private Vector getPosition(){
-		return new Vector(getX(), getY(), getZ());
+	private Vector getPosition(AutopilotInputs inputs){
+		return new Vector(inputs.getX(), inputs.getY(), inputs.getZ());
 	}
 	
 	/**
@@ -258,7 +249,7 @@ public class AutoPilot implements Autopilot{
 	/**
 	 * @author anthonyrathe
 	 */
-	private void loadAPCamera(AutoPilotCamera newAPCamera){
+	public void setAPCamera(AutoPilotCamera newAPCamera){
 		this.APCamera = newAPCamera;
 	}
 	
@@ -284,10 +275,10 @@ public class AutoPilot implements Autopilot{
 	 * @author anthonyrathe
 	 * @return the node that currently is closest to the drone
 	 */
-	private Vector getNextNode() throws IOException{
-		updatePath();
+	private Vector getNextNode(AutopilotInputs inputs) throws IOException{
+		updatePath(inputs);
 		Vector destination = getDestinationPosition();
-		Vector currentPosition = this.getPosition();
+		Vector currentPosition = this.getPosition(inputs);
 		Vector nextNode = destination;
 		float smallestDistance = currentPosition.distanceBetween(getDestinationPosition());
 		for (Vector node : this.getPath()){
@@ -303,6 +294,20 @@ public class AutoPilot implements Autopilot{
 	}
 	
 	/**
+	 * @author anthonyrathe
+	 * @param pitch
+	 * @param yaw
+	 * @param roll
+	 * @return
+	 */
+	private Vector pitchRollYawToWorld(float pitch, float roll, float yaw){
+		double z = -Math.cos((double)yaw) * Math.cos((double)pitch);
+		double x = -Math.sin((double)yaw) * Math.cos((double)pitch);
+		double y = Math.sin((double)pitch);
+		return new Vector((float)x, (float)y, (float)z);
+	}
+	
+	/**
 	 * Method that updates the desired inclinations and thrust
 	 * Strategy applied:
 	 * 	- find the closest node
@@ -311,14 +316,18 @@ public class AutoPilot implements Autopilot{
 	 * 	- determine whether to roll clockwise, counterclockwise or not at all (based on previously determined angles)
 	 *  - determine whether to climb, descend or do nothing at all (based on previously determined angles)
 	 * @author anthonyrathe
+	 * @note this version of update will be used later on, when our image recognition allows for a 3D-mapping of the world
+	 * For the version currently in use, we will be basing our oriëntation on the relative position of red pixels on the 2D
+	 * surface of the screen.
 	 */
 	//TODO Max angle of attack error uitwerken
-	public void update() throws IOException{
+	/*public void update(AutopilotInputs inputs) throws IOException{
 
-		Vector perpendicularAxis = Vector(); //pointed to the roof of the drone
-		Vector lateralAxis = Vector(); //pointed to the left of the drone
 		
-		Vector directionToNode = getPosition().vectorDifference(getDestinationPosition());
+		Vector perpendicularAxis = pitchRollYawToWorld(inputs.getPitch()-(float)Math.PI/2, inputs.getRoll(), inputs.getHeading()); //pointed to the roof of the drone
+		Vector lateralAxis = pitchRollYawToWorld(inputs.getPitch(), inputs.getRoll(), inputs.getHeading()+(float)Math.PI/2); //pointed to the left of the drone
+		
+		Vector directionToNode = getPosition(inputs).vectorDifference(getDestinationPosition());
 		float verticalAngle = perpendicularAxis.getAngleBetween(directionToNode);
 		float horizontalAngle = lateralAxis.getAngleBetween(directionToNode);
 		
@@ -346,6 +355,45 @@ public class AutoPilot implements Autopilot{
 			// Stop rolling
 			this.stopRoll();
 		}else if(horizontalAngle >= 0f && horizontalAngle < Math.PI - THRESHOLD_ANGLE){
+			// Roll counterclockwise
+			this.counterClockRollStart();
+		} 
+		
+	}*/
+	
+	/**
+	 * Method that updates the desired inclinations and thrust
+	 * Strategy applied:
+	 * 	- If destination is located on the upper half of the screen, start ascending. Start descending if located on the lower half of the screen.
+	 * 	- If destination is located on the right half of the screen, start rolling clockwise. Start rolling counterclockwise if located on the left half.
+	 * @author anthonyrathe
+	 */
+	public void update(AutopilotInputs inputs) throws IOException{
+
+		
+		float xPosition = APCamera.getDestination().getxValue();
+		float yPosition = APCamera.getDestination().getyValue();
+		
+		// Ascend/Descend
+		if(yPosition < -THRESHOLD_PIXELS){
+			// Descend
+			this.startDescend();
+		}else if(yPosition >= -THRESHOLD_PIXELS && yPosition <= THRESHOLD_PIXELS){
+			// Stop descending/ascending
+			this.stopAscendDescend();
+		}else if(yPosition > THRESHOLD_PIXELS){
+			// Ascend
+			this.startAscend();
+		}
+		
+		// Roll
+		if(xPosition > THRESHOLD_PIXELS){
+			// Roll clockwise
+			this.clockRollStart();
+		}else if(xPosition >= -THRESHOLD_PIXELS && xPosition <= THRESHOLD_PIXELS){
+			// Stop rolling
+			this.stopRoll();
+		}else if(xPosition < -THRESHOLD_PIXELS){
 			// Roll counterclockwise
 			this.counterClockRollStart();
 		} 
@@ -397,6 +445,7 @@ public class AutoPilot implements Autopilot{
 	//------- Parameters -------
 	private static final float STANDARD_INCLINATION = (float)Math.PI/3;
 	private static final float THRESHOLD_ANGLE = (float)Math.PI/36;
+	private static final float THRESHOLD_PIXELS = 5f;
 	private static final float NODE_REACHED_DISTANCE = 4f;
 
 }

@@ -2198,6 +2198,7 @@ public class Drone extends WorldObject {
 	public AutoPilot getAutopilot() {
 		return this.AP;
 	}
+	
 	/**
 	 * @author Bart
 	 * @param duration
@@ -2798,6 +2799,7 @@ public class Drone extends WorldObject {
 	private void setNextRightWingInclination(float rightWingInclination){
 		this.nextRightWingInclination = rightWingInclination;
 	}
+	
 
 	/**
 	 * A variable containing the current horizontal stabilizer inclination of the drone
