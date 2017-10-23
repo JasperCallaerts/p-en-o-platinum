@@ -53,7 +53,7 @@ public class Block extends WorldObject{
 	            // V7
 	             0.5f, -0.5f, -0.5f,
 		};
-		vertices = (getVertices(), newVertices);
+		//vertices = (getVertices(), newVertices);
 	}
 	
 	public void addColours() {
@@ -62,6 +62,19 @@ public class Block extends WorldObject{
 	
 	public void addIndices() {
 		
+	}
+
+	@Override
+	public void toNextState(float deltaTime){
+		//do nothing, cube cannot change state
+	}
+
+
+	/**
+	 * returns the position of the cube in vector format
+	 */
+	public Vector getPosition(){
+		return new Vector(this.getPositionX(), this.getPositionY(), this.getPositionZ());
 	}
 	
 	/**
@@ -96,14 +109,18 @@ public class Block extends WorldObject{
 	 * Returns the Saturation of a block
 	 */
 	public float getSaturation(){
-		return this.Saturation;
+<
+		return (float)this.Saturation;
+
 	}
 	
 	/**
 	 * Returns the Value of a block
 	 */
 	public float getValue(){
-		return this.Value;
+
+		return (float)this.Value;
+
 	}
 	
 	/**

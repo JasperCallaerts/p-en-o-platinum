@@ -1,10 +1,12 @@
 package internal;
 
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -320,6 +322,7 @@ public class AutoPilot implements Autopilot{
 	 * For the version currently in use, we will be basing our oriëntation on the relative position of red pixels on the 2D
 	 * surface of the screen.
 	 */
+
 	//TODO Max angle of attack error uitwerken
 	/*public void update(AutopilotInputs inputs) throws IOException{
 
@@ -344,6 +347,7 @@ public class AutoPilot implements Autopilot{
 			// Ascend
 			this.startAscend();
 		}
+
 		
 		// Roll
 		if (horizontalAngle > Math.PI){

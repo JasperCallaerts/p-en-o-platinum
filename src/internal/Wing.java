@@ -1,5 +1,7 @@
 package internal;
 
+import static java.lang.Math.PI;
+
 /**
  * Implmented by Martijn (r0623847)
  */
@@ -11,22 +13,22 @@ public abstract class Wing {
      * Public constructor for a wing object
      * @param relativePosition the position relative to the center of gravity of the drone
      * @param mass the mass of the drone
-     * @param maximumInclination the maximum wing inclination of the drone
+     * @param maximumAngleOfAttack the maximum wing inclination of the drone
      * @param wingInclination the current wing inclination of the drone
      */
-    public  Wing(Vector relativePosition, float liftSlope, float mass, float maximumInclination, float wingInclination){
+    public  Wing(Vector relativePosition, float liftSlope, float mass, float maximumAngleOfAttack, float wingInclination){
         if(!canHaveAsRelativePosition(relativePosition))
             throw new IllegalArgumentException(INVALID_POSITION);
         if(!canHaveAsMass(mass))
             throw new IllegalArgumentException(INVALID_MASS);
-        if(!canHaveAsMaxWingInclination(maximumInclination))
-            throw new IllegalArgumentException(INVALID_MAXINCL);
+        if(!canHaveAsMaxAngleOfAttack(maximumAngleOfAttack))
+            throw new IllegalArgumentException(INVALID_MAXAOA);
         if(!canHaveAsLiftSlope(liftSlope))
             throw new IllegalArgumentException(INVALID_LIFTSLOPE);
 
         this.relativePosition = relativePosition;
         this.mass = mass;
-        this.maximumInclination = maximumInclination;
+        this.maximumAngleOfAttack = maximumAngleOfAttack;
         this.setWingInclination(wingInclination);
         this.liftSlope = liftSlope;
     }
@@ -66,6 +68,7 @@ public abstract class Wing {
     public Vector getLift(){
         Vector normal = this.projectOnWorld(this.getNormal());
         Vector airspeed = this.getAbsoluteVelocity();
+        this.calcAngleOfAttack();
         float angleOfAttack = this.getAngleOfAttack();
         float liftSlope = this.getLiftSlope();
 
@@ -155,12 +158,28 @@ public abstract class Wing {
         Vector attackVector = this.projectOnWorld(this.getAttackVector());
 
 
-        Vector projectedAirspeed = airspeed.orthogonalProjection(normal);
+        Vector projectedAirspeed = airspeed;//.orthogonalProjection(normal);
 
         float numerator = projectedAirspeed.scalarProduct(normal);
         float denominator = projectedAirspeed.scalarProduct(attackVector);
 
+        //set the angle of attack anyway, can be used for diagnostics
         this.angleOfAttack = (float)Math.atan2(numerator, denominator);
+
+        if(!canHaveAsAngleOfAttack(this.getAngleOfAttack())){
+            throw new AngleOfAttackException(INVALID_AOA, this);
+        }
+
+    }
+
+    /**
+     * Checks if the given angle of attack is valid for the given wing
+     * @param angleOfAttack floating point number containing the angle of attack
+     * @return true if and only if angleOfAttack is part of the interval [-PI/2.0, getMaximumAngleOfAttack]
+     * note: maybe the lower bound needs to be changed - PI/2.0 is just a guess
+     */
+    public boolean canHaveAsAngleOfAttack(float angleOfAttack){
+        return angleOfAttack >= -PI/2.0 && angleOfAttack <= this.getMaximumAngleOfAttack();
     }
 
     /**
@@ -184,21 +203,24 @@ public abstract class Wing {
         this.wingInclination = wingInclination;
     }
 
+    //Todo note: Is this function still needed if we have just throw an error if the maximum AOA is reached?
+    //or do we make a seperate internal Max inclination that we adhere to?
     /**
-     * Returns true if and only if the inclination is between [0, getMaximumInclination()]
+     * Returns true if and only if the inclination is between [0, getMaximumAngleOfAttack()]
      * @param inclination the inclination to be tested
      */
     public boolean canHaveAsWingInclintion(float inclination){
+      return true;
+      //return inclination >= 0 && inclination <= this.getMaximumInclination();
 
-        return inclination >= 0 && inclination <= this.getMaximumInclination();
     }
 
     /**
      * Getter for the maximum inclination of the drone
      * @return
      */
-    public float getMaximumInclination() {
-        return maximumInclination;
+    public float getMaximumAngleOfAttack() {
+        return maximumAngleOfAttack;
     }
 
     /**
@@ -242,14 +264,19 @@ public abstract class Wing {
             return false;
         //If the wings are positioned on the z-axis, they can only have
         //negative coordinates
-        if(x_part == 0 && z_part >= 0)
+        if(x_part == 0 && z_part <= 0)
             return false;
 
         return true;
     }
 
-    public boolean canHaveAsMaxWingInclination(float maxwing){
-        return maxwing>=0 && maxwing < Math.PI/2.0f;
+    /**
+     * Checker for the angle of attack
+     * @param maxAOA the maximum angle of attack
+     * @return true if and only if the maxAOA is between [0, PI/2)
+     */
+    public boolean canHaveAsMaxAngleOfAttack(float maxAOA){
+        return maxAOA>=0 && maxAOA <= PI/2.0f;
     }
 
     /**
@@ -274,7 +301,7 @@ public abstract class Wing {
     /**
      * Variable that holds the maximum inclination of the wing (immutable)
      */
-    private float maximumInclination;
+    private float maximumAngleOfAttack;
 
     /**
      * Variable that holds the mass of the wing (immutable)
@@ -309,7 +336,8 @@ public abstract class Wing {
     private final static String INVALID_INCLINATION = "The given inclination is invalid.";
     private final static String INVALID_POSITION = "The given position is invalid.";
     private final static String INVALID_MASS = "The given mass is invalid";
-    private final static String INVALID_MAXINCL = "The given maximum inclination is invalid";
+    private final static String INVALID_MAXAOA = "The given maximum inclination is invalid";
     private final static String INVALID_DRONE = "The wing is already attached to a drone";
     private final static String INVALID_LIFTSLOPE = "The lift slope is invalid";
+    private final static String INVALID_AOA = "The angle of attack has exeded the maximum value";
 }
