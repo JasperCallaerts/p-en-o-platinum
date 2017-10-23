@@ -3,6 +3,7 @@
 	<classpathentry kind="src" path="datatypes/src"/>
 	<classpathentry excluding="src/" kind="src" path="datatypes"/>
 	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="testsource"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/LWJGL3"/>
 	<classpathentry kind="lib" path="/Users/anthonyrathe/repos/asteroids/OGP1617-Asteroids/lib/AnnotationsDoclets.jar"/>

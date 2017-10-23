@@ -25,6 +25,8 @@ package math;
 
 import java.nio.FloatBuffer;
 
+import math.Vector2f;
+
 /**
  * This class represents a (x,y)-Vector. GLSL equivalent to vec2.
  *

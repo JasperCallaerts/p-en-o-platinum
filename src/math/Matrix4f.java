@@ -25,6 +25,10 @@ package math;
 
 import java.nio.FloatBuffer;
 
+import math.Matrix4f;
+import math.Vector3f;
+import math.Vector4f;
+
 /**
  * This class represents a 4x4-Matrix. GLSL equivalent to mat4.
  *
@@ -356,13 +360,13 @@ public class Matrix4f {
     public static Matrix4f perspective(float fovy, float aspect, float near, float far) {
         Matrix4f perspective = new Matrix4f();
 
-        float f = (float) (1f / Math.tan(Math.toRadians(fovy) / 2f));
+        float g = (float) (1f / Math.tan(fovy / 2f));
 
-        perspective.m00 = f / aspect;
-        perspective.m11 = f;
+        perspective.m00 = g / aspect;
+        perspective.m11 = g;
         perspective.m22 = (far + near) / (near - far);
-        perspective.m32 = -1f;
-        perspective.m23 = (2f * far * near) / (near - far);
+        perspective.m23 = -1f;
+        perspective.m32 = (2f * far * near) / (near - far);
         perspective.m33 = 0f;
 
         return perspective;
@@ -443,5 +447,35 @@ public class Matrix4f {
 
         return scaling;
     }
+
+	public static Matrix4f viewMatrix(Vector3f right, Vector3f up, Vector3f look, Vector3f position) {
+		Vector4f col1 = new Vector4f(right.x, right.y, right.z, -position.dot(right));
+    	Vector4f col2 = new Vector4f(up.x, up.y, up.z, -position.dot(up));
+    	Vector4f col3 = new Vector4f(look.x, look.y, look.z, -position.dot(look));
+    	Vector4f col4 = new Vector4f(0f, 0f, 0f, 1f);
+    	
+    	Matrix4f view = new Matrix4f(col1, col2, col3, col4);
+    	return view;
+	}
+
+	public void print() {
+		System.out.println(m00);
+    	System.out.println(m01);
+    	System.out.println(m02);
+    	System.out.println(m03);
+    	System.out.println(m10);
+    	System.out.println(m11);
+    	System.out.println(m12);
+    	System.out.println(m13);
+    	System.out.println(m20);
+    	System.out.println(m21);
+    	System.out.println(m22);
+    	System.out.println(m23);
+		System.out.println(m30);
+		System.out.println(m31);
+		System.out.println(m32);
+		System.out.println(m33);
+		System.out.println("end");
+	}
 
 }
