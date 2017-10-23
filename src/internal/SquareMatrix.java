@@ -203,7 +203,7 @@ public class SquareMatrix {
      */
     public static SquareMatrix getHeadingTransformMatrix(float angle){
         float[] matrixArray = new float[]{(float) Math.cos(angle),   0f, (float)Math.sin(angle),
-                0f,                       1f,  0f
+                0f,                       1f,  0f,
                 - (float)Math.sin(angle), 0f, (float) Math.cos(angle)};
         return new SquareMatrix(matrixArray);
     }
