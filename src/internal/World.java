@@ -1,8 +1,10 @@
 package internal;
 import internal.Drone;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.BiPredicate;
 
 /**
  * 
@@ -107,11 +109,73 @@ public class World {
 	
 	/**
 	 * Method that evolves the world for a given amount of time
-	 */
-	public void evolve(float duration){
+	 *//*
+	public void evolve(float duration) throws IOException {
 		for(WorldObject object : this.getObjectSet()){
 			object.evolve(duration);
 		}
+	}*/
+
+	//Todo evolve the states of the world, for the given time interval, until the stop criteria is met
+
+	/**
+	 * Advances the world state with a given time interval
+	 * if the goal has been reached, the world will stop advancing
+	 * @param timeInterval the time interval
+	 * @throws IllegalArgumentException thrown if the provided time interval is invalid
+	 * @author Martijn Sauwens
+	 */
+	public void advanceWorldState(float timeInterval) throws IllegalArgumentException{
+
+		if(!isValidTimeInterval(timeInterval))
+			throw new IllegalArgumentException(INVALID_TIME_INTERVAL);
+
+		boolean goalReached = false;
+		Set<Block> blockSet = this.getBlockSet();
+		Set<Drone> droneSet = this.getDroneSet();
+		Set<WorldObject> worldObjectSet = this.getObjectSet();
+		while(!goalReached){
+			//first see if the goal is satisfied
+
+			for(Block block: blockSet){
+
+				for(Drone drone: droneSet){
+					goalReached = this.goalReached(block, drone);
+
+					if(goalReached){
+						drone.getAutopilot().simulationEnded();
+					}
+				}
+			}
+
+			//only advance if the goal has not yet been reached
+			if(!goalReached){
+				for(WorldObject worldObject: worldObjectSet){
+					worldObject.toNextState(timeInterval);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Checks if the the provided drone and block are within 4meter radius
+	 * @param block the block to be checked
+	 * @param drone the drone to be checked
+	 * @return true if and only if the block and the drone are within 4m radius
+	 * @author Martijn Sauwens
+	 */
+	public boolean goalReached(Block block, Drone drone){
+		return block.getPosition().distanceBetween(drone.getPosition()) <=4.0f;
+	}
+
+	/**
+	 * Checks if the provided time interval is valid
+	 * @param timeInterval the time interval to be checked
+	 * @return true if and only if the time interval is valid
+	 * @author Martijn Sauwens
+	 */
+	public boolean isValidTimeInterval(float timeInterval){
+		return timeInterval > 0.0f;
 	}
 	
 	private final int Xsize;
@@ -131,4 +195,8 @@ public class World {
 	// Error strings
 	private final static String ADD_WORLD_OBJECT_ERROR = "The object couldn't be added to the world";
 	private final static String WORLD_OBJECT_404 = "The object couldn't be found";
+	private final static String INVALID_TIME_INTERVAL = "The time interval is <= 0, please provide a strictly positive number";
+
+
 }
+

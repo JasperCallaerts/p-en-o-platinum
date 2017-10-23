@@ -73,7 +73,7 @@ public class Pixel {
      * Converts a pixel to gray scale
      * @return the gray scale pixel based on luminosity
      */
-    public byte getGrayscale(){
+    public byte convertToGrayscale(){
         int red = this.getRed() + BIAS;
         int green  = this.getGreen() + BIAS;
         int blue = this.getBlue() + BIAS;

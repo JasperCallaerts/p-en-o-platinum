@@ -1,10 +1,12 @@
 package internal;
 
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -211,7 +213,9 @@ public class AutoPilot implements Autopilot{
 	/**
 	 * @author anthonyrathe
 	 */
-	private void updatePath() throws IOException{
+
+	private void updatePath() throws IOException {
+
 		int[] start = this.getPosition().toIntArray();
 		int[] end = this.getDestinationPosition().toIntArray();
 		List<int[]> pathInt = Pathfinding.searchPath(start, end);
@@ -312,6 +316,7 @@ public class AutoPilot implements Autopilot{
 	 *  - determine whether to climb, descend or do nothing at all (based on previously determined angles)
 	 * @author anthonyrathe
 	 */
+
 	//TODO Max angle of attack error uitwerken
 	public void update() throws IOException{
 
@@ -335,6 +340,7 @@ public class AutoPilot implements Autopilot{
 			// Ascend
 			this.startAscend();
 		}
+
 		
 		// Roll
 		if (horizontalAngle > Math.PI){
@@ -350,6 +356,7 @@ public class AutoPilot implements Autopilot{
 			this.counterClockRollStart();
 		} 
 		
+
 	}
 	
 	

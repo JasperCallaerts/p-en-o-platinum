@@ -373,4 +373,9 @@ public class Vector {
 
 	public final static String INVALID_ARRAY = "The provided array is not of length 3";
 
+	/*
+	Constants
+	 */
+	public final static int VECTOR_SIZE = 3;
+
 }
