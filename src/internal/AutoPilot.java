@@ -21,7 +21,6 @@ import Autopilot.*;
 public class AutoPilot implements Autopilot{
 
 	public AutoPilot(){
-		
 	}
 	
 	@Override
@@ -207,7 +206,8 @@ public class AutoPilot implements Autopilot{
 	private void updatePath(AutopilotInputs inputs) throws IOException{
 		int[] start = this.getPosition(inputs).toIntArray();
 		int[] end = this.getDestinationPosition().toIntArray();
-		List<int[]> pathInt = Pathfinding.searchPath(start, end);
+		Pathfinding pathFinding = new Pathfinding(new World());
+		List<int[]> pathInt = pathFinding.searchPath(start, end);
 		List<Vector> newPath = new ArrayList<Vector>();
 		for (int[] position : pathInt){
 			newPath.add(new Vector(position[0], position[1], position[2]));

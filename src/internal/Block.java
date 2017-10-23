@@ -109,7 +109,7 @@ public class Block extends WorldObject{
 	 * Returns the Saturation of a block
 	 */
 	public float getSaturation(){
-<
+
 		return (float)this.Saturation;
 
 	}
