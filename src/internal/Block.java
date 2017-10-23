@@ -2,7 +2,7 @@ package internal;
 
 /**
  * 
- * @author Anthony Rathé & ..
+ * @author Anthony Rathé & Jonathan Craessaerts &..
  *
  */
 public class Block extends WorldObject{
@@ -109,14 +109,18 @@ public class Block extends WorldObject{
 	 * Returns the Saturation of a block
 	 */
 	public float getSaturation(){
+<
 		return (float)this.Saturation;
+
 	}
 	
 	/**
 	 * Returns the Value of a block
 	 */
 	public float getValue(){
+
 		return (float)this.Value;
+
 	}
 	
 	/**

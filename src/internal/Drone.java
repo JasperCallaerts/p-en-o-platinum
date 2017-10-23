@@ -1,3 +1,4 @@
+
 package internal;
 
 import java.io.DataOutputStream;
@@ -1135,7 +1136,7 @@ public class Drone extends WorldObject {
 			} catch (IllegalArgumentException e) {
 				throw new IllegalArgumentException(e);
 			}
-
+		this.rightWing = rightWing;
 	}
 
 	/**
@@ -1611,6 +1612,11 @@ public class Drone extends WorldObject {
 	private float horStabInclination;
 
 	/**
+	 * A variable containing the current vertical stabilizer inclination of the drone
+	 */
+	private float verStabInclination;
+	
+	/**
 	 * A variable containing the new horizontal stabilizers inclination of the drone, after queueTime has elapsed, as calculated by the autopilot
 	 */
 	private float nextHorStabInclination;
@@ -1662,9 +1668,15 @@ public class Drone extends WorldObject {
 	private static float GRAVITY = 9.81060f;
 	private static float Wingx = 1f;
 	private static float Tailsize = 1f;
+	
+	
 	private AutopilotConfig autopilotConfig;
-
-	 public void setupAutopilotConfig()throws IOException{
+	/**
+	 * Creates an AutopilotConfig file which contains all values from the Autopilot config interface
+	 * @throws IOException
+	 * @author Jonathan Craessaerts
+	 */
+	public void setupAutopilotConfig()throws IOException{
 	    	DataOutputStream dataOutputStream =
 	                new DataOutputStream(new FileOutputStream(dataStreamLocationConfig));
 	    	
@@ -1690,8 +1702,9 @@ public class Drone extends WorldObject {
 	    	dataOutputStream.close();
 	    }
 		/**
-		 * 
+		 * Creates an AutopilotInputs file which contains all values from the AutopilotInput interface
 		 * @throws IOException
+		 * @author Jonathan Craessaerts
 		 */
 	    public void setupAutopilotInputs()throws IOException{
 	    	DataOutputStream dataOutputStream =

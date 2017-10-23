@@ -25,6 +25,8 @@ package math;
 
 import java.nio.FloatBuffer;
 
+import math.Vector4f;
+
 /**
  * This class represents a (x,y,z,w)-Vector. GLSL equivalent to vec4.
  *

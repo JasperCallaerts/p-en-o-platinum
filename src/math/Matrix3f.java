@@ -25,6 +25,9 @@ package math;
 
 import java.nio.FloatBuffer;
 
+import math.Matrix3f;
+import math.Vector3f;
+
 /**
  * This class represents a 3x3-Matrix. GLSL equivalent to mat3.
  *

@@ -210,8 +210,9 @@ public abstract class Wing {
      * @param inclination the inclination to be tested
      */
     public boolean canHaveAsWingInclintion(float inclination){
+      return true;
+      //return inclination >= 0 && inclination <= this.getMaximumInclination();
 
-        return true;
     }
 
     /**

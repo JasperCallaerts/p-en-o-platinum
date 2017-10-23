@@ -151,13 +151,6 @@ public class Vector {
 		return (float)Math.acos(numerator/denominator);
 	}
 	
-	/**
-	 * get angle between this vector and the plane, defined by other1 and other2
-	 * @author anthonyrathe
-	 */
-	public float getAngleBetween(Vector other1, Vector other2){
-		
-	}
 	
 	/**
 	 * @author anthonyrathe
