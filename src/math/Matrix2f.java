@@ -25,6 +25,9 @@ package math;
 
 import java.nio.FloatBuffer;
 
+import math.Matrix2f;
+import math.Vector2f;
+
 /**
  * This class represents a 2x2-Matrix. GLSL equivalent to mat2.
  *
