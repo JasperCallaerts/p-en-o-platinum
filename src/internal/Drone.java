@@ -468,10 +468,16 @@ public class Drone extends WorldObject {
 		Vector rotation = this.getNextRotationVector(deltaTime, angularAccelerationWorld);
 		Vector orientation = this.getNextOrientation(deltaTime, angularAccelerationWorld);
 
+		Vector oldOrientation = this.getOrientation();
+
+		if(!oldOrientation.rangeEquals(orientation, deltaTime*0.01f)){
+
+			this.setRotationVector(rotation);
+			this.setOrientation(orientation);
+		}
+
 		this.setVelocity(velocity);
 		this.setPosition(position);
-		this.setRotationVector(rotation);
-		this.setOrientation(orientation);
 	}
 
 	/**
@@ -976,62 +982,62 @@ public class Drone extends WorldObject {
 	public AutoPilot getAutopilot() {
 		return this.AP;
 	}
-	
+
 	/**
 	 * @author Bart
 	 * @param duration
 	 * @return autopilotinput for autopilot
 	 */
 	private AutopilotInputs updateAutopilotInput(float duration){
-		
+
 		AutopilotInputs input;
 		return  input = new AutopilotInputs() {
-			
+
 			@Override
 			public float getZ() {
 				return getPosition().getElementAt(2);
 			}
-			
+
 			@Override
 			public float getY() {
 				return getPosition().getElementAt(1);
 			}
-			
+
 			@Override
 			public float getX() {
 				return getPosition().getElementAt(0);
 			}
-			
+
 			@Override
 			public float getRoll() {
 				return getOrientation().getElementAt(2);
 			}
-			
+
 			@Override
 			public float getPitch() {
 				return getOrientation().getElementAt(1);
 			}
-			
+
 			@Override
 			public byte[] getImage() {
 				// TODO Auto-generated method stub
 				return null;
 			}
-			
+
 			@Override
 			public float getHeading() {
 				return getOrientation().getElementAt(0);
 			}
-			
+
 			@Override
 			public float getElapsedTime() {
 				return duration;
 			}
 		};
-		
-	
+
+
 	}
-	
+
 
 	//Todo: comment for happiness of profs
 
@@ -1560,7 +1566,7 @@ public class Drone extends WorldObject {
 	private float getNextThrust() {
 		return this.nextThrust;
 	}
-	
+
 	private void setNextThrust(float thrust){
 		this.nextThrust = thrust;
 	}
@@ -1581,7 +1587,7 @@ public class Drone extends WorldObject {
 	private float getNextLeftWingInclination() {
 		return this.nextLeftWingInclination;
 	}
-	
+
 	private void setNextLeftWingInclination(float leftWingInclination){
 		this.nextLeftWingInclination = leftWingInclination;
 	}
@@ -1602,11 +1608,11 @@ public class Drone extends WorldObject {
 	private float getNextRightWingInclination() {
 		return this.nextRightWingInclination;
 	}
-	
+
 	private void setNextRightWingInclination(float rightWingInclination){
 		this.nextRightWingInclination = rightWingInclination;
 	}
-	
+
 
 	/**
 	 * A variable containing the current horizontal stabilizer inclination of the drone

@@ -238,6 +238,33 @@ public class Vector {
 	}
 
 	/**
+	 * checks if the two vectors are equal within a given error range
+	 * @param other the other vector
+	 * @param range the range of the error
+	 * @return true and only if all the components are equal within a given range (see floatEquals)
+	 */
+	public boolean rangeEquals(Vector other, float range){
+
+		boolean xPart = floatEquals(this.getxValue(), other.getxValue(), range);
+		boolean yPart = floatEquals(this.getyValue(), other.getyValue(), range);
+		boolean zPart = floatEquals(this.getzValue(), other.getzValue(), range);
+
+		return xPart&&yPart&&zPart;
+	}
+
+	/**
+	 * Checks if two given values are equal within a given range
+	 * @param value1 the first value to compare
+	 * @param value2 the second value to compare
+	 * @param epsilon the range of the error
+	 * @return true if and only if value1-value2 is in range of [-epsilon, epsilon]
+	 */
+	private static boolean floatEquals(float value1, float value2, float epsilon){
+		float diff = value1 - value2;
+		return  diff >= - epsilon && diff <= epsilon;
+	}
+
+	/**
 	 * calculates a orthogonal Projection of the given vector against the normal vector
 	 */
 	public Vector orthogonalProjection(Vector normalVector){
