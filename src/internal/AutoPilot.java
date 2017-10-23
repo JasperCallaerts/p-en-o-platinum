@@ -232,6 +232,13 @@ public class AutoPilot implements Autopilot{
 	
 	/**
 	 * @author anthonyrathe
+	 */
+	private void removeNodeFromPath(Vector node){
+		this.currentPath.remove(node);
+	}
+	
+	/**
+	 * @author anthonyrathe
 	 * @return
 	 */
 	private Vector getPosition(){
@@ -279,11 +286,16 @@ public class AutoPilot implements Autopilot{
 	 */
 	private Vector getNextNode() throws IOException{
 		updatePath();
-		Vector nextNode = getDestinationPosition();
-		float smallestDistance = this.getPosition().distanceBetween(getDestinationPosition());
+		Vector destination = getDestinationPosition();
+		Vector currentPosition = this.getPosition();
+		Vector nextNode = destination;
+		float smallestDistance = currentPosition.distanceBetween(getDestinationPosition());
 		for (Vector node : this.getPath()){
-			if (node.distanceBetween(this.getPosition()) < smallestDistance){
-				smallestDistance = node.distanceBetween(this.getPosition());
+			if(node.distanceBetween(currentPosition) <= NODE_REACHED_DISTANCE){
+				this.removeNodeFromPath(node);
+			}else if (node.distanceBetween(currentPosition) < smallestDistance 
+					&& node.distanceBetween(destination) <= currentPosition.distanceBetween(destination)){
+				smallestDistance = node.distanceBetween(currentPosition);
 				nextNode = node;
 			}
 		}
@@ -306,7 +318,7 @@ public class AutoPilot implements Autopilot{
 		Vector perpendicularAxis = Vector(); //pointed to the roof of the drone
 		Vector lateralAxis = Vector(); //pointed to the left of the drone
 		
-		Vector directionToNode = getPosition().vectorDifference(getNextNode());
+		Vector directionToNode = getPosition().vectorDifference(getDestinationPosition());
 		float verticalAngle = perpendicularAxis.getAngleBetween(directionToNode);
 		float horizontalAngle = lateralAxis.getAngleBetween(directionToNode);
 		
@@ -385,6 +397,7 @@ public class AutoPilot implements Autopilot{
 	//------- Parameters -------
 	private static final float STANDARD_INCLINATION = (float)Math.PI/3;
 	private static final float THRESHOLD_ANGLE = (float)Math.PI/36;
+	private static final float NODE_REACHED_DISTANCE = 4f;
 
 }
 
