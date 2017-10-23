@@ -59,13 +59,13 @@ public class Renderer {
     private Matrix4f viewMatrix = new Matrix4f();
     private Matrix4f modelMatrix = new Matrix4f();
     
-    private Vector3f position = new Vector3f(0.0f, 0.0f, 0.0f);
+    private Vector3f position = new Vector3f(0.0f, 0.0f, 2.0f);
 	private long window;
 	private Mesh mesh;
 	private Mouse mouse;
     private static final float SPEED = 1f;
     
-    private static final float FOV = (float) Math.toRadians(120.0f);
+    private static final float FOV = (float) Math.toRadians(60.0f);
 	private static final float NEAR = 0.01f;
 	private static final float FAR = 1000.f;
 	
@@ -160,9 +160,9 @@ public class Renderer {
 	public void update(double delta) {
 		
 		mouse.update(window);
-		System.out.println(mouse.dx());
-		System.out.println(mouse.dy());
-		System.out.println("");
+//		System.out.println(mouse.dx());
+//		System.out.println(mouse.dy());
+//		System.out.println("");
 		
 		Vector3f vec = new Vector3f(0.0f, 0.0f, 0.0f);
         if (isKeyPressed(GLFW_KEY_UP)) {
@@ -184,6 +184,9 @@ public class Renderer {
     	Vector3f up = new Vector3f(0.0f, 1.0f, 0.0f);
     	Vector3f dir = new Vector3f(0.0f, 0.0f, -1.0f);
     	viewMatrix = Matrix4f.viewMatrix(right, up, dir, position);
+    	
+//    	Matrix4f.perspective(FOV, 16.0f/9.0f, NEAR, FAR).print();
+//    	Matrix4f.viewMatrix(right, up, dir, position).print();
     	
 //    	math.Vector4f teeest = Matrix4f.perspective(FOV, 16.0f/9.0f, NEAR, FAR).multiply(Matrix4f.viewMatrix(right, up, dir, position).multiply(new math.Vector4f(0.5f, 0.5f, 0.5f, 1.0f)));  				
 //		System.out.println(teeest.x/teeest.w);

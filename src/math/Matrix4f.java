@@ -455,9 +455,9 @@ public class Matrix4f {
      */
     public static Matrix4f viewMatrix(Vector3f right, Vector3f up, Vector3f look, Vector3f position) {
     	
-    	Vector4f col1 = new Vector4f(right.x, right.y, right.z, 0);
-    	Vector4f col2 = new Vector4f(up.x, up.y, up.z, 0);
-    	Vector4f col3 = new Vector4f(look.x, look.y, look.z, 0);
+    	Vector4f col1 = new Vector4f(right.x, right.y, right.z, 0f);
+    	Vector4f col2 = new Vector4f(up.x, up.y, up.z, 0f);
+    	Vector4f col3 = new Vector4f(-look.x, -look.y, -look.z, 0f);
     	Vector4f col4 = new Vector4f(-position.x, -position.y, -position.z, 1f);
     	
     	Matrix4f view = new Matrix4f(col1, col2, col3, col4);
@@ -481,6 +481,6 @@ public class Matrix4f {
 		System.out.println(m31);
 		System.out.println(m32);
 		System.out.println(m33);
-		System.out.println("end");
+		System.out.println("");
     }
 }

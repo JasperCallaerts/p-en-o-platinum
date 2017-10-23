@@ -49,7 +49,7 @@ public class Window {
 		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); 
 
 		// Create the window
-		window = glfwCreateWindow(1280, 720, "Project X!", NULL, NULL);
+		window = glfwCreateWindow(1600, 900, "Project X!", NULL, NULL);
 		if ( window == NULL )
 			throw new RuntimeException("Failed to create the GLFW window");
 
