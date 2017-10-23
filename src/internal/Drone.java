@@ -464,22 +464,6 @@ public class Drone extends WorldObject {
 		this.setOrientation(oldOrientation.driftRejection(orientation, deltaTime*INSIGNIFICANCE));
 		this.setRotationVector(oldRotation.driftRejection(rotation, deltaTime*INSIGNIFICANCE));
 
-			this.setRotationVector(rotation);
-			this.setOrientation(orientation);
-		}
-
-		this.setVelocity(velocity);
-		this.setPosition(position);
-
-		//engage autopilot
-		AutopilotInputs input = updateAutopilotInput(deltaTime);// TODO input stream
-		AutoPilot AP = this.getAutopilot();
-		AutopilotOutputs APO = AP.simulationStarted(autopilotConfig, input);
-		this.setNextThrust(APO.getThrust());
-		this.setNextLeftWingInclination(APO.getLeftWingInclination());
-		this.setNextRightWingInclination(APO.getRightWingInclination());
-		this.setNextHorStabInclination(APO.getHorStabInclination());
-		this.setNextVerStabInclination(APO.getVerStabInclination());
 	}
 
 	/**
