@@ -74,92 +74,77 @@ public class Drone extends WorldObject {
 			
 			@Override
 			public float getWingX() {
-				// TODO Auto-generated method stub
-				return 0;
+				return Math.abs(getRightWing().getRelativePosition().getxValue());
 			}
 			
 			@Override
 			public float getWingMass() {
-				// TODO Auto-generated method stub
-				return 0;
+				return getRightWing().getMass() + getLeftWing().getMass();
 			}
 			
 			@Override
 			public float getWingLiftSlope() {
-				// TODO Auto-generated method stub
-				return 0;
+				return getRightWing().getLiftSlope()+ getLeftWing().getLiftSlope();
 			}
 			
 			@Override
 			public float getVerticalAngleOfView() {
-				// TODO Auto-generated method stub
-				return 0;
+				return Angleofview;
 			}
 			
 			@Override
 			public float getVerStabLiftSlope() {
-				// TODO Auto-generated method stub
-				return 0;
+				return getVerticalStab().getLiftSlope();
 			}
 			
 			@Override
 			public float getTailSize() {
-				// TODO Auto-generated method stub
-				return 0;
+				return Math.abs(getVerticalStab().getRelativePosition().getxValue());
 			}
 			
 			@Override
 			public float getTailMass() {
-				// TODO Auto-generated method stub
-				return 0;
+				return getVerticalStab().getMass() + getHorizontalStab().getMass();
 			}
 			
 			@Override
 			public int getNbRows() {
-				// TODO Auto-generated method stub
-				return 0;
+				return nbRows;
 			}
 			
 			@Override
 			public int getNbColumns() {
-				// TODO Auto-generated method stub
-				return 0;
+				return nbColumns;
 			}
 			
 			@Override
 			public float getMaxThrust() {
-				// TODO Auto-generated method stub
-				return 0;
+				return maxThrust;
 			}
 			
 			@Override
 			public float getMaxAOA() {
-				// TODO Auto-generated method stub
-				return 0;
+				return getRightWing().getMaximumAngleOfAttack();
 			}
 			
 			@Override
 			public float getHorizontalAngleOfView() {
-				// TODO Auto-generated method stub
-				return 0;
+				return Angleofview;
 			}
 			
 			@Override
 			public float getHorStabLiftSlope() {
-				// TODO Auto-generated method stub
-				return 0;
+				return getHorizontalStab().getLiftSlope();
 			}
 			
 			@Override
 			public float getGravity() {
-				// TODO Auto-generated method stub
-				return 0;
+				return getGravity();
 			}
 			
 			@Override
 			public float getEngineMass() {
-				// TODO Auto-generated method stub
-				return 0;
+				return engineMass;
 			}
 		};
 		// TODO config stream
@@ -468,10 +453,26 @@ public class Drone extends WorldObject {
 		Vector rotation = this.getNextRotationVector(deltaTime, angularAccelerationWorld);
 		Vector orientation = this.getNextOrientation(deltaTime, angularAccelerationWorld);
 
+		Vector oldOrientation = this.getOrientation();
+
+		if(!oldOrientation.rangeEquals(orientation, deltaTime*0.01f)){
+
+			this.setRotationVector(rotation);
+			this.setOrientation(orientation);
+		}
+
 		this.setVelocity(velocity);
 		this.setPosition(position);
-		this.setRotationVector(rotation);
-		this.setOrientation(orientation);
+		
+		//engage autopilot
+		AutopilotInputs input = updateAutopilotInput(deltaTime);// TODO input stream
+		AutoPilot AP = this.getAutopilot();
+		AutopilotOutputs APO = AP.simulationStarted(autopilotConfig, input);
+		this.setNextThrust(APO.getThrust());
+		this.setNextLeftWingInclination(APO.getLeftWingInclination());
+		this.setNextRightWingInclination(APO.getRightWingInclination());
+		this.setNextHorStabInclination(APO.getHorStabInclination());
+		this.setNextVerStabInclination(APO.getVerStabInclination());
 	}
 
 	/**
@@ -976,61 +977,65 @@ public class Drone extends WorldObject {
 	public AutoPilot getAutopilot() {
 		return this.AP;
 	}
-	
+
 	/**
 	 * @author Bart
 	 * @param duration
 	 * @return autopilotinput for autopilot
 	 */
 	private AutopilotInputs updateAutopilotInput(float duration){
-		
+
 		AutopilotInputs input;
 		return  input = new AutopilotInputs() {
-			
+
 			@Override
 			public float getZ() {
 				return getPosition().getElementAt(2);
 			}
-			
+
 			@Override
 			public float getY() {
 				return getPosition().getElementAt(1);
 			}
-			
+
 			@Override
 			public float getX() {
 				return getPosition().getElementAt(0);
 			}
-			
+
 			@Override
 			public float getRoll() {
 				return getOrientation().getElementAt(2);
 			}
-			
+
 			@Override
 			public float getPitch() {
 				return getOrientation().getElementAt(1);
 			}
-			
+
 			@Override
 			public byte[] getImage() {
 				// TODO Auto-generated method stub
 				return null;
 			}
-			
+
 			@Override
 			public float getHeading() {
 				return getOrientation().getElementAt(0);
 			}
-			
+
 			@Override
 			public float getElapsedTime() {
 				return duration;
 			}
 		};
-		
-	
+
+
 	}
+	private static final int nbRows = 200;
+	private static final int nbColumns = 200;
+	private static final float Angleofview = (float) (4*Math.PI / 6);
+	
 	
 
 	//Todo: comment for happiness of profs
@@ -1560,7 +1565,7 @@ public class Drone extends WorldObject {
 	private float getNextThrust() {
 		return this.nextThrust;
 	}
-	
+
 	private void setNextThrust(float thrust){
 		this.nextThrust = thrust;
 	}
@@ -1581,7 +1586,7 @@ public class Drone extends WorldObject {
 	private float getNextLeftWingInclination() {
 		return this.nextLeftWingInclination;
 	}
-	
+
 	private void setNextLeftWingInclination(float leftWingInclination){
 		this.nextLeftWingInclination = leftWingInclination;
 	}
@@ -1602,11 +1607,11 @@ public class Drone extends WorldObject {
 	private float getNextRightWingInclination() {
 		return this.nextRightWingInclination;
 	}
-	
+
 	private void setNextRightWingInclination(float rightWingInclination){
 		this.nextRightWingInclination = rightWingInclination;
 	}
-	
+
 
 	/**
 	 * A variable containing the current horizontal stabilizer inclination of the drone
@@ -1668,8 +1673,7 @@ public class Drone extends WorldObject {
 	 * Constant: the gravity zone constant for Belgium (simulation place)
 	 */
 	private static float GRAVITY = 9.81060f;
-	private static float Wingx = 1f;
-	private static float Tailsize = 1f;
+
 	
 	
 	private AutopilotConfig autopilotConfig;
@@ -1685,9 +1689,8 @@ public class Drone extends WorldObject {
 
 	        AutopilotConfig value = new AutopilotConfig() {
 	            public float getGravity() { return Drone.GRAVITY; }
-	            public float getWingX() { return Wingx; }
-	            public float getTailSize() { return Tailsize; }
-	            public float getEngineMass() { return getEngineMass(); }
+	            public float getWingX() { return  Math.abs(getRightWing().getRelativePosition().getxValue()); }
+	            public float getTailSize() { return Math.abs(getHorizontalStab().getRelativePosition().getzValue()); }	            public float getEngineMass() { return getEngineMass(); }
 	            public float getWingMass() { return getLeftWing().getMass(); }
 	            public float getTailMass() { return getLeftWing().getMass(); }
 	            public float getMaxThrust() { return getMaxThrust(); }
@@ -1697,8 +1700,8 @@ public class Drone extends WorldObject {
 	            public float getVerStabLiftSlope() { return getVerticalStab().getLiftSlope(); }
 	            public float getHorizontalAngleOfView() { return getHorizontalAngleOfView(); }
 	            public float getVerticalAngleOfView() { return getVerticalAngleOfView(); }
-	            public int getNbColumns() { return getNbColumns(); }
-	            public int getNbRows() { return getNbRows(); }
+	            public int getNbColumns() { return nbColumns; }
+	            public int getNbRows() { return nbRows; }
 	        };
 	        AutopilotConfigWriter.write(dataOutputStream, value);    	
 	    	dataOutputStream.close();

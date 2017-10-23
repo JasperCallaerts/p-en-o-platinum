@@ -45,6 +45,11 @@ public class AutoPilotCamera {
 
     }
 
+    /**
+     * Method to locate a red cube for the given image
+     * based on the HSV input values
+     * @return a vector containing the location of the cube
+     */
     public Vector locateRedCube(){
 
         List<Integer> xRedCoordinates = new ArrayList<Integer>();
@@ -52,23 +57,22 @@ public class AutoPilotCamera {
 
         findRedPixels(xRedCoordinates, yRedCoordinates);
 
-        int meanXCoordinate = getMean(xRedCoordinates);
-        int meanYCoordinate = getMean(yRedCoordinates);
+        int xMeanCoordinate = getMean(xRedCoordinates);
+        int yMeanCoordinate = getMean(yRedCoordinates);
 
+        float xOffset = this.getNbColumns()/2.0f;
+        float yOffset = this.getNbRows()/2.0f;
 
-        int nbPixels = xRedCoordinates.size();
-        float pixelsPerMeter= (float)Math.sqrt(nbPixels);
-
-        float rangeLineOfView = nbPixels/pixelsPerMeter;
-
-        float xCoordinate = meanXCoordinate/pixelsPerMeter - rangeLineOfView/2.0f;
-        float yCoordinate = meanYCoordinate/pixelsPerMeter - rangeLineOfView/2.0f;
-        return new Vector(xCoordinate, yCoordinate, 0);
+        return new Vector(xMeanCoordinate - xOffset, -yMeanCoordinate + yOffset, 0);
 
     }
 
 
-
+    /**
+     * Calculates the mean of the given list of integers
+     * @param integerList the list containing the integers
+     * @return the mean of the integer list
+     */
     public static int getMean(List<Integer> integerList){
         int sum = 0;
         int lengthList = integerList.size();
