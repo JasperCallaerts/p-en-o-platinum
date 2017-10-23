@@ -457,6 +457,7 @@ public class Drone extends WorldObject {
 	public void toNextState(float deltaTime){
 		if(!isValidTimeStep(deltaTime))
 			throw new IllegalArgumentException(INVALID_TIMESTEP);
+		float INSIGNIFICANCE = 0.01f;
 		//set the next state of the position & velocity of the center of mass of the drone
 		Vector acceleration = this.calcAcceleration();
 		Vector velocity = this.getNextVelocity(deltaTime, acceleration);
@@ -468,16 +469,16 @@ public class Drone extends WorldObject {
 		Vector rotation = this.getNextRotationVector(deltaTime, angularAccelerationWorld);
 		Vector orientation = this.getNextOrientation(deltaTime, angularAccelerationWorld);
 
+		Vector oldVelocity = this.getVelocity();
+		Vector oldPosition = this.getPosition();
 		Vector oldOrientation = this.getOrientation();
+		Vector oldRotation = this.getOrientation();
 
-		if(!oldOrientation.rangeEquals(orientation, deltaTime*0.01f)){
+		this.setVelocity(oldVelocity.driftRejection(velocity, deltaTime*INSIGNIFICANCE));
+		this.setPosition(oldPosition.driftRejection(position, deltaTime*INSIGNIFICANCE));
+		this.setOrientation(oldOrientation.driftRejection(orientation, deltaTime*INSIGNIFICANCE));
+		this.setRotationVector(oldRotation.driftRejection(rotation, deltaTime*INSIGNIFICANCE));
 
-			this.setRotationVector(rotation);
-			this.setOrientation(orientation);
-		}
-
-		this.setVelocity(velocity);
-		this.setPosition(position);
 	}
 
 	/**

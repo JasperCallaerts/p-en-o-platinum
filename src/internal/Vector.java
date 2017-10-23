@@ -265,6 +265,34 @@ public class Vector {
 	}
 
 	/**
+	 * Rejects drift on the new vector for the given vector
+	 * @param newVector contains the next value assigned to the vector variable
+	 * @param driftRange the range for the allowed drift
+	 * @return a vector containing the values of the newVector if and only if the new value
+	 * 		   has sufficient change to the previous one (the one which it is invoked against)
+	 * 		   see floatEquals for the details on the range.
+	 */
+	public Vector driftRejection(Vector newVector, float driftRange){
+		float thisXPart = this.getxValue();
+		float thisYPart = this.getyValue();
+		float thisZPart = this.getzValue();
+
+		float newXPart = newVector.getxValue();
+		float newYPart = newVector.getyValue();
+		float newZPart = newVector.getzValue();
+
+
+		if(floatEquals(newXPart, thisXPart, driftRange))
+			 newXPart = thisXPart;
+		if(floatEquals(newYPart, thisYPart, driftRange))
+			newYPart = thisYPart;
+		if(floatEquals(newZPart, thisZPart, driftRange))
+			newZPart = thisZPart;
+
+		return new Vector(newXPart, newYPart, newZPart);
+	}
+
+	/**
 	 * calculates a orthogonal Projection of the given vector against the normal vector
 	 */
 	public Vector orthogonalProjection(Vector normalVector){
