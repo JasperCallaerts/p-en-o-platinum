@@ -25,10 +25,6 @@ package math;
 
 import java.nio.FloatBuffer;
 
-import math.Matrix4f;
-import math.Vector3f;
-import math.Vector4f;
-
 /**
  * This class represents a 4x4-Matrix. GLSL equivalent to mat4.
  *
@@ -365,8 +361,8 @@ public class Matrix4f {
         perspective.m00 = g / aspect;
         perspective.m11 = g;
         perspective.m22 = (far + near) / (near - far);
-        perspective.m23 = -1f;
-        perspective.m32 = (2f * far * near) / (near - far);
+        perspective.m32 = -1f;
+        perspective.m23 = (2f * far * near) / (near - far);
         perspective.m33 = 0f;
 
         return perspective;
@@ -448,18 +444,28 @@ public class Matrix4f {
         return scaling;
     }
 
-	public static Matrix4f viewMatrix(Vector3f right, Vector3f up, Vector3f look, Vector3f position) {
-		Vector4f col1 = new Vector4f(right.x, right.y, right.z, -position.dot(right));
-    	Vector4f col2 = new Vector4f(up.x, up.y, up.z, -position.dot(up));
-    	Vector4f col3 = new Vector4f(look.x, look.y, look.z, -position.dot(look));
-    	Vector4f col4 = new Vector4f(0f, 0f, 0f, 1f);
+    /**
+     * Creates a view matrix
+     * 
+     * @param right
+     * @param up
+     * @param look
+     * @param position
+     * @return view
+     */
+    public static Matrix4f viewMatrix(Vector3f right, Vector3f up, Vector3f look, Vector3f position) {
+    	
+    	Vector4f col1 = new Vector4f(right.x, right.y, right.z, 0);
+    	Vector4f col2 = new Vector4f(up.x, up.y, up.z, 0);
+    	Vector4f col3 = new Vector4f(look.x, look.y, look.z, 0);
+    	Vector4f col4 = new Vector4f(-position.x, -position.y, -position.z, 1f);
     	
     	Matrix4f view = new Matrix4f(col1, col2, col3, col4);
     	return view;
-	}
-
-	public void print() {
-		System.out.println(m00);
+    }
+    
+    public void print() {
+    	System.out.println(m00);
     	System.out.println(m01);
     	System.out.println(m02);
     	System.out.println(m03);
@@ -476,6 +482,5 @@ public class Matrix4f {
 		System.out.println(m32);
 		System.out.println(m33);
 		System.out.println("end");
-	}
-
+    }
 }
