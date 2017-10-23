@@ -47,7 +47,7 @@ public class Pathfinding {
 	 * @throws IOException
 	 * 			if the dimensions of the position are not equal to 3
 	 */
-	public static List<int[]> searchPath(int[] start, int[] end) throws IOException{
+	public List<int[]> searchPath(int[] start, int[] end) throws IOException{
 		
 		
 		ArrayList<N> Checked = new ArrayList<N>();

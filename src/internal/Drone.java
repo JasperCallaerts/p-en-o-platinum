@@ -14,7 +14,7 @@ import Autopilot.AutopilotOutputs;
 
 /**
  * 
- * @author Anthony Rathé & MartijnSauwens
+ * @author Anthony Rathé & MartijnSauwens & Bart
  * Immutable variables: maxThrust, engineMass, enginePosition, droneMass, leftWing, rightWing,
  * 						horizontalStab, verticalStab, inertiaTensor
  * 	note: Orientation = (heading, pitch, roll) (in that order)

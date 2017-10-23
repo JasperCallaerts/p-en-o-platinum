@@ -7,7 +7,7 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/LWJGL3"/>
 	<classpathentry kind="lib" path="/Users/anthonyrathe/repos/asteroids/OGP1617-Asteroids/lib/AnnotationsDoclets.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Jonathan/git/p-en-o-platinum/junit-4.12.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Jonathan/git/p-en-o-platinum/hamcrest-core-1.3.jar"/>
+	<classpathentry kind="lib" path="/Users/anthonyrathe/eclipse/libaries/junit-4.12.jar"/>
+	<classpathentry kind="lib" path="/Users/anthonyrathe/eclipse/libaries/hamcrest-core-1.3.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
