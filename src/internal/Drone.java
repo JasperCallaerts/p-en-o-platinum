@@ -465,7 +465,6 @@ public class Drone extends WorldObject {
 		this.setOrientation(oldOrientation.driftRejection(orientation, deltaTime*INSIGNIFICANCE));
 		this.setRotationVector(oldRotation.driftRejection(rotation, deltaTime*INSIGNIFICANCE));
 
-
 		this.setVelocity(velocity);
 		this.setPosition(position);
 

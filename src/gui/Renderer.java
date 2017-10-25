@@ -6,6 +6,7 @@ import static org.lwjgl.glfw.GLFW.GLFW_KEY_LEFT_ALT;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_RIGHT;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_SPACE;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_UP;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_D;
 import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 import static org.lwjgl.glfw.GLFW.glfwGetKey;
 import static org.lwjgl.opengl.GL11.GL_INVALID_ENUM;
@@ -25,96 +26,41 @@ import math.Matrix4f;
 import math.Vector3f;
 
 public class Renderer {
-
-	private static final CharSequence vertexSrc = "#version 330\n"
-
-        		+ "layout (location=0) in vec3 position;\n"
-        		+ "layout (location=1) in vec3 inColor;\n"
-
-        		+ "out vec3 Color;\n"
-
-        		+ "uniform mat4 modelMatrix;\n"
-        		+ "uniform mat4 viewMatrix;\n"
-        		+ "uniform mat4 projectionMatrix;\n"
-
-        		+ "void main()\n"
-        		+ "{\n"
-        		+ "    gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(position, 1.0);\n"
-        		+ "    Color = inColor;\n"
-        		+ "}\n";
-	private static final CharSequence fragmentSrc = "#version 330 core\n"
-
-        		+ "in vec3 Color;\n"
-
-    	        + "out vec4 exColor;\n"
-
-    	        + "void main()\n"
-    	        + "{\n"
-    	        + "    exColor = vec4(Color, 1.0f);\n"
-    	        + "}\n";
 	
 	private ShaderProgram program;
 	
 	private Matrix4f projectionMatrix = new Matrix4f();
     private Matrix4f viewMatrix = new Matrix4f();
-    private Matrix4f modelMatrix = new Matrix4f();
     
-    private Vector3f position = new Vector3f(0.0f, 0.0f, 0.0f);
+    private Vector3f position = new Vector3f(0, 0, 0);
 	private long window;
-	private Mesh mesh;
+	private Mouse mouse;
+	private Cube cube;
+
+	private float yaw = 0;
+	private float pitch = 0;
     private static final float SPEED = 1f;
+    private static final float TURN_SPEED = 0.1f;
     
-    private static final float FOV = (float) Math.toRadians(120.0f);
+    private static final Vector3f ABSOLUTE_RIGHT = new Vector3f(1.0f, 0.0f, 0.0f);
+    private static final Vector3f ABSOLUTE_UP = new Vector3f(0.0f, 1.0f, 0.0f);
+    private static final Vector3f ABSOLUTE_FRONT = new Vector3f(0.0f, 0.0f, -1.0f);
+    
+//	private Vector3f look = ABSOLUTE_FRONT;
+//	private Vector3f right = ABSOLUTE_RIGHT;
+//	private Vector3f up = ABSOLUTE_UP;
+//    
+    private static final float FOV = (float) Math.toRadians(60.0f);
 	private static final float NEAR = 0.01f;
 	private static final float FAR = 1000.f;
 	
-	static float[] positions = new float[]{
-			// VO
-			-0.5f,  0.5f,  0.5f,
-			// V1
-			-0.5f, -0.5f,  0.5f,
-			// V2
-			0.5f, -0.5f,  0.5f,
-			// V3
-			0.5f,  0.5f,  0.5f,
-			// V4
-			-0.5f,  0.5f, -0.5f,
-			// V5
-			0.5f,  0.5f, -0.5f,
-			// V6
-			-0.5f, -0.5f, -0.5f,
-			// V7
-			0.5f, -0.5f, -0.5f
-	};
-	static float[] colours = new float[]{
-			0.5f, 0.0f, 0.0f,
-			0.5f, 0.0f, 0.0f,
-			0.5f, 0.0f, 0.0f,
-			0.5f, 0.0f, 0.0f,
-			0.5f, 0.0f, 0.0f,
-			0.5f, 0.0f, 0.0f,
-			0.5f, 0.0f, 0.0f,
-			0.5f, 0.0f, 0.0f
-	};
-	static int[] indices = new int[]{
-			// Front face
-			0, 1, 3, 3, 1, 2,
-			// Top Face
-			4, 0, 3, 5, 4, 3,
-			// Right face
-			3, 2, 7, 5, 3, 7,
-			// Left face
-			6, 1, 0, 6, 0, 4,
-			// Bottom face
-			2, 1, 6, 2, 6, 7,
-			// Back face
-			7, 6, 4, 7, 4, 5,
-	};
+	private boolean cameraIsOnDrone = true;
 
 	public Renderer(long window) {
 		this.window = window;
-		mesh = new Mesh();
-		program = new ShaderProgram(vertexSrc, fragmentSrc);
+		program = new ShaderProgram(false, "resources/default.vert", "resources/default.frag");
+		cube = new Cube(program);
+		mouse = new Mouse(window);
 	}
 
 	/**
@@ -142,7 +88,7 @@ public class Renderer {
 		}
         projectionMatrix = Matrix4f.perspective(FOV, ratio, NEAR, FAR);
         
-        mesh.init(positions, colours, indices);
+        cube.init();
         
         checkError();
     }
@@ -151,47 +97,57 @@ public class Renderer {
      * Releases in use OpenGL resources.
      */
     public void release() {
-    	mesh.delete();
+    	cube.delete();
     	program.delete();
     }
 
 	public void update(double delta) {
+
+		boolean isMouseMoved = mouse.update(window);
+		yaw = yaw + mouse.dx() * TURN_SPEED * (float)delta;
+		pitch = pitch - mouse.dy() * TURN_SPEED * (float)delta;
+
+		Vector3f right = new Vector3f((float) Math.cos(yaw), 0, (float) -Math.sin(yaw));
+		Vector3f up = new Vector3f((float) (Math.sin(pitch)*Math.sin(yaw)), (float) Math.cos(pitch), (float) (Math.sin(pitch)*Math.cos(yaw)));
+		Vector3f look = up.cross(right);
+		
 		Vector3f vec = new Vector3f(0.0f, 0.0f, 0.0f);
         if (isKeyPressed(GLFW_KEY_UP)) {
-            vec = new Vector3f(0.0f, 0.0f, -SPEED * (float)delta);
-        } else if (isKeyPressed(GLFW_KEY_DOWN)) {
-        	vec = new Vector3f(0.0f, 0.0f, SPEED* (float)delta);
-        } else if (isKeyPressed(GLFW_KEY_LEFT)) {
-        	vec = new Vector3f(-SPEED* (float)delta, 0.0f, 0.0f);
-        } else if (isKeyPressed(GLFW_KEY_RIGHT)) {
-        	vec = new Vector3f(SPEED* (float)delta, 0.0f, 0.0f);
-        } else if (isKeyPressed(GLFW_KEY_SPACE)) {
-        	vec = new Vector3f(0.0f, SPEED* (float)delta, 0.0f);
-        } else if (isKeyPressed(GLFW_KEY_LEFT_ALT)) {
-        	vec = new Vector3f(0.0f, -SPEED* (float)delta, 0.0f);
+            vec = vec.add(look);
+        } 
+        if (isKeyPressed(GLFW_KEY_DOWN)) {
+        	vec = vec.add(look.negate());
         }
-        position = position.add(vec);
-        Vector3f right = new Vector3f(1.0f, 0.0f, 0.0f);
-    	Vector3f up = new Vector3f(0.0f, 1.0f, 0.0f);
-    	Vector3f dir = new Vector3f(0.0f, 0.0f, -1.0f);
-    	viewMatrix = Matrix4f.viewMatrix(right, up, dir, position);
-    	
-//    	math.Vector4f teeest = Matrix4f.perspective(FOV, 16.0f/9.0f, NEAR, FAR).multiply(Matrix4f.viewMatrix(right, up, dir, position).multiply(new math.Vector4f(0.5f, 0.5f, 0.5f, 1.0f)));  				
-//		System.out.println(teeest.x/teeest.w);
-//		System.out.println(teeest.y/teeest.w);
-//		System.out.println(teeest.z/teeest.w);
-//		System.out.println(teeest.w);
-//		System.out.println("");
-      
-		System.out.println(position.x);
-		System.out.println(position.y);
-		System.out.println(position.z);
-		System.out.println("");
-     
+        if (isKeyPressed(GLFW_KEY_LEFT)) {
+        	vec = vec.add(right.negate());
+        }
+        if (isKeyPressed(GLFW_KEY_RIGHT)) {
+        	vec = vec.add(right);
+        }
+        if (isKeyPressed(GLFW_KEY_SPACE)) {
+        	vec = vec.add(up);
+        } 
+        if (isKeyPressed(GLFW_KEY_LEFT_ALT)) {
+        	vec = vec.add(up.negate());
+        }
+        
+        position = position.add(vec.scale(SPEED * (float)delta));
+        viewMatrix = Matrix4f.viewMatrix(right, up, look, position);
+        
+        cube.update();
 	}
 	
 	private boolean isKeyPressed(int keyCode) {
-		return glfwGetKey(window, keyCode) == GLFW_PRESS;
+		if (glfwGetKey(window, keyCode) == GLFW_PRESS) {
+			if (keyCode == GLFW_KEY_D) {
+				cameraIsOnDrone = true;
+			} else {
+				cameraIsOnDrone = false;
+			}
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	/**
@@ -200,12 +156,10 @@ public class Renderer {
     public void render() {
 
         program.bind();
-        
         program.setUniform("projectionMatrix", projectionMatrix);
         program.setUniform("viewMatrix", viewMatrix);
-        program.setUniform("modelMatrix", modelMatrix);
         
-        mesh.render();
+        cube.render();
         
         program.unbind();
         
