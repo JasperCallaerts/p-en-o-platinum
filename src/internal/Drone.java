@@ -437,9 +437,10 @@ public class Drone extends WorldObject {
 	 * advances the drone for a given time step, it changes the position, velocity, orientation and rotation
 	 * variables
 	 * @param deltaTime the time step
+	 * @throws IOException 
 	 */
 	@Override
-	public void toNextState(float deltaTime){
+	public void toNextState(float deltaTime) throws IOException{
 		if(!isValidTimeStep(deltaTime))
 			throw new IllegalArgumentException(INVALID_TIMESTEP);
 		float INSIGNIFICANCE = 0.01f;
@@ -464,9 +465,6 @@ public class Drone extends WorldObject {
 		this.setOrientation(oldOrientation.driftRejection(orientation, deltaTime*INSIGNIFICANCE));
 		this.setRotationVector(oldRotation.driftRejection(rotation, deltaTime*INSIGNIFICANCE));
 
-			this.setRotationVector(rotation);
-			this.setOrientation(orientation);
-		}
 
 		this.setVelocity(velocity);
 		this.setPosition(position);
