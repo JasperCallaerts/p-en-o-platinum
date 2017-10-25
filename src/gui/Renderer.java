@@ -6,6 +6,7 @@ import static org.lwjgl.glfw.GLFW.GLFW_KEY_LEFT_ALT;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_RIGHT;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_SPACE;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_UP;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_D;
 import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 import static org.lwjgl.glfw.GLFW.glfwGetKey;
 import static org.lwjgl.opengl.GL11.GL_INVALID_ENUM;
@@ -45,9 +46,15 @@ public class Renderer {
     private static final Vector3f ABSOLUTE_UP = new Vector3f(0.0f, 1.0f, 0.0f);
     private static final Vector3f ABSOLUTE_FRONT = new Vector3f(0.0f, 0.0f, -1.0f);
     
+//	private Vector3f look = ABSOLUTE_FRONT;
+//	private Vector3f right = ABSOLUTE_RIGHT;
+//	private Vector3f up = ABSOLUTE_UP;
+//    
     private static final float FOV = (float) Math.toRadians(60.0f);
 	private static final float NEAR = 0.01f;
 	private static final float FAR = 1000.f;
+	
+	private boolean cameraIsOnDrone = true;
 
 	public Renderer(long window) {
 		this.window = window;
@@ -95,39 +102,52 @@ public class Renderer {
     }
 
 	public void update(double delta) {
-		
-		mouse.update(window);
-		yaw = yaw - mouse.dx() * TURN_SPEED * (float)delta;
+
+		boolean isMouseMoved = mouse.update(window);
+		yaw = yaw + mouse.dx() * TURN_SPEED * (float)delta;
 		pitch = pitch - mouse.dy() * TURN_SPEED * (float)delta;
-		
-		Vector3f temp_look = ABSOLUTE_FRONT.scale((float) Math.cos(yaw)).add(ABSOLUTE_RIGHT.scale((float) Math.sin(yaw)));
-		Vector3f look = temp_look.scale((float) Math.cos(pitch)).add(ABSOLUTE_UP.scale((float) Math.sin(pitch)));
-		Vector3f right = look.cross(ABSOLUTE_UP).normalize();
-    	Vector3f up = right.cross(look).normalize();
-    	viewMatrix = Matrix4f.viewMatrix(right, up, look, position);
+
+		Vector3f right = new Vector3f((float) Math.cos(yaw), 0, (float) -Math.sin(yaw));
+		Vector3f up = new Vector3f((float) (Math.sin(pitch)*Math.sin(yaw)), (float) Math.cos(pitch), (float) (Math.sin(pitch)*Math.cos(yaw)));
+		Vector3f look = up.cross(right);
 		
 		Vector3f vec = new Vector3f(0.0f, 0.0f, 0.0f);
         if (isKeyPressed(GLFW_KEY_UP)) {
-            vec = look;
-        } else if (isKeyPressed(GLFW_KEY_DOWN)) {
-        	vec = look.negate();
-        } else if (isKeyPressed(GLFW_KEY_LEFT)) {
-        	vec = right.negate();
-        } else if (isKeyPressed(GLFW_KEY_RIGHT)) {
-        	vec = right;
-        } else if (isKeyPressed(GLFW_KEY_SPACE)) {
-        	vec = up;
-        } else if (isKeyPressed(GLFW_KEY_LEFT_ALT)) {
-        	vec = up.negate();
+            vec = vec.add(look);
+        } 
+        if (isKeyPressed(GLFW_KEY_DOWN)) {
+        	vec = vec.add(look.negate());
+        }
+        if (isKeyPressed(GLFW_KEY_LEFT)) {
+        	vec = vec.add(right.negate());
+        }
+        if (isKeyPressed(GLFW_KEY_RIGHT)) {
+        	vec = vec.add(right);
+        }
+        if (isKeyPressed(GLFW_KEY_SPACE)) {
+        	vec = vec.add(up);
+        } 
+        if (isKeyPressed(GLFW_KEY_LEFT_ALT)) {
+        	vec = vec.add(up.negate());
         }
         
         position = position.add(vec.scale(SPEED * (float)delta));
+        viewMatrix = Matrix4f.viewMatrix(right, up, look, position);
         
         cube.update();
 	}
 	
 	private boolean isKeyPressed(int keyCode) {
-		return glfwGetKey(window, keyCode) == GLFW_PRESS;
+		if (glfwGetKey(window, keyCode) == GLFW_PRESS) {
+			if (keyCode == GLFW_KEY_D) {
+				cameraIsOnDrone = true;
+			} else {
+				cameraIsOnDrone = false;
+			}
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	/**
