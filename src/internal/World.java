@@ -124,8 +124,9 @@ public class World {
 	 * @param timeInterval the time interval
 	 * @throws IllegalArgumentException thrown if the provided time interval is invalid
 	 * @author Martijn Sauwens
+	 * @throws IOException 
 	 */
-	public void advanceWorldState(float timeInterval) throws IllegalArgumentException{
+	public void advanceWorldState(float timeInterval) throws IllegalArgumentException, IOException{
 
 		if(!isValidTimeInterval(timeInterval))
 			throw new IllegalArgumentException(INVALID_TIME_INTERVAL);

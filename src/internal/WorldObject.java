@@ -13,8 +13,9 @@ public abstract class WorldObject {
 	/**
 	 * Advances the world object for a given delta time
 	 * @param deltaTime the size of the time step
+	 * @throws IOException 
 	 */
-	public abstract void toNextState(float deltaTime);
+	public abstract void toNextState(float deltaTime) throws IOException;
 
 	/**
 	 * Checks if the time difference is valid

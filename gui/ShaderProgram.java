@@ -20,11 +20,6 @@ import static org.lwjgl.opengl.GL20.glShaderSource;
 import static org.lwjgl.opengl.GL20.glUniformMatrix4fv;
 import static org.lwjgl.opengl.GL20.glUseProgram;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.FloatBuffer;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,25 +30,20 @@ import math.Matrix4f;
 
 public class ShaderProgram {
 	private int program;
-	private CharSequence vertexShader;
-	private CharSequence fragmentShader;
+	private CharSequence vertexSrc;
+	private CharSequence fragmentSrc;
 	private final Map<String, Integer> uniforms;
 	
-	public ShaderProgram(boolean compiled, CharSequence vertexsrc, CharSequence fragmentsrc) {
-		if (compiled) {
-			this.vertexShader = vertexsrc;
-			this.fragmentShader = fragmentsrc;
-		} else {
-			this.vertexShader = loadShader((String) vertexsrc);
-			this.fragmentShader = loadShader((String) fragmentsrc);
-		}
+	public ShaderProgram(CharSequence vertexsrc, CharSequence fragmentsrc) {
+		this.vertexSrc = vertexsrc;
+		this.fragmentSrc = fragmentsrc;
 		uniforms = new HashMap<>();
 	}
 
 	public void init() {
 		program = glCreateProgram();
         int vertexId = glCreateShader(GL_VERTEX_SHADER);
-        glShaderSource(vertexId, vertexShader);
+        glShaderSource(vertexId, vertexSrc);
         glCompileShader(vertexId);
         if(glGetShaderi(vertexId, GL_COMPILE_STATUS) != GL_TRUE) {
             System.out.println(glGetShaderInfoLog(vertexId, Integer.MAX_VALUE));
@@ -61,7 +51,7 @@ public class ShaderProgram {
         }
         
         int fragmentId = glCreateShader(GL_FRAGMENT_SHADER);
-        glShaderSource(fragmentId, fragmentShader);
+        glShaderSource(fragmentId, fragmentSrc);
         glCompileShader(fragmentId);
         if(glGetShaderi(fragmentId, GL_COMPILE_STATUS) != GL_TRUE) {
             System.out.println(glGetShaderInfoLog(fragmentId, Integer.MAX_VALUE));
@@ -103,34 +93,6 @@ public class ShaderProgram {
     }
 
 	public void delete() {
-		if (program != 0) {
-            glDeleteProgram(program);
-        }
+		glDeleteProgram(program);
 	}
-	
-	/**
-     * Loads a shader from a file.
-     *
-     * @param type Type of the shader
-     * @param path File path of the shader
-     *
-     * @return Compiled Shader from specified file
-     */
-    public static CharSequence loadShader(String path) {
-        StringBuilder builder = new StringBuilder();
-
-        try (InputStream in = new FileInputStream(path);
-             BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                builder.append(line).append("\n");
-            }
-        } catch (IOException ex) {
-            throw new RuntimeException("Failed to load a shader file!"
-                                       + System.lineSeparator() + ex.getMessage());
-        }
-        CharSequence source = builder.toString();
-
-        return source;
-    }
 }
