@@ -6,8 +6,8 @@ package internal;
 
 public class HorizontalWing extends Wing {
 
-    public HorizontalWing(Vector relativePosition, float liftSlope, float mass, float maximumInclination, float wingInclination){
-        super(relativePosition, liftSlope,  mass, maximumInclination, wingInclination);
+    public HorizontalWing(Vector relativePosition, float liftSlope, float mass, float maximumAngleOfAttack, float wingInclination){
+        super(relativePosition, liftSlope,  mass, maximumAngleOfAttack, wingInclination);
     }
 /*
     @Override

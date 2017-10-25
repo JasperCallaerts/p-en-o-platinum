@@ -280,6 +280,7 @@ public class Drone extends WorldObject {
 		return sumHeadingPitch.vectorSum(rollRotation);
 	}
 
+
 	/**
 	 * Calculates the heading rotation vector component for a given rotation vector
 	 * the heading vector stands always with the y-axis in the world axis system
@@ -300,6 +301,7 @@ public class Drone extends WorldObject {
 
 		return new Vector(result, 0.0f, 0.0f);
 	}
+
 
 	/**
 	 * Calculates the pitch rotation vector component for a given rotation vector
@@ -341,6 +343,7 @@ public class Drone extends WorldObject {
 
 	}
 
+
 	/**
 	 * Calculates the angular acceleration in the heading, pitch, roll system for a given
 	 * angular acceleration vector
@@ -381,7 +384,6 @@ public class Drone extends WorldObject {
 
 		return part1 + part2 + part3 + part4 + part5 + part6;
 	}
-
 	/**
 	 * Calculates the pitch angular acceleration component for the given angular acceleration vector
 	 * the pitch acceleration vector stands parallel to the x-axis after the heading transformation
@@ -396,11 +398,9 @@ public class Drone extends WorldObject {
 		Vector AAVector = angularAccelerationVector;
 
 		float headingRotation = this.getHeadingRotationVector(rotationVector).getxValue();
-
 		//split up in parts for convenience
 		float part1 = (float) (AAVector.getxValue()*Math.cos(heading) - rotationVector.getxValue()*headingRotation*Math.sin(heading));
 		float part2 = (float) (- AAVector.getzValue()*Math.sin(heading) - rotationVector.getzValue()*headingRotation*Math.cos(heading));
-
 		return part1 + part2;
 	}
 
@@ -423,7 +423,7 @@ public class Drone extends WorldObject {
 
 		//split up for convenience
 		float part1 = (float) (AAVector.getzValue()*Math.cos(heading)/Math.cos(pitch) -
-                        rotationVector.getzValue()*headingRotation*Math.sin(heading)/Math.cos(pitch));
+				rotationVector.getzValue()*headingRotation*Math.sin(heading)/Math.cos(pitch));
 		float part2 = (float) (rotationVector.getzValue()*pitchRotation*Math.sin(heading)*Math.sin(pitch)/(Math.cos(pitch)*Math.cos(pitch)));
 		float part3 = (float) (AAVector.getxValue()*Math.sin(heading)/Math.cos(pitch) + rotationVector.getxValue()
 				*headingRotation*Math.cos(heading)/Math.cos(pitch));
@@ -513,6 +513,7 @@ public class Drone extends WorldObject {
 
 	}
 
+
 	/**
 	 * Calculates the next position under the assumption that the acceleration remains constant
 	 * @param deltaTime the time between the steps
@@ -576,6 +577,7 @@ public class Drone extends WorldObject {
 		}
 
 		Vector totalLift = Vector.sumVectorArray(liftVectors);
+
 		// transform the thrust vector of the drone to the world axis
 		Vector thrust = this.droneOnWorld(this.getThrustVector());
 
@@ -714,7 +716,7 @@ public class Drone extends WorldObject {
 	 * @author Martijn Sauwens
 	 */
 	public Vector getThrustVector() {
-		return new Vector(-this.getThrust(), 0, 0);
+		return new Vector(0, 0, -this.getThrust());
 	}
 
 	/**

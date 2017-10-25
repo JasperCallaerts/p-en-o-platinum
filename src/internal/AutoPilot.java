@@ -374,7 +374,7 @@ public class AutoPilot implements Autopilot{
 	 */
 	public void update(AutopilotInputs inputs) throws IOException{
 
-		
+		APCamera.loadNextImage(inputs.getImage());
 		float xPosition = APCamera.getDestination().getxValue();
 		float yPosition = APCamera.getDestination().getyValue();
 		

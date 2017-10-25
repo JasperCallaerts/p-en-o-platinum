@@ -5,8 +5,8 @@ package internal;
  */
 public class VerticalWing extends Wing {
 
-    public VerticalWing(Vector relativePosition, float liftSlope, float mass, float maximumWingInclination, float wingInclination){
-        super(relativePosition, liftSlope, mass, maximumWingInclination, wingInclination);
+    public VerticalWing(Vector relativePosition, float liftSlope, float mass, float maximumAngleOfAttack, float wingInclination){
+        super(relativePosition, liftSlope, mass, maximumAngleOfAttack, wingInclination);
 
     }
 

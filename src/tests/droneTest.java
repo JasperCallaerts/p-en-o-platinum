@@ -70,14 +70,7 @@ public class droneTest {
 	}
 	
 
-	@Test 
-	public final void getEulerRotationTest(){
-		Vector v = drone1.getEulerRotations(orientation);
-		assertEquals(v.getyValue(), -PI, delta);
-		assertEquals(v.getxValue(), 0, delta);
-		assertEquals(v.getzValue(), PI/2, delta);
-	}
-	
+
 	
 	
 	@Test

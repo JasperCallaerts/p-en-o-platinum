@@ -75,10 +75,9 @@ public abstract class Wing {
         // calculate s^2
         float airspeedSquared = airspeed.scalarProduct(airspeed);
 
-        float scalarPart = airspeedSquared*angleOfAttack*liftSlope;
+        float scalarPart =  airspeedSquared*angleOfAttack*liftSlope;
 
-        Vector lift = normal.scalarMult(scalarPart);
-
+        Vector lift = normal.scalarMult(-scalarPart);
         return lift;
     }
 
@@ -116,20 +115,20 @@ public abstract class Wing {
     }
 
     /**
-	 * Calculates the normal vector of the wing in the Drone's coordinate system
-	 */
-	public abstract Vector getNormal();
+     * Calculates the normal vector of the wing in the Drone's coordinate system
+     */
+    public abstract Vector getNormal();
 
-	/**
-	 * returns the attackVector
-	 */
-	public abstract Vector getAttackVector();
+    /**
+     * returns the attackVector
+     */
+    public abstract Vector getAttackVector();
 
     /**
      * projects the vector onto the axis of the drone
      * @return
      */
-	public abstract Vector projectOnDrone(Vector vector);
+    public abstract Vector projectOnDrone(Vector vector);
 
     /**
      * project the given vector on the world axis
@@ -165,7 +164,6 @@ public abstract class Wing {
 
         //set the angle of attack anyway, can be used for diagnostics
         this.angleOfAttack = (float)Math.atan2(numerator, denominator);
-
         if(!canHaveAsAngleOfAttack(this.getAngleOfAttack())){
             throw new AngleOfAttackException(INVALID_AOA, this);
         }
@@ -179,7 +177,7 @@ public abstract class Wing {
      * note: maybe the lower bound needs to be changed - PI/2.0 is just a guess
      */
     public boolean canHaveAsAngleOfAttack(float angleOfAttack){
-        return angleOfAttack >= -PI/2.0 && angleOfAttack <= this.getMaximumAngleOfAttack();
+        return true; //angleOfAttack >= -PI/2.0 && angleOfAttack <= this.getMaximumAngleOfAttack();
     }
 
     /**
@@ -210,9 +208,8 @@ public abstract class Wing {
      * @param inclination the inclination to be tested
      */
     public boolean canHaveAsWingInclintion(float inclination){
-      return true;
-      //return inclination >= 0 && inclination <= this.getMaximumInclination();
 
+        return true;
     }
 
     /**
