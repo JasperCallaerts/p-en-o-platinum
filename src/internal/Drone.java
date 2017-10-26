@@ -14,7 +14,7 @@ import Autopilot.AutopilotOutputs;
 
 /**
  * 
- * @author Anthony Rathé & MartijnSauwens & Bart
+ * @author Anthony RathÃ© & MartijnSauwens & Bart
  * Immutable variables: maxThrust, engineMass, enginePosition, droneMass, leftWing, rightWing,
  * 						horizontalStab, verticalStab, inertiaTensor
  * 	note: Orientation = (heading, pitch, roll) (in that order)
@@ -444,6 +444,24 @@ public class Drone extends WorldObject {
 		if(!isValidTimeStep(deltaTime))
 			throw new IllegalArgumentException(INVALID_TIMESTEP);
 		float INSIGNIFICANCE = 0.01f;
+		
+		//engage autopilot
+		AutopilotInputs input = updateAutopilotInput(deltaTime);// TODO input stream
+		AutoPilot AP = this.getAutopilot();
+		if(firstRun){
+			AutopilotOutputs APO = AP.simulationStarted(autopilotConfig, input);
+			firstRun = false;
+		}
+		else{
+			AutopilotOutputs APO = AP.timePassed(input);
+		}
+		AutopilotOutputs APO = AP.simulationStarted(autopilotConfig, input);
+		setThrust(APO.getThrust());
+		setLeftWingInclination(APO.getLeftWingInclination());
+		setRightWingInclination(APO.getRightWingInclination());
+		setHorStabInclination(APO.getHorStabInclination());
+		setVerStabInclination(APO.getVerStabInclination());
+		
 		//set the next state of the position & velocity of the center of mass of the drone
 		Vector acceleration = this.calcAcceleration();
 		Vector velocity = this.getNextVelocity(deltaTime, acceleration);
@@ -468,16 +486,9 @@ public class Drone extends WorldObject {
 		this.setVelocity(velocity);
 		this.setPosition(position);
 
-		//engage autopilot
-		AutopilotInputs input = updateAutopilotInput(deltaTime);// TODO input stream
-		AutoPilot AP = this.getAutopilot();
-		AutopilotOutputs APO = AP.simulationStarted(autopilotConfig, input);
-		this.setNextThrust(APO.getThrust());
-		this.setNextLeftWingInclination(APO.getLeftWingInclination());
-		this.setNextRightWingInclination(APO.getRightWingInclination());
-		this.setNextHorStabInclination(APO.getHorStabInclination());
-		this.setNextVerStabInclination(APO.getVerStabInclination());
+		
 	}
+	private boolean firstRun = true;
 
 	/**
 	 * calculates the next orientation based on the current orientation and the angular acceleration
@@ -929,10 +940,10 @@ public class Drone extends WorldObject {
 				AutopilotInputs input = updateAutopilotInput(duration);// TODO input stream
 				AutoPilot AP = this.getAutopilot();
 				AutopilotOutputs APO = AP.simulationStarted(autopilotConfig, input);
-				this.setNextThrust(APO.getThrust());
-				this.setNextLeftWingInclination(APO.getLeftWingInclination());
-				this.setNextRightWingInclination(APO.getRightWingInclination());
-				this.setNextHorStabInclination(APO.getHorStabInclination());
+				this.setThrust(APO.getThrust());
+				this.setLeftWingInclination(APO.getLeftWingInclination());
+				this.setRightWingInclination(APO.getRightWingInclination());
+				this.setHorStabInclination(APO.getHorStabInclination());
 				this.setNextVerStabInclination(APO.getVerStabInclination());
 				if (duration >= AP_CALC_TIME) {
 					duration = duration - AP_CALC_TIME;
