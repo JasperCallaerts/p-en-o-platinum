@@ -1041,8 +1041,7 @@ public class Drone implements WorldObject {
 
 			@Override
 			public byte[] getImage() {
-				// TODO Auto-generated method stub
-				return null;
+				return getAPImage();
 			}
 
 			@Override
@@ -1063,6 +1062,13 @@ public class Drone implements WorldObject {
 	private static final float Angleofview = (float) (4*Math.PI / 6);
 
 
+	private byte[] APImage;
+	public void setAPImage(byte[] image){
+		APImage = image;
+	}
+	private byte[] getAPImage(){
+		return APImage;
+	}
 
 	//Todo: comment for happiness of profs
 
@@ -1753,8 +1759,8 @@ public class Drone implements WorldObject {
 	    	
 	    	
 	    	AutopilotInputs value = new AutopilotInputs() {
-	            public byte[] getImage() { // TODO 
-					return null; }
+	            public byte[] getImage() { 
+					return getAPImage(); }
 	            public float getX() { return x; }
 	            public float getY() { return y; }
 	            public float getZ() { return z; }
@@ -1796,4 +1802,3 @@ public class Drone implements WorldObject {
 	private final static String INVALID_TIMESTEP = "The provided time needs to be strictly positive";
 
 }
-
