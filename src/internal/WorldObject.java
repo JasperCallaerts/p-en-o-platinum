@@ -7,7 +7,7 @@ import java.io.IOException;
  * @author anthonyrathe
  *
  */
-public abstract class WorldObject {
+public interface WorldObject {
 	// public abstract void evolve(float duration) throws IOException;
 
 	/**
@@ -26,7 +26,7 @@ public abstract class WorldObject {
 		return deltaTime > 0.0f;
 	}
 
-	public boolean canHaveAsWorld(World world){
+	public static boolean canHaveAsWorld(World world){
 		return true;
 	};
 

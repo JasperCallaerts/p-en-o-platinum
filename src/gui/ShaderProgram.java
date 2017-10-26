@@ -111,7 +111,7 @@ public class ShaderProgram {
 	/**
      * Loads a shader from a file.
      *
-     * @param type Type of the shader
+     * @param //type Type of the shader
      * @param path File path of the shader
      *
      * @return Compiled Shader from specified file

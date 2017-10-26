@@ -4,6 +4,8 @@ import internal.*;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
+
 /**
  * Created by Martijn on 21/10/2017.
  */
@@ -56,7 +58,11 @@ public class StateTest {
                 + "\nOrientation: " + drone.getOrientation().toString() + "\n");
         try {
             for (int index = 0; index != nbOfIterations; index++) {
-                drone.toNextState(timeStep);
+                try {
+                    drone.toNextState(timeStep);
+                }catch (IOException e){
+
+                }
                 System.out.println("VerticalStab: " + verticalStabilizer.getLift());
                 System.out.println("HorizontalStab: " + horizontalStabilizer.getLift());
                 System.out.println("RightMain: " + rightMain.getLift());

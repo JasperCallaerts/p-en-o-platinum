@@ -23,6 +23,23 @@ public class Pixel {
     }
 
     /**
+     * constructor for a pixel in HSV value
+     * @param H the hue value of the pixel
+     * @param S the saturation value of the pixel
+     * @param V the value value of the pixel
+     */
+    public Pixel(float H, float S, float V){
+       float[] rgb = HSVconverter.HSVtoRGB(H, S, V);
+       byte R = (byte) (Math.round(rgb[0]) - BIAS);
+       byte G = (byte) (Math.round(rgb[1]) - BIAS);
+       byte B = (byte) (Math.round(rgb[2]) - BIAS);
+
+       this.red = R;
+       this.green = G;
+       this.blue = B;
+    }
+
+    /**
      * Constructor for a pixel class object
      * @param pixelArray array containing the RGB values (red, green, blue) in that specific order
      */

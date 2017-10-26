@@ -20,7 +20,7 @@ import Autopilot.AutopilotOutputs;
  * 	note: Orientation = (heading, pitch, roll) (in that order)
  * 	the orientation has always values in the range [-PI, PI]
  */
-public class Drone extends WorldObject {
+public class Drone implements WorldObject {
 
 	/**
 	 * Constructor for a drone class object
@@ -437,11 +437,12 @@ public class Drone extends WorldObject {
 	 * advances the drone for a given time step, it changes the position, velocity, orientation and rotation
 	 * variables
 	 * @param deltaTime the time step
-	 * @throws IOException 
+	 * @throws IOException
+	 * @author Martijn Sauwens
 	 */
 	@Override
 	public void toNextState(float deltaTime) throws IOException{
-		if(!isValidTimeStep(deltaTime))
+		if(!WorldObject.isValidTimeStep(deltaTime))
 			throw new IllegalArgumentException(INVALID_TIMESTEP);
 		float INSIGNIFICANCE = 0.01f;
 		//set the next state of the position & velocity of the center of mass of the drone

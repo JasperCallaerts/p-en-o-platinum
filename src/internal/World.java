@@ -20,7 +20,7 @@ public class World {
 		
 	}
 	
-	private Set<WorldObject> objects;
+	private Set<WorldObject> objects = new HashSet<>();
 	
 	/**
 	 * Method that returns a set of all the objects in the world
@@ -50,7 +50,7 @@ public class World {
 	 * @author anthonyrathe
 	 */
 	public boolean canHaveAsObject(WorldObject object){
-		return object.canHaveAsWorld(this);
+		return WorldObject.canHaveAsWorld(this);
 	}
 	
 	/**
@@ -126,7 +126,7 @@ public class World {
 	 * @author Martijn Sauwens
 	 * @throws IOException 
 	 */
-	public void advanceWorldState(float timeInterval) throws IllegalArgumentException, IOException{
+	public void advanceWorldState(float timeInterval, int nbIntervals) throws IllegalArgumentException, IOException{
 
 		if(!isValidTimeInterval(timeInterval))
 			throw new IllegalArgumentException(INVALID_TIME_INTERVAL);
@@ -135,27 +135,26 @@ public class World {
 		Set<Block> blockSet = this.getBlockSet();
 		Set<Drone> droneSet = this.getDroneSet();
 		Set<WorldObject> worldObjectSet = this.getObjectSet();
-		while(!goalReached){
-			//first see if the goal is satisfied
 
-			for(Block block: blockSet){
+		for(int index = 0; index != nbIntervals; index++) {
 
-				for(Drone drone: droneSet){
-					goalReached = this.goalReached(block, drone);
-
-					if(goalReached){
+			// first check if the goal is reached
+			for (Block block : blockSet) {
+				for (Drone drone : droneSet) {
+					//if the goal is reached, exit the loop by throwing throwing an exception
+					if (this.goalReached(block, drone)) {
+						//don't forget to notify the autopilot first
 						drone.getAutopilot().simulationEnded();
+						throw new SimulationEndedException();
 					}
 				}
 			}
-
-			//only advance if the goal has not yet been reached
-			if(!goalReached){
-				for(WorldObject worldObject: worldObjectSet){
-					worldObject.toNextState(timeInterval);
-				}
+			// if the goal was not reached, set the new state
+			for (WorldObject worldObject : worldObjectSet) {
+				worldObject.toNextState(timeInterval);
 			}
 		}
+
 	}
 
 	/**

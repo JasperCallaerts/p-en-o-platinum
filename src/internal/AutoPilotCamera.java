@@ -1,5 +1,7 @@
 package internal;
 
+import org.lwjgl.system.CallbackI;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -154,6 +156,68 @@ public class AutoPilotCamera {
         return pixelArray;
     }
 
+    public Array2D<Pixel> downsampleImage(int sampleFactor){
+        if(!canBeDownSampled(sampleFactor))
+            throw new IllegalArgumentException(INCOMPATIBLE_SIZE);
+
+        int newNbCols = this.getNbColumns()/sampleFactor;
+        int newNbRows = this.getNbRows()/sampleFactor;
+        Pixel[] downsampledArray = new Pixel[newNbCols*newNbCols];
+
+        for(int rowIndex = 0; rowIndex != newNbRows; rowIndex++){
+            for(int columnIndex = 0; columnIndex != newNbCols; columnIndex++){
+                Array2D<Pixel> sample = this.getImage2DArray().getSlice(rowIndex*sampleFactor, (sampleFactor+1)*(rowIndex + 1),
+                        columnIndex*sampleFactor, (sampleFactor + 1)*(columnIndex + 1));
+                if(containsPixelWith(RED_H_VALUE, RED_S_VALUE, Z_AXIS_V_VALUE, (Pixel[]) sample.getArray2DList().toArray())){
+                    downsampledArray[rowIndex*newNbRows+columnIndex] = new Pixel(RED_H_VALUE, RED_S_VALUE, Z_AXIS_V_VALUE);
+                }else{
+
+                }
+            }
+
+
+        }
+        return null;
+
+    }
+
+    public static boolean containsPixelWith(float H, float S, float V, Pixel[] pixelArray){
+        for(Pixel pixel: pixelArray){
+            float [] pixelHSV = pixel.convertToHSV();
+            if(pixelHSV[0] == H && pixelHSV[1] == S && pixelHSV[2] == V){
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static Pixel getMeanPixel(Pixel[] pixelArray){
+        int red = 0;
+        int green = 0;
+        int blue = 0;
+
+        return null;
+    }
+
+    /**
+     * Checks if the image can be down sampled by a given factor
+     * @param samplefactor
+     * @return
+     */
+    private boolean canBeDownSampled(int samplefactor){
+        if (samplefactor <= 0)
+            return false;
+
+        int nbCols = this.getNbColumns();
+        int nbRows = this.getNbRows();
+
+        int remainCols = nbCols%samplefactor;
+        int remainRows = nbRows%samplefactor;
+
+        return remainCols == 0 && remainRows == 0;
+    }
+
     /**
      * Converts an image byte array to a 2D array containing the pixels of the image
      * @param byteImage the bytes containing the pixels of the image
@@ -269,4 +333,5 @@ public class AutoPilotCamera {
     public final static String IO_EXCEPTION = "Something went wrong reading the image";
     public final static String VIEWINGANGLE_EXCEPTION = "the viewing angle is out of range (0, PI]";
     public final static String ILLEGAL_SIZE = "The byte array cannot be converted to a 2D pixel array";
+    public final static String INCOMPATIBLE_SIZE = "the sample size is not a multiple of the dimensions of the array";
 }
