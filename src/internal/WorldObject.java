@@ -15,7 +15,7 @@ public interface WorldObject {
 	 * @param deltaTime the size of the time step
 	 * @throws IOException 
 	 */
-	public abstract void toNextState(float deltaTime) throws IOException;
+	public void toNextState(float deltaTime) throws IOException;
 
 	/**
 	 * Checks if the time difference is valid
@@ -34,5 +34,5 @@ public interface WorldObject {
 	 * Getter for the position of the world object
 	 * @return the position of the world object in vector format
 	 */
-	public abstract Vector getPosition();
+	public Vector getPosition();
 }

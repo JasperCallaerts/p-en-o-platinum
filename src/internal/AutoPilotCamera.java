@@ -193,9 +193,17 @@ public class AutoPilotCamera {
     }
 
     public static Pixel getMeanPixel(Pixel[] pixelArray){
+
+        int length = pixelArray.length;
         int red = 0;
         int green = 0;
         int blue = 0;
+
+        for(Pixel pixel: pixelArray){
+            red += pixel.getRedInt();
+            green += pixel.getGreenInt();
+            blue += pixel.getBlueInt();
+        }
 
         return null;
     }
