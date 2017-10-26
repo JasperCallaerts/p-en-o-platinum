@@ -51,7 +51,7 @@ public class Cube {
 	private Mesh mesh;
 	private ShaderProgram program;
 	private Matrix4f modelMatrix = new Matrix4f();
-	private Vector3f position = new Vector3f(-1f, 1f, -4f);
+	private Vector3f position = new Vector3f(0, 0, -4);
 	
 	public Cube(ShaderProgram program) {
 		mesh = new Mesh();
@@ -72,8 +72,8 @@ public class Cube {
 		mesh.delete();
 	}
 
-	public void update() {
-		// TODO Auto-generated method stub
-		
+	public void update(Vector3f displacement) {
+		this.position = this.position.add(displacement);
+		modelMatrix = Matrix4f.translate(position.x, position.y, position.z);
 	}
 }
