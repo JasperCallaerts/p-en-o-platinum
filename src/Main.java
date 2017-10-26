@@ -25,8 +25,7 @@ public class Main {
 			new Window().run();
 			//pass the outputs to the drone
 			byte[] camera = Window.getCameraView();
-			//Todo update the camera input of the drone!
-			//drone.getAutopilot().update();
+			drone.setAPImage(camera);
 			try {
 				world.advanceWorldState(TIME_STEP, STEPS_PER_ITERATION);
 			} catch (SimulationEndedException e) {
@@ -42,7 +41,6 @@ public class Main {
 	private final static float TIME_STEP = 0.001f;
 	private final static int STEPS_PER_ITERATION = Math.round(1/20f*TIME_STEP);
 }
-
 
 
 
