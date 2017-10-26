@@ -455,12 +455,19 @@ public class Matrix4f {
      */
     public static Matrix4f viewMatrix(Vector3f right, Vector3f up, Vector3f look, Vector3f position) {
     	
-    	Vector4f col1 = new Vector4f(right.x, right.y, right.z, 0f);
-    	Vector4f col2 = new Vector4f(up.x, up.y, up.z, 0f);
-    	Vector4f col3 = new Vector4f(-look.x, -look.y, -look.z, 0f);
-    	Vector4f col4 = new Vector4f(-position.x, -position.y, -position.z, 1f);
+    	Vector4f m1col1 = new Vector4f(right.x, up.x, -look.x, 0f);
+    	Vector4f m1col2 = new Vector4f(right.y, up.y, -look.y, 0f);
+    	Vector4f m1col3 = new Vector4f(right.z, up.z, -look.z, 0f);
+    	Vector4f m1col4 = new Vector4f(0f, 0f, 0f, 1f);
     	
-    	Matrix4f view = new Matrix4f(col1, col2, col3, col4);
+    	Vector4f m2col1 = new Vector4f(1f, 0f, 0f, 0f);
+    	Vector4f m2col2 = new Vector4f(0f, 1f, 0f, 0f);
+    	Vector4f m2col3 = new Vector4f(0f, 0f, 1f, 0f);
+    	Vector4f m2col4 = new Vector4f(-position.x, -position.y, -position.z, 1f);
+    	
+    	Matrix4f m1 = new Matrix4f(m1col1, m1col2, m1col3, m1col4);
+    	Matrix4f m2 = new Matrix4f(m2col1, m2col2, m2col3, m2col4);
+    	Matrix4f view = m1.multiply(m2);
     	return view;
     }
     
