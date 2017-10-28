@@ -123,7 +123,6 @@ public class World {
 		if(!isValidTimeInterval(timeInterval))
 			throw new IllegalArgumentException(INVALID_TIME_INTERVAL);
 
-		boolean goalReached = false;
 		Set<Block> blockSet = this.getBlockSet();
 		Set<Drone> droneSet = this.getDroneSet();
 		Set<WorldObject> worldObjectSet = this.getObjectSet();
