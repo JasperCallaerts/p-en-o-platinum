@@ -23,16 +23,7 @@ public class Cube {
 			// V7
 			0.5f, -0.5f, -0.5f
 	};
-	static float[] colours = new float[]{
-			0.5f, 0.0f, 0.0f,
-			0.5f, 0.0f, 0.0f,
-			0.5f, 0.0f, 0.0f,
-			0.5f, 0.0f, 0.0f,
-			0.5f, 0.0f, 0.0f,
-			0.5f, 0.0f, 0.0f,
-			0.5f, 0.0f, 0.0f,
-			0.5f, 0.0f, 0.0f
-	};
+	private float[] colours;
 	static int[] indices = new int[]{
 			// Front face
 			0, 1, 3, 3, 1, 2,
@@ -51,11 +42,25 @@ public class Cube {
 	private Mesh mesh;
 	private ShaderProgram program;
 	private Matrix4f modelMatrix = new Matrix4f();
-	private Vector3f position = new Vector3f(0, 0, -4);
+	private Vector3f position = new Vector3f();
+	private Vector3f colour = new Vector3f();
 	
-	public Cube(ShaderProgram program) {
+	public Cube(ShaderProgram program, Vector3f position, Vector3f colour) {
 		mesh = new Mesh();
 		this.program = program;
+		
+		this.position = position;
+		this.colour  = colour;
+		colours = new float[]{
+					colour.x, colour.y, colour.z,
+					colour.x, colour.y, colour.z,
+					colour.x, colour.y, colour.z,
+					colour.x, colour.y, colour.z,
+					colour.x, colour.y, colour.z,
+					colour.x, colour.y, colour.z,
+					colour.x, colour.y, colour.z,
+					colour.x, colour.y, colour.z,
+			};
 	}
 
 	public void init() {
@@ -75,5 +80,9 @@ public class Cube {
 	public void update(Vector3f displacement) {
 		this.position = this.position.add(displacement);
 		modelMatrix = Matrix4f.translate(position.x, position.y, position.z);
+	}
+	
+	public Vector3f getPostition() {
+		return this.position;
 	}
 }

@@ -7,6 +7,9 @@ import static org.lwjgl.glfw.GLFW.GLFW_KEY_RIGHT;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_SPACE;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_UP;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_D;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_A;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_W;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_S;
 import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 import static org.lwjgl.glfw.GLFW.glfwGetKey;
 import static org.lwjgl.glfw.GLFW.glfwGetTime;
@@ -19,6 +22,13 @@ import static org.lwjgl.opengl.GL11.glGetError;
 import static org.lwjgl.opengl.GL30.GL_INVALID_FRAMEBUFFER_OPERATION;
 
 import java.nio.IntBuffer;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import javax.swing.text.html.HTMLDocument.Iterator;
 
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.system.MemoryStack;
@@ -36,16 +46,16 @@ public class Renderer {
     private Vector3f position = new Vector3f(0, 0, 0);
 	private long window;
 	private Mouse mouse;
-	private Cube cube;
+	private Map<String, Cube> cubes = new HashMap<String, Cube>(); 
 
 	private float yaw = 0;
 	private float pitch = 0;
     private static final float SPEED = 1f;
     private static final float TURN_SPEED = 0.1f;
     
-    private static final Vector3f ABSOLUTE_RIGHT = new Vector3f(1.0f, 0.0f, 0.0f);
-    private static final Vector3f ABSOLUTE_UP = new Vector3f(0.0f, 1.0f, 0.0f);
-    private static final Vector3f ABSOLUTE_FRONT = new Vector3f(0.0f, 0.0f, -1.0f);
+//    private static final Vector3f ABSOLUTE_RIGHT = new Vector3f(1.0f, 0.0f, 0.0f);
+//    private static final Vector3f ABSOLUTE_UP = new Vector3f(0.0f, 1.0f, 0.0f);
+//    private static final Vector3f ABSOLUTE_FRONT = new Vector3f(0.0f, 0.0f, -1.0f);
      
     private static final float FOV = (float) Math.toRadians(60.0f);
 	private static final float NEAR = 0.01f;
@@ -54,8 +64,12 @@ public class Renderer {
 	public Renderer(long window) {
 		this.window = window;
 		program = new ShaderProgram(false, "resources/default.vert", "resources/default.frag");
-		cube = new Cube(program);
 		mouse = new Mouse(window);
+		
+		Cube cube = new Cube(program, new Vector3f(0f, 0f, -10f), new Vector3f(0.5f, 0f, 0f));
+		cubes.put("cube", cube);
+		Cube drone = new Cube(program, new Vector3f(), new Vector3f(0.8f, 0.5f, 0f));
+		cubes.put("drone", drone);
 	}
 
 	/**
@@ -83,7 +97,9 @@ public class Renderer {
 		}
         projectionMatrix = Matrix4f.perspective(FOV, ratio, NEAR, FAR);
         
-        cube.init();
+        for (Cube object : cubes.values()) {
+        	object.init();
+        }
         
         checkError();
     }
@@ -92,7 +108,10 @@ public class Renderer {
      * Releases in use OpenGL resources.
      */
     public void release() {
-    	cube.delete();
+    	for (Cube object : cubes.values()) {
+    		object.delete();
+        }
+
     	program.delete();
     }
 
@@ -107,16 +126,16 @@ public class Renderer {
 		Vector3f look = up.cross(right);
 		
 		Vector3f vec = new Vector3f(0.0f, 0.0f, 0.0f);
-        if (isKeyPressed(GLFW_KEY_UP)) {
+        if (isKeyPressed(GLFW_KEY_UP) || isKeyPressed(GLFW_KEY_W)) {
             vec = vec.add(look);
         } 
-        if (isKeyPressed(GLFW_KEY_DOWN)) {
+        if (isKeyPressed(GLFW_KEY_DOWN) || isKeyPressed(GLFW_KEY_S)) {
         	vec = vec.add(look.negate());
         }
-        if (isKeyPressed(GLFW_KEY_LEFT)) {
+        if (isKeyPressed(GLFW_KEY_LEFT) || isKeyPressed(GLFW_KEY_A)) {
         	vec = vec.add(right.negate());
         }
-        if (isKeyPressed(GLFW_KEY_RIGHT)) {
+        if (isKeyPressed(GLFW_KEY_RIGHT) || isKeyPressed(GLFW_KEY_D)) {
         	vec = vec.add(right);
         }
         if (isKeyPressed(GLFW_KEY_SPACE)) {
@@ -129,8 +148,10 @@ public class Renderer {
         position = position.add(vec.scale(SPEED * (float)delta));
         viewMatrix = Matrix4f.viewMatrix(right, up, look, position);
         
-//        cube.update(new Vector3f((float) (Math.cos(glfwGetTime())*delta), (float) (Math.sin(glfwGetTime())*delta), 0f));
-        cube.update(new Vector3f());
+//        cubes.get("cube").update(new Vector3f((float) (Math.cos(glfwGetTime())*delta), (float) (Math.sin(glfwGetTime())*delta), 0f));
+        if (cubes.get("drone").getPostition().z > cubes.get("cube").getPostition().z + 1f) {
+        	cubes.get("drone").update(new Vector3f(0, 0, (float) -delta));
+        }
 	}
 	
 	private boolean isKeyPressed(int keyCode) {
@@ -146,7 +167,9 @@ public class Renderer {
         program.setUniform("projectionMatrix", projectionMatrix);
         program.setUniform("viewMatrix", viewMatrix);
         
-        cube.render();
+        for (Cube object : cubes.values()) {
+        	object.render();
+        }
         
         program.unbind();
         
