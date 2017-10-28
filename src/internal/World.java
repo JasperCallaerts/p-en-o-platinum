@@ -14,6 +14,9 @@ import java.util.function.BiPredicate;
 public class World {
 	
 	public World(){
+		Xsize = 0;	//max groottes initialiseren
+		Ysize = 0;
+		Zsize = 0;
 
 	}
 	
@@ -167,6 +170,19 @@ public class World {
 		return timeInterval > 0.0f;
 	}
 
+	private final int Xsize;
+	private final int Ysize;
+	private final int Zsize;
+
+	public int getXsize(){
+		return Xsize;
+	}
+	public int getYsize() {
+		return Ysize;
+	}
+	public int getZsize(){
+		return Zsize;
+	}
 	
 	// Error strings
 	private final static String ADD_WORLD_OBJECT_ERROR = "The object couldn't be added to the world";
