@@ -1,5 +1,6 @@
 package gui;
 
+import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
 import org.lwjgl.system.*;
@@ -49,7 +50,7 @@ public class Window {
 		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); 
 
 		// Create the window
-		window = glfwCreateWindow(1000, 1000, "Project X!", NULL, NULL);
+		window = glfwCreateWindow(WIDTH, HEIGHT, "Project X!", NULL, NULL);
 		if ( window == NULL )
 			throw new RuntimeException("Failed to create the GLFW window");
 
@@ -131,5 +132,32 @@ public class Window {
 		
 		renderer.release();
 	}
+
+	/**
+	 * Reads the pixels on the screen and returns them as an array of bytes
+	 * @return an byte array containing the image
+	 * @author Martijn
+	 */
+	public static byte[] getCameraView(){
+		ByteBuffer buffer = BufferUtils.createByteBuffer(HEIGHT *WIDTH*3);
+		//the array used for storing the pixels
+		byte[] pixelArray = new byte[HEIGHT *WIDTH*3];
+		GL11.glPixelStorei(GL11.GL_PACK_ALIGNMENT, 1);
+		GL11.glPixelStorei(GL11.GL_UNPACK_ALIGNMENT, 1);
+		//prepare the buffer for filling
+		buffer.clear();
+		//read the pixels on screen in the given window
+		GL11.glReadPixels(0,0, WIDTH, HEIGHT, GL11.GL_RGB, GL11.GL_UNSIGNED_BYTE, buffer);
+
+
+		//prepare buffer for reading
+		buffer.clear();
+		//transfer al the buffered data to the array
+		buffer.get(pixelArray);
+		return pixelArray;
+	}
+
+	private static int WIDTH = 1000;
+	private static int HEIGHT = 1000;
 
 }

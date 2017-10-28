@@ -29,8 +29,7 @@ import java.util.List;
  */
 public class AutoPilotCamera {
 
-    public AutoPilotCamera(byte[] image, float horizontalAngleOfView, float verticalAngleOfView, int nbRows, int nbColumns,
-                           String pixelTag) throws IllegalArgumentException{
+    public AutoPilotCamera(byte[] image, float horizontalAngleOfView, float verticalAngleOfView, int nbRows, int nbColumns) throws IllegalArgumentException{
 
         if(!isValidAngleOfView(horizontalAngleOfView) || ! isValidAngleOfView(verticalAngleOfView))
             throw new IllegalArgumentException(VIEWINGANGLE_EXCEPTION);

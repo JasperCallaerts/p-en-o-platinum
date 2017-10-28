@@ -15,7 +15,7 @@ import Autopilot.AutopilotOutputs;
 /**
  * 
  * @author Anthony Rathé & MartijnSauwens & Bart
- * Immutable variables: maxThrust, engineMass, enginePosition, droneMass, leftWing, rightWing,
+ * Immutable variables: maxThrust, engineMass, enginePosition, leftWing, rightWing,
  * 						horizontalStab, verticalStab, inertiaTensor
  * 	note: Orientation = (heading, pitch, roll) (in that order)
  * 	the orientation has always values in the range [-PI, PI]
@@ -24,7 +24,6 @@ public class Drone implements WorldObject {
 
 	/**
 	 * Constructor for a drone class object
-	 * @param droneMass the mass of the drone itself (no wings & engine included)
 	 * @param engineMass the mass of the engine
 	 * @param maxThrust the maximum thrust the engine of the drone can generate
 	 * @param position the position of the drone in space
@@ -37,11 +36,10 @@ public class Drone implements WorldObject {
 	 * @param verticalStab the vectical stabilizet tail wing of the drone
 	 * @param AP the autopilot of the drone
 	 */
-	public Drone(float droneMass, float engineMass, float maxThrust, Vector position, Vector velocity, Vector orientation,
+	public Drone(float engineMass, float maxThrust, Vector position, Vector velocity, Vector orientation,
 		  Vector rotationVector, Wing rightMainWing, Wing leftMainWing, Wing horizontalStab, Wing verticalStab, AutoPilot AP) {
 
-		if (!this.canHaveAsDroneMass(droneMass) ||
-				!this.canHaveAsEngineMass(engineMass) || !this.canHaveAsMaxThrust(maxThrust)) {
+		if (!this.canHaveAsEngineMass(engineMass) || !this.canHaveAsMaxThrust(maxThrust)) {
 			throw new IllegalArgumentException(ILLEGAL_CONFIG);
 		}
 
@@ -49,7 +47,6 @@ public class Drone implements WorldObject {
 		this.AP = AP;
 		this.maxThrust = maxThrust;
 		this.engineMass = engineMass;
-		this.droneMass = droneMass;
 
 		// set variable variables of the drone
 		this.setPosition(position);
@@ -70,155 +67,86 @@ public class Drone implements WorldObject {
 		//these variables are calculated from the ones above
 		this.setEnginePosition();
 		this.setInertiaTensor();
-		this.autopilotConfig = new AutopilotConfig() {
-			
-			@Override
-			public float getWingX() {
-				return Math.abs(getRightWing().getRelativePosition().getxValue());
-			}
-			
-			@Override
-			public float getWingMass() {
-				return getRightWing().getMass() + getLeftWing().getMass();
-			}
-			
-			@Override
-			public float getWingLiftSlope() {
-				return getRightWing().getLiftSlope()+ getLeftWing().getLiftSlope();
-			}
-			
-			@Override
-			public float getVerticalAngleOfView() {
-				return Angleofview;
-			}
-			
-			@Override
-			public float getVerStabLiftSlope() {
-				return getVerticalStab().getLiftSlope();
-			}
-			
-			@Override
-			public float getTailSize() {
-				return Math.abs(getVerticalStab().getRelativePosition().getxValue());
-			}
-			
-			@Override
-			public float getTailMass() {
-				return getVerticalStab().getMass() + getHorizontalStab().getMass();
-			}
-			
-			@Override
-			public int getNbRows() {
-				return nbRows;
-			}
-			
-			@Override
-			public int getNbColumns() {
-				return nbColumns;
-			}
-			
-			@Override
-			public float getMaxThrust() {
-				return maxThrust;
-			}
-			
-			@Override
-			public float getMaxAOA() {
-				return getRightWing().getMaximumAngleOfAttack();
-			}
-			
-			@Override
-			public float getHorizontalAngleOfView() {
-				return Angleofview;
-			}
-			
-			@Override
-			public float getHorStabLiftSlope() {
-				return getHorizontalStab().getLiftSlope();
-			}
-			
-			@Override
-			public float getGravity() {
-				return getGravity();
-			}
-			
-			@Override
-			public float getEngineMass() {
-				return engineMass;
-			}
-		};
+//		this.autopilotConfig = new AutopilotConfig() {
+//
+//			@Override
+//			public float getWingX() {
+//				return Math.abs(getRightWing().getRelativePosition().getxValue());
+//			}
+//
+//			@Override
+//			public float getWingMass() {
+//				return getRightWing().getMass() + getLeftWing().getMass();
+//			}
+//
+//			@Override
+//			public float getWingLiftSlope() {
+//				return getRightWing().getLiftSlope()+ getLeftWing().getLiftSlope();
+//			}
+//
+//			@Override
+//			public float getVerticalAngleOfView() {
+//				return Angleofview;
+//			}
+//
+//			@Override
+//			public float getVerStabLiftSlope() {
+//				return getVerticalStab().getLiftSlope();
+//			}
+//
+//			@Override
+//			public float getTailSize() {
+//				return Math.abs(getVerticalStab().getRelativePosition().getxValue());
+//			}
+//
+//			@Override
+//			public float getTailMass() {
+//				return getVerticalStab().getMass() + getHorizontalStab().getMass();
+//			}
+//
+//			@Override
+//			public int getNbRows() {
+//				return nbRows;
+//			}
+//
+//			@Override
+//			public int getNbColumns() {
+//				return nbColumns;
+//			}
+//
+//			@Override
+//			public float getMaxThrust() {
+//				return maxThrust;
+//			}
+//
+//			@Override
+//			public float getMaxAOA() {
+//				return getRightWing().getMaximumAngleOfAttack();
+//			}
+//
+//			@Override
+//			public float getHorizontalAngleOfView() {
+//				return Angleofview;
+//			}
+//
+//			@Override
+//			public float getHorStabLiftSlope() {
+//				return getHorizontalStab().getLiftSlope();
+//			}
+//
+//			@Override
+//			public float getGravity() {
+//				return getGravity();
+//			}
+//
+//			@Override
+//			public float getEngineMass() {
+//				return engineMass;
+//			}
+//		};
 		// TODO config stream
 	}
-	
-	//------- Drone Controlling Methods -------
-	/**
-	 * @author anthonyrathe
-	 */
-	private void clockRollStart(){
-		this.getLeftWing().setWingInclination(-this.getLeftWing().getMaximumAngleOfAttack());
-		this.getRightWing().setWingInclination(this.getRightWing().getMaximumAngleOfAttack());
-	}
-	
-	/**
-	 * @author anthonyrathe
-	 */
-	private void counterClockRollStart(){
-		this.getLeftWing().setWingInclination(this.getLeftWing().getMaximumAngleOfAttack());
-		this.getRightWing().setWingInclination(-this.getRightWing().getMaximumAngleOfAttack());
-	}
-	
-	/**
-	 * @author anthonyrathe
-	 */
-	private void stopRoll(){
-		this.getLeftWing().setWingInclination(0f);
-		this.getRightWing().setWingInclination(0f);
-	}
-	
-	/**
-	 * @author anthonyrathe
-	 */
-	private void startTurnLeft(){
-		this.getVerticalStab().setWingInclination(this.getVerticalStab().getMaximumAngleOfAttack());
-	}
-	
-	/**
-	 * @author anthonyrathe
-	 */
-	private void startTurnRight(){
-		this.getVerticalStab().setWingInclination(-this.getVerticalStab().getMaximumAngleOfAttack());
-	}
-	
-	/**
-	 * @author anthonyrathe
-	 */
-	private void stopTurn(){
-		this.getVerticalStab().setWingInclination(0f);
-	}
-	
-	/**
-	 * @author anthonyrathe
-	 */
-	private void startAscend(){
-		this.getHorizontalStab().setWingInclination(this.getHorizontalStab().getMaximumAngleOfAttack());
-	}
-	
-	/**
-	 * @author anthonyrathe
-	 */
-	private void startDescend(){
-		this.getHorizontalStab().setWingInclination(-this.getHorizontalStab().getMaximumAngleOfAttack());
-		
-	}
-	
-	/**
-	 * @author anthonyrathe
-	 */
-	private void stopAscendDescend(){
-		this.getHorizontalStab().setWingInclination(0f);
-	}
-	
-	
+
 	
 	//------- END Drone Controlling Methods -------
 
@@ -270,6 +198,7 @@ public class Drone implements WorldObject {
 	 * 		   Vector(headingRotation, pitchRotation, rollRotation)
 	 * 		   for more info concering the projection see the individual transformation functions
 	 * note: see notes on the calculations for clarification
+	 * @author Martijn Sauwens
 	 */
 	public Vector getRotationHPR(Vector rotationVector){
 		Vector headingRotation = this.getHeadingRotationVector(rotationVector);
@@ -310,6 +239,7 @@ public class Drone implements WorldObject {
 	 * @param rotationVector the rotation vector to be projected
 	 * @return a vector containing the pitch rotation, given in the heading transformed world axis system
 	 * 		   return new Vector (0 , projectedPitch, 0)
+	 * @author Martijn Sauwens
 	 */
 	public Vector getPitchRotationVector(Vector rotationVector){
 		float heading = this.getHeading();
@@ -329,6 +259,7 @@ public class Drone implements WorldObject {
 	 * @param rotationVector the rotation vector to be projected
 	 * @return a vector containing the roll rotation, given in the double transformed world axis system
 	 * 		   return new Vector(0, 0, rollRotationVector)
+	 * @author Martijn Sauwens
 	 */
 	public Vector getRollRotationVector(Vector rotationVector){
 		float heading = this.getHeading();
@@ -349,6 +280,7 @@ public class Drone implements WorldObject {
 	 * angular acceleration vector
 	 * @param angularAccelerationVector the angular acceleration vector in the world axis system
 	 * @return a vector of format (HeadingAcceleration, PitchAcceleration, RollAcceleration)
+	 * @author Martijn Sauwens
 	 */
 	public Vector getAngularAccelerationHPR(Vector angularAccelerationVector){
 		float headingAcceleration = this.getHeadingAngularAcceleration(angularAccelerationVector);
@@ -364,6 +296,7 @@ public class Drone implements WorldObject {
 	 * @param angularAccelerationVector the vector containing the angular acceleration given in the
 	 *                                  world-axis system
 	 * @return the heading angular acceleration
+	 * @author Martijn Sauwens
 	 */
 	public float getHeadingAngularAcceleration(Vector angularAccelerationVector){
 		float heading = this.getHeading();
@@ -391,6 +324,7 @@ public class Drone implements WorldObject {
 	 * @param angularAccelerationVector the vector containing the angular acceleration
 	 *                                  given in the world-axis system
 	 * @return the pitch angular acceleration
+	 * @author Martijn Sauwens
 	 */
 	public float getPitchAngularAcceleration(Vector angularAccelerationVector){
 		float heading = this.getHeading();
@@ -411,6 +345,7 @@ public class Drone implements WorldObject {
 	 * @param angularAccelerationVector the vector containing the angular acceleration
 	 *                                  given in the world-axis system
 	 * @return the roll angular acceleration
+	 * @author Martijn Sauwens
 	 */
 	public float getRollAngularAcceleration(Vector angularAccelerationVector){
 		float heading = this.getHeading();
@@ -438,7 +373,7 @@ public class Drone implements WorldObject {
 	 * variables
 	 * @param deltaTime the time step
 	 * @throws IOException
-	 * @author Martijn Sauwens
+	 * @author Martijn Sauwens & Bart Jacobs
 	 */
 	@Override
 	public void toNextState(float deltaTime) throws IOException{
@@ -449,20 +384,25 @@ public class Drone implements WorldObject {
 		//engage autopilot
 		AutopilotInputs input = updateAutopilotInput(deltaTime);// TODO input stream
 		AutoPilot AP = this.getAutopilot();
-		if(firstRun){
-			AutopilotOutputs APO = AP.simulationStarted(autopilotConfig, input);
-			firstRun = false;
+		AutopilotOutputs APO;
+
+		if(!AP.isConfiguredAP()){
+			// if the AP isn't configured yet, take the config of the autopilot
+			// and configure it
+			APO = AP.simulationStarted(autopilotConfig, input);
 		}
 		else{
-			AutopilotOutputs APO = AP.timePassed(input);
+			//else just calculate the next action
+			APO = AP.timePassed(input);
 		}
-		AutopilotOutputs APO = AP.simulationStarted(autopilotConfig, input);
 		setThrust(APO.getThrust());
 		setLeftWingInclination(APO.getLeftWingInclination());
 		setRightWingInclination(APO.getRightWingInclination());
 		setHorStabInclination(APO.getHorStabInclination());
 		setVerStabInclination(APO.getVerStabInclination());
 
+
+		//--- calculations for the physics model
 		//set the next state of the position & velocity of the center of mass of the drone
 		Vector acceleration = this.calcAcceleration();
 		Vector velocity = this.getNextVelocity(deltaTime, acceleration);
@@ -487,17 +427,8 @@ public class Drone implements WorldObject {
 		this.setVelocity(velocity);
 		this.setPosition(position);
 
-		//engage autopilot
-		AutopilotInputs input = updateAutopilotInput(deltaTime);// TODO input stream
-		AutoPilot AP = this.getAutopilot();
-		AutopilotOutputs APO = AP.simulationStarted(autopilotConfig, input);
-		this.setNextThrust(APO.getThrust());
-		this.setNextLeftWingInclination(APO.getLeftWingInclination());
-		this.setNextRightWingInclination(APO.getRightWingInclination());
-		this.setNextHorStabInclination(APO.getHorStabInclination());
-		this.setNextVerStabInclination(APO.getVerStabInclination());
 	}
-	private boolean firstRun = true;
+
 
 	/**
 	 * calculates the next orientation based on the current orientation and the angular acceleration
@@ -687,8 +618,7 @@ public class Drone implements WorldObject {
 
 	/**
 	 * Getter for the velocity of the drone
-	 *
-	 * @return
+	 * @author Martijn Sauwens
 	 */
 	public Vector getVelocity() {
 		return velocity;
@@ -700,6 +630,7 @@ public class Drone implements WorldObject {
 	 *
 	 * @param velocity the desired velocity of the drone
 	 * @throws IllegalArgumentException if the speed is invalid
+	 * @author Martijn Sauwens
 	 */
 	public void setVelocity(Vector velocity) throws IllegalArgumentException {
 		if (this.isValidVelocity(velocity)) {
@@ -736,7 +667,7 @@ public class Drone implements WorldObject {
 	/**
 	 * getter for the thrust of the drone
 	 *
-	 * @Basic
+	 * @author Martijn Sauwens
 	 */
 	public float getThrust() {
 		return thrust;
@@ -774,14 +705,8 @@ public class Drone implements WorldObject {
 	 * @author Martijn Sauwens
 	 */
 	public Vector getGravity() {
-		Wing[] wingArray = this.getWingArray();
-		float totalMass = this.getDroneMass() + getEngineMass();
 
-		for (Wing wing : wingArray) {
-			totalMass += wing.getMass();
-		}
-
-		float scalarGravity = totalMass * GRAVITY;
+		float scalarGravity = this.getTotalMass() * GRAVITY;
 
 		return new Vector(0.0f, -scalarGravity, 0.0f);
 	}
@@ -798,24 +723,6 @@ public class Drone implements WorldObject {
 		return thrust >= 0 && thrust <= this.getMaxThrust();
 	}
 
-	/**
-	 * Getter for the mass of the drone
-	 *
-	 * @return the mass of the drone
-	 */
-	public float getDroneMass() {
-		return droneMass;
-	}
-
-	/**
-	 * Checkers if the drone mass is valid
-	 *
-	 * @param droneMass the mass of the drone
-	 * @return true if and only if the mass > 0
-	 */
-	public boolean canHaveAsDroneMass(float droneMass) {
-		return droneMass >= 0;
-	}
 
 	/**
 	 * Method that checks if a suggested inclination is valid.
@@ -824,7 +731,7 @@ public class Drone implements WorldObject {
 	 * @author anthonyrathe
 	 */
 	private boolean canHaveAsInclination(float inclination) {
-		return inclination >= 0 && inclination < 2 * Math.PI;
+		return inclination >= -Math.PI/2 && inclination <= Math.PI/2;
 	}
 
 	/**
@@ -835,7 +742,7 @@ public class Drone implements WorldObject {
 	 */
 	private void setLeftWingInclination(float newLeftWingInclination) {
 		if (this.canHaveAsInclination(newLeftWingInclination)) {
-			this.leftWingInclination = newLeftWingInclination;
+			this.getLeftWing().setWingInclination(newLeftWingInclination);
 		} else {
 			throw new IllegalArgumentException(Drone.INCLINATION_OUT_OF_RANGE);
 		}
@@ -844,21 +751,21 @@ public class Drone implements WorldObject {
 	/**
 	 * Method that gets the current left wing inclination.
 	 *
-	 * @author anthonyrathe
+	 * @author anthonyrathe & Martijn Sauwens
 	 */
 	public float getLeftWingInclination() {
-		return this.leftWingInclination;
+		return this.getLeftWing().getWingInclination();
 	}
 
 	/**
 	 * Method that sets the new right wing inclination.
 	 *
 	 * @param newRightWingInclination the new inclination at which the right wing should be set
-	 * @author anthonyrathe
+	 * @author anthonyrathe & Martijn Sauwens
 	 */
 	private void setRightWingInclination(float newRightWingInclination) {
 		if (this.canHaveAsInclination(newRightWingInclination)) {
-			this.rightWingInclination = newRightWingInclination;
+			this.getRightWing().setWingInclination(newRightWingInclination);
 		} else {
 			throw new IllegalArgumentException(Drone.INCLINATION_OUT_OF_RANGE);
 		}
@@ -867,21 +774,21 @@ public class Drone implements WorldObject {
 	/**
 	 * Method that gets the current right wing inclination.
 	 *
-	 * @author anthonyrathe
+	 * @author anthonyrathe & Martijn Sauwens
 	 */
 	public float getRightWingInclination() {
-		return this.leftWingInclination;
+		return this.getRightWing().getWingInclination();
 	}
 
 	/**
 	 * Method that sets the new horizontal stabilizer inclination.
 	 *
 	 * @param newHorStabInclination the new inclination at which the horizontal stabilizer should be set
-	 * @author anthonyrathe
+	 * @author anthonyrathe & Martijn Sauwens
 	 */
 	private void setHorStabInclination(float newHorStabInclination) {
 		if (this.canHaveAsInclination(newHorStabInclination)) {
-			this.horStabInclination = newHorStabInclination;
+			this.getHorizontalStab().setWingInclination(newHorStabInclination);
 		} else {
 			throw new IllegalArgumentException(Drone.INCLINATION_OUT_OF_RANGE);
 		}
@@ -890,112 +797,38 @@ public class Drone implements WorldObject {
 	/**
 	 * Method that gets the current horizontal stabilizer inclination.
 	 *
-	 * @author anthonyrathe
+	 * @author anthonyrathe & Martijn Sauwens
 	 */
 	public float getHorStabInclination() {
-		return this.horStabInclination;
+		return this.getHorizontalStab().getWingInclination();
 	}
 
-/*
-	*/
-/**
+
+	/**
 	 * Method that sets the new vertical stabilizer inclination.
 	 *
 	 * @param newVerStabInclination the new inclination at which the vertical stabilizer should be set
-	 * @author anthonyrathe
-	 *//*
+	 * @author anthonyrathe & Martijn Sauwens
+	 */
 
 	private void setVerStabInclination(float newVerStabInclination) {
 		if (this.canHaveAsInclination(newVerStabInclination)) {
-			this.verStabInclination = newVerStabInclination;
+			this.getVerticalStab().setWingInclination(newVerStabInclination);
 		} else {
 			throw new IllegalArgumentException(Drone.INCLINATION_OUT_OF_RANGE);
 		}
 	}
 
-	*/
-/**
+
+	/**
 	 * Method that gets the current vertical stabilizer inclination.
 	 *
-	 * @author anthonyrathe
-	 *//*
+	 * @author anthonyrathe & Martijn Sauwens
+	 */
 
 	public float getVerStabInclination() {
-		return this.verStabInclination;
+		return this.getVerticalStab().getWingInclination();
 	}
-*/
-
-	/**
-	 * Moves the drone for a given amount of time, taking in account autopilot input.
-	 *
-	 * @param duration the amount of time the drone should be moved
-	 * @author anthonyrathe
-	 * @throws IOException 
-	 */
-	public void evolve(float duration) throws IOException {
-		while (duration > 0) {
-			if (this.nextStateAvailable()) {
-				if (duration >= this.getQueueTime()) {
-					this.move(this.getQueueTime());
-					this.nextState();
-					duration = duration - this.getQueueTime();
-					this.setQueueTime((float) 0.0);
-				} else {
-					this.move(duration);
-					this.setQueueTime(getQueueTime() - duration);
-					duration = (float) 0.0;
-				}
-			} else {
-				AutopilotInputs input = updateAutopilotInput(duration);// TODO input stream
-				AutoPilot AP = this.getAutopilot();
-				AutopilotOutputs APO = AP.simulationStarted(autopilotConfig, input);
-				this.setThrust(APO.getThrust());
-				this.setLeftWingInclination(APO.getLeftWingInclination());
-				this.setRightWingInclination(APO.getRightWingInclination());
-				this.setHorStabInclination(APO.getHorStabInclination());
-				this.setNextVerStabInclination(APO.getVerStabInclination());
-				if (duration >= AP_CALC_TIME) {
-					duration = duration - AP_CALC_TIME;
-					this.move(AP_CALC_TIME);
-					this.nextState();
-				} else {
-					this.move(duration);
-					this.setQueueTime(AP_CALC_TIME - duration);
-					duration = (float) 0.0;
-				}
-			}
-		}
-	}
-
-	/**
-	 * Moves the drone for a given amount of time, not taking in account any state changes.
-	 *
-	 * @param duration the amount of time the drone should be moved as it is in its current state
-	 */
-	public void move(float duration) {
-
-	}
-
-	/**
-	 * Changes the state of the drone to the next state, as calculated earlier by the autopilot.
-	 * State will remain the same if there is no queue-time.
-	 * @author anthonyrathe
-	 */
-	public void nextState() {
-		if (this.nextStateAvailable()) {
-			this.setThrust(this.getNextThrust());
-			this.getLeftWing().setWingInclination(this.getNextLeftWingInclination());
-			this.getRightWing().setWingInclination(this.getNextRightWingInclination());
-			this.getHorizontalStab().setWingInclination(this.getNextHorStabInclination());
-			this.getVerticalStab().setWingInclination(this.getNextVerStabInclination());
-		}
-	}
-
-
-	/**
-	 * A variable containing the autopilot loaded onto the drone
-	 */
-	private final AutoPilot AP;
 
 	/**
 	 * Method returning the autopilot loaded onto the drone
@@ -1012,7 +845,7 @@ public class Drone implements WorldObject {
 	private AutopilotInputs updateAutopilotInput(float duration){
 
 		AutopilotInputs input;
-		return  input = new AutopilotInputs() {
+		return  new AutopilotInputs() {
 
 			@Override
 			public float getZ() {
@@ -1063,14 +896,16 @@ public class Drone implements WorldObject {
 
 
 	private byte[] APImage;
+
 	public void setAPImage(byte[] image){
 		APImage = image;
 	}
+
 	private byte[] getAPImage(){
 		return APImage;
 	}
 
-	//Todo: comment for happiness of profs
+
 
 	/**
 	 * Getter for the orientation of the drone
@@ -1096,6 +931,7 @@ public class Drone implements WorldObject {
 	 * @param heading the heading value of the rotation
 	 * @param pitch the pitch value of the rotation
 	 * @param roll the roll value of the rotation
+	 * @author Martijn Sauwens
 	 */
 	public void setOrientation(float heading, float pitch, float roll) {
 		this.Orientation = normalizeOrientation(new Vector(heading, pitch, roll));
@@ -1106,6 +942,7 @@ public class Drone implements WorldObject {
 	 * the range of the orientation elements to the range [-PI, PI]
 	 * @param orientation the vector containing the orientation of the drone (heading, pitch, roll)
 	 * @return a new vector with all elements rescaled to the range [-PI, PI]
+	 * @author Martijn Sauwens
 	 */
 	public Vector normalizeOrientation(Vector orientation){
 		float[] vectorArray = new float[Vector.VECTOR_SIZE];
@@ -1154,11 +991,11 @@ public class Drone implements WorldObject {
 	}
 
 	/**
-	 * Martijn Sauwens
 	 * Setter of the right wing of the drone, the binary relationship can only be created if
 	 * the drone has no right wing yet or the wing is not attached to another drone
 	 *
 	 * @param rightWing the right wing of the drone
+	 * @author Martijn Sauwens
 	 */
 	public void setRightWing(HorizontalWing rightWing) throws NullPointerException, IllegalArgumentException {
 		if (rightWing == null) {
@@ -1193,10 +1030,9 @@ public class Drone implements WorldObject {
 	}
 
 	/**
-	 * Martijn Sauwens
 	 * Setter for the left wing of the drone
-	 *
 	 * @param leftWing the left wing of the drone
+	 * @author Martijn Sauwens
 	 */
 	public void setLeftWing(HorizontalWing leftWing) throws IllegalArgumentException, NullPointerException {
 		if (leftWing == null) {
@@ -1226,7 +1062,7 @@ public class Drone implements WorldObject {
 	/**
 	 * getter of the horizontal stabilizer
 	 *
-	 * @return
+	 * @return the horizontal stabilizer wing
 	 */
 	public HorizontalWing getHorizontalStab() {
 		return horizontalStab;
@@ -1258,6 +1094,7 @@ public class Drone implements WorldObject {
 	 * Returns true if and only if there is no horizontal stabilizer attached to the drone
 	 *
 	 * @param horizontalStab the horizontal stabilizer
+	 * @author Martijn Sauwens
 	 */
 	public boolean canHaveAsHorizontalStab(HorizontalWing horizontalStab) {
 		return this.getHorizontalStab() == null;
@@ -1265,6 +1102,7 @@ public class Drone implements WorldObject {
 
 	/**
 	 * Getter for the vertical stabilizer
+	 * @Author Martijn Sauwens
 	 */
 	public VerticalWing getVerticalStab() {
 		return verticalStab;
@@ -1294,6 +1132,7 @@ public class Drone implements WorldObject {
 	 * Returns true if and only if there is no vertical stabilizer attached to the drone.
 	 *
 	 * @param vercticalStab the vertical stabilizer to be attached
+	 * @author Martijn Sauwens
 	 */
 	public boolean canHaveAsVerticalStab(VerticalWing vercticalStab) {
 		return this.getVerticalStab() == null;
@@ -1303,6 +1142,7 @@ public class Drone implements WorldObject {
 	 * Creates an array containing all the wings of the drone
 	 *
 	 * @return an array containing all the wings of the drone
+	 * @author Martijn Sauwens
 	 */
 	public Wing[] getWingArray() {
 		return new Wing[]{this.getRightWing(), this.getLeftWing(), this.getHorizontalStab(), this.getVerticalStab()};
@@ -1311,7 +1151,8 @@ public class Drone implements WorldObject {
 	/**
 	 * Getter for the rotation vector
 	 *
-	 * @return
+	 * @return the rotation vector of the drone
+	 * @author Martijn Sauwens
 	 */
 	public Vector getRotationVector() {
 		return rotationVector;
@@ -1462,20 +1303,25 @@ public class Drone implements WorldObject {
 
 	/**
 	 * Calculates the total mass of the drone
-	 * @return the mass of the wings, the drone and the engine
+	 * @return the mass of the wings and the engine
 	 * @author Martijn Sauwens
 	 */
 	public float getTotalMass(){
-		float totalMass = 0;
+		float totalMass = this.getEngineMass();
 
 		Wing[] wingArray = this.getWingArray();
 		for(Wing wing: wingArray){
 			totalMass += wing.getMass();
 		}
-		totalMass += this.getEngineMass() + this.getDroneMass();
 
 		return totalMass;
 	}
+
+
+	/**
+	 * A variable containing the autopilot loaded onto the drone
+	 */
+	private final AutoPilot AP;
 
 	/**
 	 * Variable containing the right wing of the drone (immutable)
@@ -1528,11 +1374,6 @@ public class Drone implements WorldObject {
 	private Vector angularAccelerationVector;
 
 	/**
-	 * A variable containing the mass of the drone (immutable)
-	 */
-	private float droneMass;
-
-	/**
 	 * A variable containing the mass of the engine of the drone (immutable)
 	 */
 	private float engineMass;
@@ -1557,136 +1398,6 @@ public class Drone implements WorldObject {
 	 */
 	private SquareMatrix inertiaTensor;
 
-	/**
-	 * A variable containing the amount of time (in seconds) the drone must wait before being able to call the autopilot
-	 */
-	private float queueTime;
-
-	/**
-	 * A getter that returns the current queueTime
-	 */
-	private float getQueueTime() {
-		return this.queueTime;
-	}
-
-	/**
-	 * A setter that sets the new queueTime
-	 *
-	 * @param newQueueTime the new amount of queue time (in seconds)
-	 * @author anthonyrathe
-	 */
-	private void setQueueTime(float newQueueTime) {
-		this.queueTime = newQueueTime;
-	}
-
-	/**
-	 * Method for telling whether or not a next state is available
-	 */
-	private boolean nextStateAvailable() {
-		return this.getQueueTime() > 0;
-	}
-
-	/**
-	 * A variable containing the new thrust of the drone, after queueTime has elapsed, as calculated by the autopilot
-	 */
-	private float nextThrust;
-
-	/**
-	 * A getter that returns the next amount of thrust
-	 */
-	private float getNextThrust() {
-		return this.nextThrust;
-	}
-
-	private void setNextThrust(float thrust){
-		this.nextThrust = thrust;
-	}
-
-	/**
-	 * A variable containing the current left wing inclination of the drone
-	 */
-	private float leftWingInclination;
-
-	/**
-	 * A variable containing the new left wing inclination of the drone, after queueTime has elapsed, as calculated by the autopilot
-	 */
-	private float nextLeftWingInclination;
-
-	/**
-	 * A getter that returns the next left wing inclination
-	 */
-	private float getNextLeftWingInclination() {
-		return this.nextLeftWingInclination;
-	}
-
-	private void setNextLeftWingInclination(float leftWingInclination){
-		this.nextLeftWingInclination = leftWingInclination;
-	}
-
-	/**
-	 * A variable containing the current right wing inclination of the drone
-	 */
-	private float rightWingInclination;
-
-	/**
-	 * A variable containing the new right wing inclination of the drone, after queueTime has elapsed, as calculated by the autopilot
-	 */
-	private float nextRightWingInclination;
-
-	/**
-	 * A getter that returns the next right wing inclination
-	 */
-	private float getNextRightWingInclination() {
-		return this.nextRightWingInclination;
-	}
-
-	private void setNextRightWingInclination(float rightWingInclination){
-		this.nextRightWingInclination = rightWingInclination;
-	}
-
-
-	/**
-	 * A variable containing the current horizontal stabilizer inclination of the drone
-	 */
-	private float horStabInclination;
-
-	/**
-	 * A variable containing the current vertical stabilizer inclination of the drone
-	 */
-	private float verStabInclination;
-	
-	/**
-	 * A variable containing the new horizontal stabilizers inclination of the drone, after queueTime has elapsed, as calculated by the autopilot
-	 */
-	private float nextHorStabInclination;
-	
-	private void setNextHorStabInclination(float horStabInclination){
-		this.nextHorStabInclination = horStabInclination;
-	}
-
-	/**
-	 * A getter that returns the next horizontal stabilizer inclination
-	 */
-	private float getNextHorStabInclination() {
-		return this.nextHorStabInclination;
-	}
-
-	/**
-	 * A variable containing the new vertical stabilizers inclination of the drone, after queueTime has elapsed, as calculated by the autopilot
-	 */
-	private float nextVerStabInclination;
-
-	/**
-	 * A getter that returns the next vertical stabilizer inclination
-	 */
-	private float getNextVerStabInclination() {
-		return this.nextVerStabInclination;
-	}
-	
-	private void setNextVerStabInclination(float verStabInclination){
-		this.nextVerStabInclination = verStabInclination;
-	}
-
 	/*
 	 * Constants
 	 */
@@ -1706,9 +1417,24 @@ public class Drone implements WorldObject {
 	 */
 	private static float GRAVITY = 9.81060f;
 
-	
-	
+	/**
+	 * setter for the autopilot Configuration
+	 * @param autopilotConfig the autopilot configuration
+	 * @author Martijn Sauwens
+	 */
+	public void configureAutopilot(AutopilotConfig autopilotConfig) throws IllegalArgumentException{
+		if(this.autopilotConfig != null){
+			throw new IllegalArgumentException(AUTOPILOT_CONFIG);
+		}
+		this.autopilotConfig = autopilotConfig;
+	}
+
+	/**
+	 * Variable thatb stores the configuration of the autopilot
+	 */
 	private AutopilotConfig autopilotConfig;
+
+	//---- START OF STREAM STUFF ---//
 	/**
 	 * Creates an AutopilotConfig file which contains all values from the Autopilot config interface
 	 * @throws IOException
@@ -1717,12 +1443,13 @@ public class Drone implements WorldObject {
 	public void setupAutopilotConfig()throws IOException{
 	    	DataOutputStream dataOutputStream =
 	                new DataOutputStream(new FileOutputStream(dataStreamLocationConfig));
-	    	
+
 
 	        AutopilotConfig value = new AutopilotConfig() {
 	            public float getGravity() { return Drone.GRAVITY; }
 	            public float getWingX() { return  Math.abs(getRightWing().getRelativePosition().getxValue()); }
-	            public float getTailSize() { return Math.abs(getHorizontalStab().getRelativePosition().getzValue()); }	            public float getEngineMass() { return getEngineMass(); }
+	            public float getTailSize() { return Math.abs(getHorizontalStab().getRelativePosition().getzValue()); }
+	            public float getEngineMass() { return getEngineMass(); }
 	            public float getWingMass() { return getLeftWing().getMass(); }
 	            public float getTailMass() { return getLeftWing().getMass(); }
 	            public float getMaxThrust() { return getMaxThrust(); }
@@ -1735,7 +1462,7 @@ public class Drone implements WorldObject {
 	            public int getNbColumns() { return nbColumns; }
 	            public int getNbRows() { return nbRows; }
 	        };
-	        AutopilotConfigWriter.write(dataOutputStream, value);    	
+	        AutopilotConfigWriter.write(dataOutputStream, value);
 	    	dataOutputStream.close();
 	    }
 		/**
@@ -1784,7 +1511,8 @@ public class Drone implements WorldObject {
 	     * Variable for the filename that's created when making the AutopilotInputs datastream 
 	     */
 	    private String dataStreamLocationInputs = "APInputs.txt";
-	    
+
+	// ---- END OF STREAM STUFF ---- //
 	    
 	/*
 	 * Error Messages:
@@ -1800,5 +1528,260 @@ public class Drone implements WorldObject {
 			"have not been initialized yet";
 	private final static String ILLEGAL_CONFIG = "The given configuration contains illegal values and or arguments";
 	private final static String INVALID_TIMESTEP = "The provided time needs to be strictly positive";
+	private final static String AUTOPILOT_CONFIG = "the autopilot has already been initialized";
+
+	/*
+	code graveyard:
+	 */
+//
+//
+//	//------- Drone Controlling Methods -------
+//	/**
+//	 * @author anthonyrathe
+//	 */
+//	private void clockRollStart(){
+//		this.getLeftWing().setWingInclination(-this.getLeftWing().getMaximumAngleOfAttack());
+//		this.getRightWing().setWingInclination(this.getRightWing().getMaximumAngleOfAttack());
+//	}
+//
+//	/**
+//	 * @author anthonyrathe
+//	 */
+//	private void counterClockRollStart(){
+//		this.getLeftWing().setWingInclination(this.getLeftWing().getMaximumAngleOfAttack());
+//		this.getRightWing().setWingInclination(-this.getRightWing().getMaximumAngleOfAttack());
+//	}
+//
+//	/**
+//	 * @author anthonyrathe
+//	 */
+//	private void stopRoll(){
+//		this.getLeftWing().setWingInclination(0f);
+//		this.getRightWing().setWingInclination(0f);
+//	}
+//
+//	/**
+//	 * @author anthonyrathe
+//	 */
+//	private void startTurnLeft(){
+//		this.getVerticalStab().setWingInclination(this.getVerticalStab().getMaximumAngleOfAttack());
+//	}
+//
+//	/**
+//	 * @author anthonyrathe
+//	 */
+//	private void startTurnRight(){
+//		this.getVerticalStab().setWingInclination(-this.getVerticalStab().getMaximumAngleOfAttack());
+//	}
+//
+//	/**
+//	 * @author anthonyrathe
+//	 */
+//	private void stopTurn(){
+//		this.getVerticalStab().setWingInclination(0f);
+//	}
+//
+//	/**
+//	 * @author anthonyrathe
+//	 */
+//	private void startAscend(){
+//		this.getHorizontalStab().setWingInclination(this.getHorizontalStab().getMaximumAngleOfAttack());
+//	}
+//
+//	/**
+//	 * @author anthonyrathe
+//	 */
+//	private void startDescend(){
+//		this.getHorizontalStab().setWingInclination(-this.getHorizontalStab().getMaximumAngleOfAttack());
+//
+//	}
+//
+//	/**
+//	 * @author anthonyrathe
+//	 */
+//	private void stopAscendDescend(){
+//		this.getHorizontalStab().setWingInclination(0f);
+//	}
+//
+//
+//	/**
+//	 * Changes the state of the drone to the next state, as calculated earlier by the autopilot.
+//	 * State will remain the same if there is no queue-time.
+//	 * @author anthonyrathe
+//	 */
+//	public void nextState() {
+//		if (this.nextStateAvailable()) {
+//			this.setThrust(this.getNextThrust());
+//			this.getLeftWing().setWingInclination(this.getNextLeftWingInclination());
+//			this.getRightWing().setWingInclination(this.getNextRightWingInclination());
+//			this.getHorizontalStab().setWingInclination(this.getNextHorStabInclination());
+//			this.getVerticalStab().setWingInclination(this.getNextVerStabInclination());
+//		}
+//	}
+//
+//	/**
+//	 * A variable containing the amount of time (in seconds) the drone must wait before being able to call the autopilot
+//	 */
+//	private float queueTime;
+//
+//	/**
+//	 * A getter that returns the current queueTime
+//	 */
+//	private float getQueueTime() {
+//		return this.queueTime;
+//	}
+//
+//	/**
+//	 * A setter that sets the new queueTime
+//	 *
+//	 * @param newQueueTime the new amount of queue time (in seconds)
+//	 * @author anthonyrathe
+//	 */
+//	private void setQueueTime(float newQueueTime) {
+//		this.queueTime = newQueueTime;
+//	}
+//
+//	/**
+//	 * Method for telling whether or not a next state is available
+//	 */
+//	private boolean nextStateAvailable() {
+//		return this.getQueueTime() > 0;
+//	}
+//
+//	/**
+//	 * A variable containing the new thrust of the drone, after queueTime has elapsed, as calculated by the autopilot
+//	 */
+//	private float nextThrust;
+//
+//	/**
+//	 * A getter that returns the next amount of thrust
+//	 */
+//	private float getNextThrust() {
+//		return this.nextThrust;
+//	}
+//
+//	private void setNextThrust(float thrust){
+//		this.nextThrust = thrust;
+//	}
+//
+//	/**
+//	 * A variable containing the current left wing inclination of the drone
+//	 */
+//	private float leftWingInclination;
+//
+//	/**
+//	 * A variable containing the new left wing inclination of the drone, after queueTime has elapsed, as calculated by the autopilot
+//	 */
+//	private float nextLeftWingInclination;
+//
+//	/**
+//	 * A getter that returns the next left wing inclination
+//	 */
+//	private float getNextLeftWingInclination() {
+//		return this.nextLeftWingInclination;
+//	}
+//
+//	private void setNextLeftWingInclination(float leftWingInclination){
+//		this.nextLeftWingInclination = leftWingInclination;
+//	}
+//
+//	/**
+//	 * A variable containing the current right wing inclination of the drone
+//	 */
+//	private float rightWingInclination;
+//
+//	/**
+//	 * A variable containing the new right wing inclination of the drone, after queueTime has elapsed, as calculated by the autopilot
+//	 */
+//	private float nextRightWingInclination;
+//
+//	/**
+//	 * A getter that returns the next right wing inclination
+//	 */
+//	private float getNextRightWingInclination() {
+//		return this.nextRightWingInclination;
+//	}
+//
+//	private void setNextRightWingInclination(float rightWingInclination){
+//		this.nextRightWingInclination = rightWingInclination;
+//	}
+//
+//
+//
+//	/**
+//	 * A variable containing the new horizontal stabilizers inclination of the drone, after queueTime has elapsed, as calculated by the autopilot
+//	 */
+//	private float nextHorStabInclination;
+//
+//	private void setNextHorStabInclination(float horStabInclination){
+//		this.nextHorStabInclination = horStabInclination;
+//	}
+//
+//	/**
+//	 * A getter that returns the next horizontal stabilizer inclination
+//	 */
+//	private float getNextHorStabInclination() {
+//		return this.nextHorStabInclination;
+//	}
+//
+//	/**
+//	 * A variable containing the new vertical stabilizers inclination of the drone, after queueTime has elapsed, as calculated by the autopilot
+//	 */
+//	private float nextVerStabInclination;
+//
+//	/**
+//	 * A getter that returns the next vertical stabilizer inclination
+//	 */
+//	private float getNextVerStabInclination() {
+//		return this.nextVerStabInclination;
+//	}
+//
+//	private void setNextVerStabInclination(float verStabInclination){
+//		this.nextVerStabInclination = verStabInclination;
+//	}
+//
+//	/**
+//	 * Moves the drone for a given amount of time, taking in account autopilot input.
+//	 *
+//	 * @param duration the amount of time the drone should be moved
+//	 * @author anthonyrathe
+//	 * @throws IOException
+//	 */
+//	public void evolve(float duration) throws IOException {
+//		while (duration > 0) {
+//			if (this.nextStateAvailable()) {
+//				if (duration >= this.getQueueTime()) {
+//					this.move(this.getQueueTime());
+//					this.nextState();
+//					duration = duration - this.getQueueTime();
+//					this.setQueueTime((float) 0.0);
+//				} else {
+//					this.move(duration);
+//					this.setQueueTime(getQueueTime() - duration);
+//					duration = (float) 0.0;
+//				}
+//			} else {
+//				AutopilotInputs input = updateAutopilotInput(duration);// TODO input stream
+//				AutoPilot AP = this.getAutopilot();
+//				AutopilotOutputs APO = AP.simulationStarted(autopilotConfig, input);
+//				this.setThrust(APO.getThrust());
+//				this.setLeftWingInclination(APO.getLeftWingInclination());
+//				this.setRightWingInclination(APO.getRightWingInclination());
+//				this.setHorStabInclination(APO.getHorStabInclination());
+//				this.setNextVerStabInclination(APO.getVerStabInclination());
+//				if (duration >= AP_CALC_TIME) {
+//					duration = duration - AP_CALC_TIME;
+//					this.move(AP_CALC_TIME);
+//					this.nextState();
+//				} else {
+//					this.move(duration);
+//					this.setQueueTime(AP_CALC_TIME - duration);
+//					duration = (float) 0.0;
+//				}
+//			}
+//		}
+//	}
+
+
 
 }
