@@ -1,6 +1,6 @@
 package internal;
 
-import org.lwjgl.system.CallbackI;
+import com.sun.javafx.scene.CameraHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +39,7 @@ public class AutoPilotCamera {
         this.nbColumns = nbColumns;
         this.horizAngleOfView = horizontalAngleOfView;
         this.verticalAngleOfView = verticalAngleOfView;
-        this.image2DArray = this.convertToPixel2DArray(image, nbRows, nbColumns);
+        this.setCameraImage(this.convertToCameraImage(image, nbRows, nbColumns));
         this.world = new World();
     }
 
@@ -100,7 +100,7 @@ public class AutoPilotCamera {
         for(int rowIndex = 0; rowIndex != nbRows; rowIndex++){
             for(int columnIndex = 0; columnIndex != nbColumns; columnIndex++){
                 //select the pixel
-                Pixel currentPixel = this.getImage2DArray().getElementAtIndex(rowIndex, columnIndex);
+                Pixel currentPixel = this.getCameraImage().getElementAtIndex(rowIndex, columnIndex);
                 //convert to HSV
                 Vector HSV = new Vector(currentPixel.convertToHSV());
                 float hValue = HSV.getxValue();
@@ -121,11 +121,8 @@ public class AutoPilotCamera {
      * @param newImageArray the byte array containing the next image
      */
     public void loadNextImage(byte[] newImageArray){
-        if(! canHaveAsImageArray(newImageArray))
-            throw new IllegalArgumentException(ILLEGAL_SIZE);
-        Array2D<Pixel> newImage = this.convertToPixel2DArray(newImageArray, this.getNbRows(), this.getNbColumns());
-        this.setImage2DArray(newImage);
-
+        CameraImage newImage = this.convertToCameraImage(newImageArray, this.getNbRows(), this.getNbColumns());
+        this.setCameraImage(newImage);
         this.setDestination(this.locateRedCube());
     }
 
@@ -156,75 +153,6 @@ public class AutoPilotCamera {
         return pixelArray;
     }
 
-    public Array2D<Pixel> downsampleImage(int sampleFactor){
-        if(!canBeDownSampled(sampleFactor))
-            throw new IllegalArgumentException(INCOMPATIBLE_SIZE);
-
-        int newNbCols = this.getNbColumns()/sampleFactor;
-        int newNbRows = this.getNbRows()/sampleFactor;
-        Pixel[] downsampledArray = new Pixel[newNbCols*newNbCols];
-
-        for(int rowIndex = 0; rowIndex != newNbRows; rowIndex++){
-            for(int columnIndex = 0; columnIndex != newNbCols; columnIndex++){
-                Array2D<Pixel> sample = this.getImage2DArray().getSlice(rowIndex*sampleFactor, (sampleFactor+1)*(rowIndex + 1),
-                        columnIndex*sampleFactor, (sampleFactor + 1)*(columnIndex + 1));
-                if(containsPixelWith(RED_H_VALUE, RED_S_VALUE, Z_AXIS_V_VALUE, (Pixel[]) sample.getArray2DList().toArray())){
-                    downsampledArray[rowIndex*newNbRows+columnIndex] = new Pixel(RED_H_VALUE, RED_S_VALUE, Z_AXIS_V_VALUE);
-                }else{
-
-                }
-            }
-
-
-        }
-        return null;
-
-    }
-
-    public static boolean containsPixelWith(float H, float S, float V, Pixel[] pixelArray){
-        for(Pixel pixel: pixelArray){
-            float [] pixelHSV = pixel.convertToHSV();
-            if(pixelHSV[0] == H && pixelHSV[1] == S && pixelHSV[2] == V){
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public static Pixel getMeanPixel(Pixel[] pixelArray){
-
-        int length = pixelArray.length;
-        int red = 0;
-        int green = 0;
-        int blue = 0;
-
-        for(Pixel pixel: pixelArray){
-            red += pixel.getRedInt();
-            green += pixel.getGreenInt();
-            blue += pixel.getBlueInt();
-        }
-
-        return null;
-    }
-
-    /**
-     * Checks if the image can be down sampled by a given factor
-     * @param samplefactor
-     * @return
-     */
-    private boolean canBeDownSampled(int samplefactor){
-        if (samplefactor <= 0)
-            return false;
-
-        int nbCols = this.getNbColumns();
-        int nbRows = this.getNbRows();
-
-        int remainCols = nbCols%samplefactor;
-        int remainRows = nbRows%samplefactor;
-
-        return remainCols == 0 && remainRows == 0;
-    }
 
     /**
      * Converts an image byte array to a 2D array containing the pixels of the image
@@ -233,27 +161,27 @@ public class AutoPilotCamera {
      * @param nbColumns the number cf columns of the pixel array
      * @return a 2D array containing the pixels of the image
      */
-    public Array2D<Pixel> convertToPixel2DArray(byte[] byteImage, int nbRows, int nbColumns){
+    public CameraImage convertToCameraImage(byte[] byteImage, int nbRows, int nbColumns){
         Pixel[] pixelArray = this.convertToPixelArray(byteImage);
-        return new Array2D<Pixel>(pixelArray, nbRows, nbColumns);
+        return new CameraImage(pixelArray, nbRows, nbColumns);
     }
 
     public boolean isValidAngleOfView(float angle){
         return angle > 0.0f && angle <= Math.PI;
     }
 
-    public Array2D<Pixel> getImage2DArray(){
-        return this.image2DArray;
+    public CameraImage getCameraImage(){
+        return this.cameraImage;
     }
 
-    public void setImage2DArray(Array2D<Pixel> image2DArray){
-
+    public void setCameraImage(CameraImage cameraImage){
+        this.cameraImage = cameraImage;
     }
 
     /**
-     * Checks if the given image array can be set as as image array?
-     * @param imageArray the image2DArray to be checked
-     * @return true if and only if the image2DArray is the right size
+     * Checks if the given image array can be set as as image array
+     * @param imageArray the cameraImage to be checked
+     * @return true if and only if the cameraImage is the right size
      */
     public boolean canHaveAsImageArray(byte[] imageArray){
        return this.getNbRows()*this.getNbColumns() == imageArray.length/NB_OF_BYTES_IN_PIXEL;
@@ -296,7 +224,7 @@ public class AutoPilotCamera {
     /*
         Variables
          */
-    private Array2D<Pixel> image2DArray;
+    private CameraImage cameraImage;
 
     /**
      * The number of pixel rows the pixel image contains (immutable)
