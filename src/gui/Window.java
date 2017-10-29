@@ -102,10 +102,12 @@ public class Window {
 	}
 
 	public void renderFrame() {	
+
 		// Run the rendering unless the user has attempted to close
 		// the window or has pressed the ESCAPE key.
 		if (glfwWindowShouldClose(window)) {
 			terminate();
+			return;
 		}
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
@@ -125,11 +127,15 @@ public class Window {
 		
 		// Free the window callbacks and destroy the window
 		glfwFreeCallbacks(window);
+		Renderer.checkError();
 		glfwDestroyWindow(window);
-
+		Renderer.checkError();
+		
 		// Terminate GLFW and free the error callback
 		glfwTerminate();
+		Renderer.checkError();
 		glfwSetErrorCallback(null).free();
+		Renderer.checkError();
 	}
 	
 	public void updateTime() {

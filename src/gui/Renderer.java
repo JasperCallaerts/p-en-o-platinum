@@ -102,6 +102,8 @@ public class Renderer {
         }
 
     	program.delete();
+    	
+        checkError();
     }
 
     /**
@@ -139,6 +141,8 @@ public class Renderer {
         
         position = position.add(vec.scale(SPEED * (float)delta));
         viewMatrix = Matrix4f.viewMatrix(right, up, look, position);
+        
+        checkError();
 	}
 	
 	private boolean isKeyPressed(int keyCode) {
