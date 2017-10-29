@@ -33,6 +33,10 @@ import javax.swing.text.html.HTMLDocument.Iterator;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.system.MemoryStack;
 
+import internal.Block;
+import internal.Drone;
+import internal.World;
+import internal.WorldObject;
 import math.Matrix4f;
 import math.Vector3f;
 
@@ -46,7 +50,8 @@ public class Renderer {
     private Vector3f position = new Vector3f(0, 0, 0);
 	private long window;
 	private Mouse mouse;
-	private Map<String, Cube> cubes = new HashMap<String, Cube>(); 
+//	private Map<String, Cube> cubes = new HashMap<String, Cube>(); 
+	private World world;
 
 	private float yaw = 0;
 	private float pitch = 0;
@@ -66,10 +71,10 @@ public class Renderer {
 		program = new ShaderProgram(false, "resources/default.vert", "resources/default.frag");
 		mouse = new Mouse(window);
 		
-		Cube cube = new Cube(program, new Vector3f(0f, 0f, -10f), new Vector3f(0.5f, 0f, 0f));
-		cubes.put("cube", cube);
-		Cube drone = new Cube(program, new Vector3f(), new Vector3f(0.8f, 0.5f, 0f));
-		cubes.put("drone", drone);
+//		Cube cube = new Cube(new Vector3f(0f, 0f, -10f), new Vector3f(0.5f, 0f, 0f));
+//		cubes.put("cube", cube);
+//		Cube drone = new Cube(new Vector3f(), new Vector3f(0.8f, 0.5f, 0f));
+//		cubes.put("drone", drone);
 	}
 
 	/**
@@ -97,8 +102,17 @@ public class Renderer {
 		}
         projectionMatrix = Matrix4f.perspective(FOV, ratio, NEAR, FAR);
         
-        for (Cube object : cubes.values()) {
-        	object.init();
+//        for (Cube object : cubes.values()) {
+//        	object.init(program);
+//        }
+        java.util.Iterator<Block> blockIterator = world.getBlockSet().iterator(); 
+        while (blockIterator.hasNext()){
+        	blockIterator.next().init(program);
+        }
+        
+        java.util.Iterator<Drone> droneIterator = world.getDroneSet().iterator(); 
+        while (droneIterator.hasNext()){
+        	droneIterator.next().init(program);
         }
         
         checkError();
@@ -108,8 +122,17 @@ public class Renderer {
      * Releases in use OpenGL resources.
      */
     public void release() {
-    	for (Cube object : cubes.values()) {
-    		object.delete();
+//    	for (Cube object : cubes.values()) {
+//    		object.delete();
+//        }
+    	java.util.Iterator<Block> blockIterator = world.getBlockSet().iterator(); 
+        while (blockIterator.hasNext()){
+        	blockIterator.next().delete();
+        }
+        
+        java.util.Iterator<Drone> droneIterator = world.getDroneSet().iterator(); 
+        while (droneIterator.hasNext()){
+        	droneIterator.next().delete();
         }
 
     	program.delete();
@@ -149,9 +172,19 @@ public class Renderer {
         viewMatrix = Matrix4f.viewMatrix(right, up, look, position);
         
 //        cubes.get("cube").update(new Vector3f((float) (Math.cos(glfwGetTime())*delta), (float) (Math.sin(glfwGetTime())*delta), 0f));
-        if (cubes.get("drone").getPostition().z > cubes.get("cube").getPostition().z + 1f) {
-        	cubes.get("drone").update(new Vector3f(0, 0, (float) -delta));
+//        if (cubes.get("drone").getPostition().z > cubes.get("cube").getPostition().z + 1f) {
+//        	cubes.get("drone").update(new Vector3f(0, 0, (float) -delta));
+//        }
+        
+        java.util.Iterator<Block> blockIterator = world.getBlockSet().iterator(); 
+        while (blockIterator.hasNext()){
+        	blockIterator.next().update(new Vector3f());
         }
+        
+//        java.util.Iterator<Drone> droneIterator = world.getDroneSet().iterator(); 
+//        while (droneIterator.hasNext()){
+//        	droneIterator.next().update(new Vector3f());
+//        }
 	}
 	
 	private boolean isKeyPressed(int keyCode) {
@@ -167,8 +200,17 @@ public class Renderer {
         program.setUniform("projectionMatrix", projectionMatrix);
         program.setUniform("viewMatrix", viewMatrix);
         
-        for (Cube object : cubes.values()) {
-        	object.render();
+//        for (Cube object : cubes.values()) {
+//        	object.render();
+//        }
+        java.util.Iterator<Block> blockIterator = world.getBlockSet().iterator(); 
+        while (blockIterator.hasNext()){
+        	blockIterator.next().render();
+        }
+        
+        java.util.Iterator<Drone> droneIterator = world.getDroneSet().iterator(); 
+        while (droneIterator.hasNext()){
+        	droneIterator.next().render();
         }
         
         program.unbind();

@@ -11,6 +11,8 @@ import Autopilot.AutopilotConfigWriter;
 import Autopilot.AutopilotInputs;
 import Autopilot.AutopilotInputsWriter;
 import Autopilot.AutopilotOutputs;
+import gui.Cube;
+import math.Vector3f;
 
 /**
  * 
@@ -20,7 +22,7 @@ import Autopilot.AutopilotOutputs;
  * 	note: Orientation = (heading, pitch, roll) (in that order)
  * 	the orientation has always values in the range [-PI, PI]
  */
-public class Drone implements WorldObject {
+public class Drone extends Cube implements WorldObject {
 
 	/**
 	 * Constructor for a drone class object
@@ -39,6 +41,7 @@ public class Drone implements WorldObject {
 	public Drone(float engineMass, float maxThrust, Vector position, Vector velocity, Vector orientation,
 		  Vector rotationVector, Wing rightMainWing, Wing leftMainWing, Wing horizontalStab, Wing verticalStab, AutoPilot AP) {
 
+    super(Vector3f.toVector3f(position), new Vector3f());
 		if (!this.canHaveAsEngineMass(engineMass) || !this.canHaveAsMaxThrust(maxThrust)) {
 			throw new IllegalArgumentException(ILLEGAL_CONFIG);
 		}
@@ -426,6 +429,8 @@ public class Drone implements WorldObject {
 
 		this.setVelocity(velocity);
 		this.setPosition(position);
+    
+		update(new Vector3f());
 
 	}
 
