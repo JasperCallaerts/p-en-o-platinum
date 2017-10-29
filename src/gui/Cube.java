@@ -45,9 +45,8 @@ public class Cube {
 	private Vector3f position = new Vector3f();
 	private Vector3f colour = new Vector3f();
 	
-	public Cube(ShaderProgram program, Vector3f position, Vector3f colour) {
+	public Cube(Vector3f position, Vector3f colour) {
 		mesh = new Mesh();
-		this.program = program;
 		
 		this.position = position;
 		this.colour  = colour;
@@ -63,7 +62,8 @@ public class Cube {
 			};
 	}
 
-	public void init() {
+	public void init(ShaderProgram program) {
+		setShaderProgram(program);
 		mesh.init(positions, colours, indices);
 		modelMatrix = Matrix4f.translate(position.x, position.y, position.z);
 	}
@@ -82,7 +82,11 @@ public class Cube {
 		modelMatrix = Matrix4f.translate(position.x, position.y, position.z);
 	}
 	
-	public Vector3f getPostition() {
+	public void setShaderProgram(ShaderProgram program) {
+		this.program = program;
+	}
+	
+	public Vector3f getPos() {
 		return this.position;
 	}
 }

@@ -2,6 +2,8 @@ package internal;
 
 import java.io.IOException;
 
+import gui.Cube;
+
 /**
  * 
  * @author anthonyrathe
