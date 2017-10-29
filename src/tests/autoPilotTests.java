@@ -1,4 +1,5 @@
 package tests;
+import gui.Cube;
 import org.junit.Test;
 
 import Autopilot.AutopilotConfig;
@@ -32,7 +33,7 @@ import org.junit.Before;
 
 /**
  * 
- * @author Anthony Rathé
+ * @author Anthony Rathï¿½
  * 
  */
 // TODO autopilot debuggen
@@ -108,7 +109,9 @@ public class autoPilotTests {
 				rotation, wing2, wing1, wing3, wing4, AP); 
 		
 		world = new World();
-		redBlock = new Block(new Vector3f(0f,0f,0f), new Vector3f(255, 0, 0));
+		redBlock = new Block(new Vector(0f,0f,0f));
+		Cube redCube = new Cube(new Vector3f(0f,0f,0f), new Vector3f(255, 0, 0));
+		redBlock.setAssocatedCube(redCube);
 		world.addWorldObject(redBlock);
 		world.addWorldObject(drone);
 		

@@ -1,4 +1,5 @@
 package tests;
+import internal.HSVconverter;
 import internal.Vector;
 import org.junit.Test;
 
@@ -66,6 +67,13 @@ public class VectorTest {
 	public final void getAngle(){
 		float angle = vector1.getAngleBetween(vector2);
 		assertEquals(angle, Math.PI/2.0, EPSILON);
+	}
+
+	@Test
+	public final void HSVtester(){
+
+		float[] converted = HSVconverter.RGBtoHSV(1.0f, 1.0f, 0.0f);
+		System.out.println(converted[0] + ", " + converted[1] + ", " + converted[2]);
 	}
 
 }

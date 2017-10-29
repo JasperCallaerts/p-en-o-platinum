@@ -35,8 +35,6 @@ public class Main {
 			//pass the outputs to the drone
 			byte[] camera = Window.getCameraView();
 			drone.setAPImage(camera);
-			//Todo update the camera input of the drone!
-			//drone.getAutopilot().update();
 			try {
 				world.advanceWorldState(TIME_STEP, STEPS_PER_ITERATION);
 			} catch (SimulationEndedException e) {

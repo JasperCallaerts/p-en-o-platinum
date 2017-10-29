@@ -57,7 +57,7 @@ public class droneTest {
 	@Before
 	public void setupDrones(){
 		//dronemass/enginemass/maxthrust
-		drone1 = new Drone(50, 10, 30, position, velocity, orientation, 
+		drone1 = new Drone(10, 30, position, velocity, orientation,
 				rotation, wing2, wing1, wing3, wing4, AP); 
 	}
 	
@@ -136,13 +136,7 @@ public class droneTest {
 		assertEquals(g.getxValue(), v.getxValue(), 0.001);
 		assertEquals(g.getzValue(), v.getzValue(), 0.001);
 	}
-	
-	@Test (expected = IllegalArgumentException.class)
-	public final void canHaveAsDroneMassTest(){
-		drone2 = new Drone(0, 10, 30, position, velocity, orientation, 
-				rotation, wing2, wing1, wing3, wing4, AP);
-		drone2.canHaveAsDroneMass(drone2.getDroneMass());
-	}
+
 	
 	@Test (expected = IllegalArgumentException.class)
 	public final void setVelocityTest(){

@@ -29,9 +29,9 @@ public class Pixel {
      */
     public Pixel(float H, float S, float V){
        float[] rgb = HSVconverter.HSVtoRGB(H, S, V);
-       byte R = (byte) (Math.round(rgb[0]) - BIAS);
-       byte G = (byte) (Math.round(rgb[1]) - BIAS);
-       byte B = (byte) (Math.round(rgb[2]) - BIAS);
+       byte R = (byte) (Math.round(rgb[0]*MAX) - BIAS);
+       byte G = (byte) (Math.round(rgb[1]*MAX) - BIAS);
+       byte B = (byte) (Math.round(rgb[2]*MAX) - BIAS);
 
        this.red = R;
        this.green = G;
@@ -79,9 +79,9 @@ public class Pixel {
      * @return an array Containing the (H, S, V);
      */
     public float[] convertToHSV(){
-        int R = this.getRedInt();
-        int G = this.getGreenInt();
-        int B = this.getBlueInt();
+        float R = this.getRedFloat();
+        float G = this.getGreenFloat();
+        float B = this.getBlueFloat();
         return HSVconverter.RGBtoHSV(R, G, B);
     }
 
@@ -188,6 +188,13 @@ public class Pixel {
     }
 
     /**
+     * getter for the red value of the pixel in float value
+     * @return an floating point value, range (0.0f, 1.0f)
+     */
+    public float getRedFloat(){
+        return this.getRedInt()/255.0f;
+    }
+    /**
      * Setter for the red value of the pixel
      * @param red the desired red value between -128 and 127
      */
@@ -223,6 +230,14 @@ public class Pixel {
     }
 
     /**
+     * Getter for the green floating point value of the pixel
+     * @return an floating point value, range (0.0f, 1.0f)
+     */
+    public float getGreenFloat(){
+        return this.getGreenInt()/255.0f;
+    }
+
+    /**
      * Setter for the green value of the pixel
      * @param green the desired green value between -128 and 127
      */
@@ -255,6 +270,14 @@ public class Pixel {
      */
     public int getBlueInt(){
         return this.getBlue() + BIAS;
+    }
+
+    /**
+     * Getter for the blue value of he pixel in floating point
+     * @return a floating point value, range (0.0f, 1.0f)
+     */
+    public float getBlueFloat(){
+        return this.getBlueInt()/255.0f;
     }
 
     /**
@@ -300,6 +323,7 @@ public class Pixel {
     public final static int MAX = 255;
     public final static int MIN = 0;
     public final static int NB_OF_BYTES_IN_PIXEL = 3;
+
 
     /*
     Error Messages

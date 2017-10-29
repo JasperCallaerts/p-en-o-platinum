@@ -17,18 +17,18 @@ public interface WorldObject {
 	 * @param deltaTime the size of the time step
 	 * @throws IOException 
 	 */
-	public void toNextState(float deltaTime) throws IOException;
+	void toNextState(float deltaTime) throws IOException;
 
 	/**
 	 * Checks if the time difference is valid
 	 * @param deltaTime the time step to be tested
 	 * @return true if and only if deltaTime > 0.0f
 	 */
-	public static boolean isValidTimeStep(float deltaTime){
+	static boolean isValidTimeStep(float deltaTime){
 		return deltaTime > 0.0f;
 	}
 
-	public static boolean canHaveAsWorld(World world){
+	static boolean canHaveAsWorld(World world){
 		return true;
 	};
 
@@ -36,7 +36,7 @@ public interface WorldObject {
 	 * Getter for the position of the world object
 	 * @return the position of the world object in vector format
 	 */
-	public Vector getPosition();
+	Vector getPosition();
 
-	public Cube getAssociatedCube();
+	Cube getAssociatedCube();
 }
