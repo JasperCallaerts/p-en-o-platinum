@@ -98,7 +98,7 @@ public class Window {
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
 		
-		Renderer renderer = new Renderer(window, world);
+		renderer = new Renderer(window, world);
 		renderer.init();
 	}
 

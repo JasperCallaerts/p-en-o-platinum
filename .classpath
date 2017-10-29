@@ -2,11 +2,10 @@
 <classpath>
 	<classpathentry kind="src" path="datatypes/src"/>
 	<classpathentry excluding="src/" kind="src" path="datatypes"/>
-	<classpathentry kind="src" path="src"/><classpathentry kind="src" path="testsource"/>
+	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/LWJGL3"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/liblwjgl"/>
-	<classpathentry kind="lib" path="C:/Users/Anthony Rathe/repos/asteroids/OGP1617-Asteroids/lib/AnnotationsDoclets.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Anthony Rathe/eclipse/libraries/junit-4.12.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Anthony Rathe/eclipse/libraries/hamcrest-core-1.3.jar"/><classpathentry kind="output" path="bin"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
+	<classpathentry kind="output" path="bin"/>
 </classpath>
