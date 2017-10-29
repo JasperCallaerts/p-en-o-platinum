@@ -62,7 +62,7 @@ public class Renderer {
 	}
 
 	/**
-     * Initializes the OpenGL state. Creating programs, VAOs and VBOs and sets 
+     * Initializes the OpenGL state. Creating programs and sets 
      * appropriate state. 
      */
     public void init() {
@@ -101,13 +101,13 @@ public class Renderer {
     	
     	Iterator<WorldObject> iterator = world.getObjectSet().iterator(); 
         while (iterator.hasNext()){
-        	iterator.next().getAssociatedCube().delete(program);
+        	iterator.next().getAssociatedCube().delete();
         }
 
     	program.delete();
     }
 
-	public void update(double delta) {
+	public void processInput(double delta) {
 
 		mouse.update(window);
 		yaw = yaw - mouse.dx() * TURN_SPEED * (float)delta;
@@ -156,7 +156,7 @@ public class Renderer {
         
         Iterator<WorldObject> iterator = world.getObjectSet().iterator(); 
         while (iterator.hasNext()){
-        	iterator.next().getAssociatedCube().render(program);
+        	iterator.next().getAssociatedCube().render();
         }
         
         program.unbind();

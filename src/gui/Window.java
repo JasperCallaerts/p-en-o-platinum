@@ -42,7 +42,7 @@ public class Window {
 		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); 
 
 		// Create the window
-		window = glfwCreateWindow(WIDTH, HEIGHT, "Project X!", NULL, NULL);
+		window = glfwCreateWindow(WIDTH, HEIGHT, "Drone simulator 2017", NULL, NULL);
 		if ( window == NULL )
 			throw new RuntimeException("Failed to create the GLFW window");
 
@@ -109,7 +109,7 @@ public class Window {
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
 
-		renderer.update(getDeltaTime());
+		renderer.processInput(getDeltaTime());
 		renderer.render();
 
 		glfwSwapBuffers(window); // swap the color buffers
