@@ -14,6 +14,7 @@ public class Main {
 	 * @author Martijn Sauwens
 	 */
 	public static void main(String[] args) {
+		// initialize a window
 		Window window = new Window();
 		
 		// drone builder covers all the stuff involving building the drone, adjust parameters there
@@ -30,7 +31,6 @@ public class Main {
 		while (goalNotReached) {
 			
 			//first render the image
-			//Todo implement the render such that it only renders one image if this method is called
 			new Window().renderFrame();
 			//pass the outputs to the drone
 			byte[] camera = Window.getCameraView();
@@ -46,7 +46,7 @@ public class Main {
 			}
 
 		}
-		
+		// close the window
 		window.terminate();
 	}
 	// configuration for 20 fps

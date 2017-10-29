@@ -12,7 +12,6 @@ import static org.lwjgl.glfw.GLFW.GLFW_KEY_W;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_S;
 import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 import static org.lwjgl.glfw.GLFW.glfwGetKey;
-import static org.lwjgl.glfw.GLFW.glfwGetTime;
 import static org.lwjgl.opengl.GL11.GL_INVALID_ENUM;
 import static org.lwjgl.opengl.GL11.GL_INVALID_OPERATION;
 import static org.lwjgl.opengl.GL11.GL_INVALID_VALUE;
@@ -22,13 +21,7 @@ import static org.lwjgl.opengl.GL11.glGetError;
 import static org.lwjgl.opengl.GL30.GL_INVALID_FRAMEBUFFER_OPERATION;
 
 import java.nio.IntBuffer;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
-import javax.swing.text.html.HTMLDocument.Iterator;
+import java.util.Iterator;
 
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.system.MemoryStack;
@@ -50,7 +43,6 @@ public class Renderer {
     private Vector3f position = new Vector3f(0, 0, 0);
 	private long window;
 	private Mouse mouse;
-//	private Map<String, Cube> cubes = new HashMap<String, Cube>(); 
 	private World world;
 
 	private float yaw = 0;
@@ -58,9 +50,6 @@ public class Renderer {
     private static final float SPEED = 1f;
     private static final float TURN_SPEED = 0.1f;
     
-//    private static final Vector3f ABSOLUTE_RIGHT = new Vector3f(1.0f, 0.0f, 0.0f);
-//    private static final Vector3f ABSOLUTE_UP = new Vector3f(0.0f, 1.0f, 0.0f);
-//    private static final Vector3f ABSOLUTE_FRONT = new Vector3f(0.0f, 0.0f, -1.0f);
      
     private static final float FOV = (float) Math.toRadians(60.0f);
 	private static final float NEAR = 0.01f;
@@ -70,11 +59,6 @@ public class Renderer {
 		this.window = window;
 		program = new ShaderProgram(false, "resources/default.vert", "resources/default.frag");
 		mouse = new Mouse(window);
-		
-//		Cube cube = new Cube(new Vector3f(0f, 0f, -10f), new Vector3f(0.5f, 0f, 0f));
-//		cubes.put("cube", cube);
-//		Cube drone = new Cube(new Vector3f(), new Vector3f(0.8f, 0.5f, 0f));
-//		cubes.put("drone", drone);
 	}
 
 	/**
@@ -102,17 +86,9 @@ public class Renderer {
 		}
         projectionMatrix = Matrix4f.perspective(FOV, ratio, NEAR, FAR);
         
-//        for (Cube object : cubes.values()) {
-//        	object.init(program);
-//        }
-        java.util.Iterator<Block> blockIterator = world.getBlockSet().iterator(); 
-        while (blockIterator.hasNext()){
-        	blockIterator.next().init(program);
-        }
-        
-        java.util.Iterator<Drone> droneIterator = world.getDroneSet().iterator(); 
-        while (droneIterator.hasNext()){
-        	droneIterator.next().init(program);
+        Iterator<WorldObject> iterator = world.getObjectSet().iterator(); 
+        while (iterator.hasNext()){
+        	iterator.next().getAssociatedCube().init(program);
         }
         
         checkError();
@@ -122,17 +98,10 @@ public class Renderer {
      * Releases in use OpenGL resources.
      */
     public void release() {
-//    	for (Cube object : cubes.values()) {
-//    		object.delete();
-//        }
-    	java.util.Iterator<Block> blockIterator = world.getBlockSet().iterator(); 
-        while (blockIterator.hasNext()){
-        	blockIterator.next().delete();
-        }
-        
-        java.util.Iterator<Drone> droneIterator = world.getDroneSet().iterator(); 
-        while (droneIterator.hasNext()){
-        	droneIterator.next().delete();
+    	
+    	Iterator<WorldObject> iterator = world.getObjectSet().iterator(); 
+        while (iterator.hasNext()){
+        	iterator.next().getAssociatedCube().delete(program);
         }
 
     	program.delete();
@@ -170,21 +139,6 @@ public class Renderer {
         
         position = position.add(vec.scale(SPEED * (float)delta));
         viewMatrix = Matrix4f.viewMatrix(right, up, look, position);
-        
-//        cubes.get("cube").update(new Vector3f((float) (Math.cos(glfwGetTime())*delta), (float) (Math.sin(glfwGetTime())*delta), 0f));
-//        if (cubes.get("drone").getPostition().z > cubes.get("cube").getPostition().z + 1f) {
-//        	cubes.get("drone").update(new Vector3f(0, 0, (float) -delta));
-//        }
-        
-        java.util.Iterator<Block> blockIterator = world.getBlockSet().iterator(); 
-        while (blockIterator.hasNext()){
-        	blockIterator.next().update(new Vector3f());
-        }
-        
-//        java.util.Iterator<Drone> droneIterator = world.getDroneSet().iterator(); 
-//        while (droneIterator.hasNext()){
-//        	droneIterator.next().update(new Vector3f());
-//        }
 	}
 	
 	private boolean isKeyPressed(int keyCode) {
@@ -200,17 +154,9 @@ public class Renderer {
         program.setUniform("projectionMatrix", projectionMatrix);
         program.setUniform("viewMatrix", viewMatrix);
         
-//        for (Cube object : cubes.values()) {
-//        	object.render();
-//        }
-        java.util.Iterator<Block> blockIterator = world.getBlockSet().iterator(); 
-        while (blockIterator.hasNext()){
-        	blockIterator.next().render();
-        }
-        
-        java.util.Iterator<Drone> droneIterator = world.getDroneSet().iterator(); 
-        while (droneIterator.hasNext()){
-        	droneIterator.next().render();
+        Iterator<WorldObject> iterator = world.getObjectSet().iterator(); 
+        while (iterator.hasNext()){
+        	iterator.next().getAssociatedCube().render(program);
         }
         
         program.unbind();
