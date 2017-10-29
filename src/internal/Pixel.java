@@ -1,6 +1,5 @@
 package internal;
 
-import javax.swing.text.Position;
 
 /**
  * a class of Immutable pixels, represented by RGB values in bytes.

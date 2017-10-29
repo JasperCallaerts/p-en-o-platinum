@@ -1,11 +1,14 @@
 package gui;
 
+import internal.CameraImage;
+import internal.Pixel;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
 import org.lwjgl.system.*;
 
 import java.nio.*;
+import java.util.List;
 
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
@@ -154,10 +157,47 @@ public class Window {
 		buffer.clear();
 		//transfer al the buffered data to the array
 		buffer.get(pixelArray);
-		return pixelArray;
+
+		//rescale the image to the appropriate size
+		byte[] rescaledPixelArray = rescale(pixelArray, WIDTH, CAMERA_WIDTH, HEIGHT, CAMERA_HEIGHT);
+
+		return rescaledPixelArray;
+	}
+
+	/**
+	 * Rescales the given image to an image of size (newNbRows*newNbColumns)
+	 * @param newNbRows the nb of rows the rescaled image contains
+	 * @param newNbColumns the nb of columns the rescaled image contains
+	 * @return a new byte array containing the rescaled image
+	 * note: algorithm is modified version from the one used in:
+	 * http://tech-algorithm.com/articles/nearest-neighbor-image-scaling/
+	 */
+	public static byte[] rescale(byte[] imageArray, int oldNbRows, int newNbRows,int oldNbColumns, int newNbColumns){
+
+
+		byte[] temp = new byte[newNbRows*newNbColumns*3];
+		float xRatio = oldNbColumns/(float)newNbColumns;
+		float yRatio = oldNbRows/(float)newNbRows;
+		float px, py;
+
+		for(int i = 0; i!= newNbRows; i++){
+			for(int j = 0; j!= newNbColumns; j++){
+				px = (float) Math.floor(j*xRatio);
+				py = (float) Math.floor(i*yRatio);
+
+				for(int k = 0; k != 3; k++) {
+					temp[((i * newNbColumns) + j) * 3 + k] = imageArray[((int) (py * oldNbColumns + px)) * 3 + k];
+				}
+
+			}
+		}
+
+		return temp;
 	}
 
 	private static int WIDTH = 1000;
 	private static int HEIGHT = 1000;
+	private static int CAMERA_WIDTH = 200;
+	private static int CAMERA_HEIGHT = 200;
 
 }

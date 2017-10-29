@@ -119,7 +119,10 @@ public class AutoPilotCamera {
      * Sets the image array variable to the
      * @param newImageArray the byte array containing the next image
      */
-    public void loadNextImage(byte[] newImageArray){
+    public void loadNextImage(byte[] newImageArray)throws IllegalArgumentException{
+        if(!canHaveAsImageArray(newImageArray)){
+            throw new IllegalArgumentException(INCOMPATIBLE_SIZE);
+        }
         CameraImage newImage = this.convertToCameraImage(newImageArray, this.getNbRows(), this.getNbColumns());
         this.setCameraImage(newImage);
         this.setDestination(this.locateRedCube());
