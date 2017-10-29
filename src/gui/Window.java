@@ -2,6 +2,8 @@ package gui;
 
 import internal.CameraImage;
 import internal.Pixel;
+import internal.World;
+
 import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
@@ -24,7 +26,7 @@ public class Window {
 	private double time;
 	private double previousTime;
 
-	public Window() {
+	public Window(World world) {
 		// Setup an error callback. The default implementation
 		// will print the error message in System.err.
 		GLFWErrorCallback.createPrint(System.err).set();
@@ -96,7 +98,7 @@ public class Window {
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
 		
-		Renderer renderer = new Renderer(window);
+		Renderer renderer = new Renderer(window, world);
 		renderer.init();
 	}
 

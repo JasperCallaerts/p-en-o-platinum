@@ -26,8 +26,6 @@ import java.util.Iterator;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.system.MemoryStack;
 
-import internal.Block;
-import internal.Drone;
 import internal.World;
 import internal.WorldObject;
 import math.Matrix4f;
@@ -55,7 +53,8 @@ public class Renderer {
 	private static final float NEAR = 0.01f;
 	private static final float FAR = 1000.f;
 
-	public Renderer(long window) {
+	public Renderer(long window, World world) {
+		this.world = world;
 		this.window = window;
 		program = new ShaderProgram(false, "resources/default.vert", "resources/default.frag");
 		mouse = new Mouse(window);
