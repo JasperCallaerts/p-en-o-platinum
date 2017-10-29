@@ -31,7 +31,7 @@ public class Main {
 		while (goalNotReached) {
 			
 			//first render the image
-			new Window().renderFrame();
+			window.renderFrame();
 			//pass the outputs to the drone
 			byte[] camera = Window.getCameraView();
 			drone.setAPImage(camera);
