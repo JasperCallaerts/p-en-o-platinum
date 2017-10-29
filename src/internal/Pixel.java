@@ -1,6 +1,5 @@
 package internal;
 
-import javax.swing.text.Position;
 
 /**
  * a class of Immutable pixels, represented by RGB values in bytes.
@@ -20,6 +19,23 @@ public class Pixel {
         this.setRed(red);
         this.setGreen(green);
         this.setBlue(blue);
+    }
+
+    /**
+     * constructor for a pixel in HSV value
+     * @param H the hue value of the pixel
+     * @param S the saturation value of the pixel
+     * @param V the value value of the pixel
+     */
+    public Pixel(float H, float S, float V){
+       float[] rgb = HSVconverter.HSVtoRGB(H, S, V);
+       byte R = (byte) (Math.round(rgb[0]) - BIAS);
+       byte G = (byte) (Math.round(rgb[1]) - BIAS);
+       byte B = (byte) (Math.round(rgb[2]) - BIAS);
+
+       this.red = R;
+       this.green = G;
+       this.blue = B;
     }
 
     /**

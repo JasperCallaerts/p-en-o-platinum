@@ -25,6 +25,7 @@ package math;
 
 import java.nio.FloatBuffer;
 
+import internal.Vector;
 import math.Vector3f;
 
 /**
@@ -195,4 +196,11 @@ public class Vector3f {
         buffer.flip();
     }
 
+    public static Vector toVector(Vector3f vec) {
+    	return new Vector(vec.x, vec.y, vec.z);
+    }
+    
+    public static Vector3f toVector3f(Vector vec) {
+    	return new Vector3f(vec.getxValue(), vec.getyValue(), vec.getzValue());
+    }
 }

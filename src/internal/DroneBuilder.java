@@ -1,6 +1,8 @@
 package internal;
 
 
+import Autopilot.AutopilotConfig;
+
 /**
  * Created by Martijn on 23/10/2017.
  * @author Martijn Sauwens
@@ -8,12 +10,11 @@ package internal;
 public class DroneBuilder {
 
     /**
-     * Constants used to create the drone
+     * Constants used to create the drone & configure the autopilot
      */
 
-    public final static float DRONE_MASS = 0.0f;
     public final static float ENGINE_MASS = 5.0f;
-    public final static float MAX_THRUST = 1000.0f;
+    public final static float MAX_THRUST = 150.0f;
     public final static float MAIN_WING_MASS = 2.5f;
     public final static float STABILIZER_MASS = 1.25f;
     public final static float MAINWING_START_INCL = (float) Math.PI/12.0f;
@@ -44,12 +45,164 @@ public class DroneBuilder {
         horizontalStabilizer = new HorizontalWing(STABILIZE_POS, LIFT_COEFFICIENT, STABILIZER_MASS, MAX_ANGLE_OF_ATTACK, STABS_START_INCL);
         verticalStabilizer = new VerticalWing(STABILIZE_POS, LIFT_COEFFICIENT, STABILIZER_MASS, MAX_ANGLE_OF_ATTACK, STABS_START_INCL);
 
-        //todo initialize the AP;
-        drone = new Drone(DRONE_MASS, ENGINE_MASS, MAX_THRUST, STARTPOS, START_VEL, START_ORIENTATION, START_ROTATION, rightMain, leftMain, horizontalStabilizer, verticalStabilizer, null);
+        drone = new Drone(ENGINE_MASS, MAX_THRUST, STARTPOS, START_VEL, START_ORIENTATION, START_ROTATION, rightMain, leftMain, horizontalStabilizer, verticalStabilizer, new AutoPilot());
+
+         // configure the autopilot
+        drone.configureAutopilot(this.createConfig());
+
+        // if the drone needs to be balanced, do so (balancing is the act of setting the vertical force to 0
+        // and the Z value to 0
         if(this.isBalanced()){
             balanceDrone(drone);
         }
+
         return drone;
+    }
+
+    /**
+     * Constants to create the autopilotConfig & Autopilot
+     */
+    private final static float HORIZONTALVIEW = 120.0f;
+    private final static float VERTICALVIEW = 120.0f;
+    private final static int NB_ROWS = 200;
+    private final static int NB_COLS= 200;
+
+    /**
+     * Creates an un configured autopilot
+     * @return an autopilot class object
+     */
+    public AutoPilot createAutoPilot(){
+       return  new AutoPilot();
+    }
+
+    /**
+     * Pseudo constructor for a configuration of an autopilotConfig
+     * @return an Autopilot config
+     */
+    public AutopilotConfig createConfig(){
+        return new AutopilotConfig(){
+
+            /**
+             * not used
+             * @return 0.0f
+             */
+            @Override
+            public float getGravity() {
+                return 0;
+            }
+
+            /**
+             * not used
+             * @return
+             */
+            @Override
+            public float getWingX() {
+                return RIGHTWING_POS.getxValue();
+            }
+
+            /**
+             * not used
+             * @return
+             */
+            @Override
+            public float getTailSize() {
+                return STABILIZE_POS.getzValue();
+            }
+
+            /**
+             * not used
+             * @return
+             */
+            @Override
+            public float getEngineMass() {
+                return ENGINE_MASS;
+            }
+
+            /**
+             * not used
+             * @return
+             */
+            @Override
+            public float getWingMass() {
+                return MAIN_WING_MASS;
+            }
+
+            /**
+             * not used
+             * @return
+             */
+            @Override
+            public float getTailMass() {
+                return STABILIZER_MASS;
+            }
+
+            /**
+             * returns the maximum thrust of the drone
+             * @return
+             */
+            @Override
+            public float getMaxThrust() {
+                return MAX_THRUST;
+            }
+
+            /**
+             * not used
+             * @return 0.0f
+             */
+            @Override
+            public float getMaxAOA() {
+                return 0;
+            }
+
+            /**
+             * not used
+             * @return 0.0f
+             */
+            @Override
+            public float getWingLiftSlope() {
+                return LIFT_COEFFICIENT;
+            }
+
+            /**
+             * not used
+             * @return 0.0f
+             */
+            @Override
+            public float getHorStabLiftSlope() {
+                return LIFT_COEFFICIENT;
+            }
+
+            /**
+             * not used
+             * @return 0.0f
+             */
+            @Override
+            public float getVerStabLiftSlope() {
+                return LIFT_COEFFICIENT;
+            }
+
+
+            @Override
+            public float getHorizontalAngleOfView() {
+                return HORIZONTALVIEW;
+            }
+
+            @Override
+            public float getVerticalAngleOfView() {
+                return VERTICALVIEW;
+            }
+
+            @Override
+            public int getNbColumns() {
+                return NB_COLS;
+            }
+
+            @Override
+            public int getNbRows() {
+                return NB_ROWS;
+            }
+        };
+
     }
 
     public void balanceDrone(Drone drone){

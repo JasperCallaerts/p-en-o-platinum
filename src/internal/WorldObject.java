@@ -2,12 +2,14 @@ package internal;
 
 import java.io.IOException;
 
+import gui.Cube;
+
 /**
  * 
  * @author anthonyrathe
  *
  */
-public abstract class WorldObject {
+public interface WorldObject {
 	// public abstract void evolve(float duration) throws IOException;
 
 	/**
@@ -15,7 +17,7 @@ public abstract class WorldObject {
 	 * @param deltaTime the size of the time step
 	 * @throws IOException 
 	 */
-	public abstract void toNextState(float deltaTime) throws IOException;
+	public void toNextState(float deltaTime) throws IOException;
 
 	/**
 	 * Checks if the time difference is valid
@@ -26,7 +28,7 @@ public abstract class WorldObject {
 		return deltaTime > 0.0f;
 	}
 
-	public boolean canHaveAsWorld(World world){
+	public static boolean canHaveAsWorld(World world){
 		return true;
 	};
 
@@ -34,5 +36,5 @@ public abstract class WorldObject {
 	 * Getter for the position of the world object
 	 * @return the position of the world object in vector format
 	 */
-	public abstract Vector getPosition();
+	public Vector getPosition();
 }

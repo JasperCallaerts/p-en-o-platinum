@@ -1,5 +1,7 @@
 package internal;
 
+import com.sun.javafx.scene.CameraHelper;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,8 +29,7 @@ import java.util.List;
  */
 public class AutoPilotCamera {
 
-    public AutoPilotCamera(byte[] image, float horizontalAngleOfView, float verticalAngleOfView, int nbRows, int nbColumns,
-                           String pixelTag) throws IllegalArgumentException{
+    public AutoPilotCamera(byte[] image, float horizontalAngleOfView, float verticalAngleOfView, int nbRows, int nbColumns) throws IllegalArgumentException{
 
         if(!isValidAngleOfView(horizontalAngleOfView) || ! isValidAngleOfView(verticalAngleOfView))
             throw new IllegalArgumentException(VIEWINGANGLE_EXCEPTION);
@@ -37,8 +38,12 @@ public class AutoPilotCamera {
         this.nbColumns = nbColumns;
         this.horizAngleOfView = horizontalAngleOfView;
         this.verticalAngleOfView = verticalAngleOfView;
+<<<<<<< HEAD
         
         this.image2DArray = this.convertToPixel2DArray(image, nbRows, nbColumns);
+=======
+        this.setCameraImage(this.convertToCameraImage(image, nbRows, nbColumns));
+>>>>>>> 063e7a620bfa23f1777f66200ff41a9732279f32
         this.world = new World();
     }
 
@@ -99,7 +104,7 @@ public class AutoPilotCamera {
         for(int rowIndex = 0; rowIndex != nbRows; rowIndex++){
             for(int columnIndex = 0; columnIndex != nbColumns; columnIndex++){
                 //select the pixel
-                Pixel currentPixel = this.getImage2DArray().getElementAtIndex(rowIndex, columnIndex);
+                Pixel currentPixel = this.getCameraImage().getElementAtIndex(rowIndex, columnIndex);
                 //convert to HSV
                 Vector HSV = new Vector(currentPixel.convertToHSV());
                 float hValue = HSV.getxValue();
@@ -119,12 +124,12 @@ public class AutoPilotCamera {
      * Sets the image array variable to the
      * @param newImageArray the byte array containing the next image
      */
-    public void loadNextImage(byte[] newImageArray){
-        if(! canHaveAsImageArray(newImageArray))
-            throw new IllegalArgumentException(ILLEGAL_SIZE);
-        Array2D<Pixel> newImage = this.convertToPixel2DArray(newImageArray, this.getNbRows(), this.getNbColumns());
-        this.setImage2DArray(newImage);
-
+    public void loadNextImage(byte[] newImageArray)throws IllegalArgumentException{
+        if(!canHaveAsImageArray(newImageArray)){
+            throw new IllegalArgumentException(INCOMPATIBLE_SIZE);
+        }
+        CameraImage newImage = this.convertToCameraImage(newImageArray, this.getNbRows(), this.getNbColumns());
+        this.setCameraImage(newImage);
         this.setDestination(this.locateRedCube());
     }
 
@@ -155,6 +160,7 @@ public class AutoPilotCamera {
         return pixelArray;
     }
 
+
     /**
      * Converts an image byte array to a 2D array containing the pixels of the image
      * @param byteImage the bytes containing the pixels of the image
@@ -162,27 +168,27 @@ public class AutoPilotCamera {
      * @param nbColumns the number cf columns of the pixel array
      * @return a 2D array containing the pixels of the image
      */
-    public Array2D<Pixel> convertToPixel2DArray(byte[] byteImage, int nbRows, int nbColumns){
+    public CameraImage convertToCameraImage(byte[] byteImage, int nbRows, int nbColumns){
         Pixel[] pixelArray = this.convertToPixelArray(byteImage);
-        return new Array2D<Pixel>(pixelArray, nbRows, nbColumns);
+        return new CameraImage(pixelArray, nbRows, nbColumns);
     }
 
     public boolean isValidAngleOfView(float angle){
         return angle > 0.0f && angle <= Math.PI;
     }
 
-    public Array2D<Pixel> getImage2DArray(){
-        return this.image2DArray;
+    public CameraImage getCameraImage(){
+        return this.cameraImage;
     }
 
-    public void setImage2DArray(Array2D<Pixel> image2DArray){
-
+    public void setCameraImage(CameraImage cameraImage){
+        this.cameraImage = cameraImage;
     }
 
     /**
-     * Checks if the given image array can be set as as image array?
-     * @param imageArray the image2DArray to be checked
-     * @return true if and only if the image2DArray is the right size
+     * Checks if the given image array can be set as as image array
+     * @param imageArray the cameraImage to be checked
+     * @return true if and only if the cameraImage is the right size
      */
     public boolean canHaveAsImageArray(byte[] imageArray){
        return this.getNbRows()*this.getNbColumns() == imageArray.length/NB_OF_BYTES_IN_PIXEL;
@@ -225,7 +231,7 @@ public class AutoPilotCamera {
     /*
         Variables
          */
-    private Array2D<Pixel> image2DArray;
+    private CameraImage cameraImage;
 
     /**
      * The number of pixel rows the pixel image contains (immutable)
@@ -270,4 +276,5 @@ public class AutoPilotCamera {
     public final static String IO_EXCEPTION = "Something went wrong reading the image";
     public final static String VIEWINGANGLE_EXCEPTION = "the viewing angle is out of range (0, PI]";
     public final static String ILLEGAL_SIZE = "The byte array cannot be converted to a 2D pixel array";
+    public final static String INCOMPATIBLE_SIZE = "the sample size is not a multiple of the dimensions of the array";
 }

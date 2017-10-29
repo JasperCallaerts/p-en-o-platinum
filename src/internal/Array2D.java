@@ -35,18 +35,19 @@ public class Array2D<T> {
      * @param endColumn the end of the 2D array column (exclusive)
      * @return a new 2D array containing a 2D slice of the provided 2D array
      */
-    public Array2D getSlice(int startRow, int endRow, int startColumn, int endColumn){
+    public Array2D<T> getSlice(int startRow, int endRow, int startColumn, int endColumn){
         ArrayList<T> tempArray = new ArrayList<>();
         for(int rowIndex = startRow; rowIndex != endRow; rowIndex++){
             T[] row = this.getRow(rowIndex);
             ArrayList<T> tempRow = new ArrayList<>(Arrays.asList(row));
-            ArrayList<T> columnSlice = (ArrayList<T>) tempRow.subList(startColumn, endColumn);
+            ArrayList<T> columnSlice = new ArrayList<>(tempRow.subList(startColumn, endColumn));
             tempArray.addAll(columnSlice);
         }
 
         T[] elemArray = (T[]) tempArray.toArray();
-        return new Array2D(elemArray, endRow-startRow,endColumn-startColumn );
+        return new Array2D<T>(elemArray, endRow-startRow,endColumn-startColumn );
     }
+
 
     /**
      * Selects a row from the 2D array
@@ -142,6 +143,15 @@ public class Array2D<T> {
     private boolean isValid2DArray(T[] array2DArray, int nbRows, int nbColumns){
         int length = array2DArray.length;
         return length == nbColumns*nbRows;
+    }
+
+    @Override
+    public String toString() {
+        return "Array2D{" +
+                "nbRows=" + nbRows +
+                ", nbColumns=" + nbColumns +
+                ", array2DArray=" + Arrays.toString(array2DArray) +
+                '}';
     }
 
     /**
