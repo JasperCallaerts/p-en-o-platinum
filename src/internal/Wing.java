@@ -261,7 +261,7 @@ public abstract class Wing {
             return false;
         //If the wings are positioned on the z-axis, they can only have
         //negative coordinates
-        if(x_part == 0 && z_part > 0)
+        if(x_part == 0 && z_part < 0)
             return false;
 
         return true;
