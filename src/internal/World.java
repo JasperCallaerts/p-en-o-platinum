@@ -17,7 +17,7 @@ public class World {
 		Xsize = 0;	//max groottes initialiseren
 		Ysize = 0;
 		Zsize = 0;
-		
+
 	}
 	
 	private Set<WorldObject> objects = new HashSet<>();
@@ -106,15 +106,7 @@ public class World {
 		return this.getSet(Block.class);
 	}
 	
-	
-	/**
-	 * Method that evolves the world for a given amount of time
-	 *//*
-	public void evolve(float duration) throws IOException {
-		for(WorldObject object : this.getObjectSet()){
-			object.evolve(duration);
-		}
-	}*/
+
 
 	//Todo evolve the states of the world, for the given time interval, until the stop criteria is met
 
@@ -131,7 +123,6 @@ public class World {
 		if(!isValidTimeInterval(timeInterval))
 			throw new IllegalArgumentException(INVALID_TIME_INTERVAL);
 
-		boolean goalReached = false;
 		Set<Block> blockSet = this.getBlockSet();
 		Set<Drone> droneSet = this.getDroneSet();
 		Set<WorldObject> worldObjectSet = this.getObjectSet();
@@ -177,11 +168,11 @@ public class World {
 	public boolean isValidTimeInterval(float timeInterval){
 		return timeInterval > 0.0f;
 	}
-	
+
 	private final int Xsize;
 	private final int Ysize;
 	private final int Zsize;
-	
+
 	public int getXsize(){
 		return Xsize;
 	}

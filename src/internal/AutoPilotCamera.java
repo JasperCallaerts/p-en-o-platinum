@@ -29,8 +29,7 @@ import java.util.List;
  */
 public class AutoPilotCamera {
 
-    public AutoPilotCamera(byte[] image, float horizontalAngleOfView, float verticalAngleOfView, int nbRows, int nbColumns,
-                           String pixelTag) throws IllegalArgumentException{
+    public AutoPilotCamera(byte[] image, float horizontalAngleOfView, float verticalAngleOfView, int nbRows, int nbColumns) throws IllegalArgumentException{
 
         if(!isValidAngleOfView(horizontalAngleOfView) || ! isValidAngleOfView(verticalAngleOfView))
             throw new IllegalArgumentException(VIEWINGANGLE_EXCEPTION);
@@ -120,7 +119,10 @@ public class AutoPilotCamera {
      * Sets the image array variable to the
      * @param newImageArray the byte array containing the next image
      */
-    public void loadNextImage(byte[] newImageArray){
+    public void loadNextImage(byte[] newImageArray)throws IllegalArgumentException{
+        if(!canHaveAsImageArray(newImageArray)){
+            throw new IllegalArgumentException(INCOMPATIBLE_SIZE);
+        }
         CameraImage newImage = this.convertToCameraImage(newImageArray, this.getNbRows(), this.getNbColumns());
         this.setCameraImage(newImage);
         this.setDestination(this.locateRedCube());
