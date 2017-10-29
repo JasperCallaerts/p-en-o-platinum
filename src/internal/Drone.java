@@ -847,7 +847,7 @@ public class Drone extends Cube implements WorldObject {
 	 * @param duration
 	 * @return autopilotinput for autopilot
 	 */
-	private AutopilotInputs updateAutopilotInput(float duration){
+	public AutopilotInputs updateAutopilotInput(float duration){
 
 		AutopilotInputs input;
 		return  new AutopilotInputs() {
