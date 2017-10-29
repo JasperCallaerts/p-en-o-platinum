@@ -58,11 +58,17 @@ public class AutoPilotCamera {
 
         findRedPixels(xRedCoordinates, yRedCoordinates);
 
+        // if no cube was found, set destination to (0.0, 0.0)
+        if(xRedCoordinates.size() ==0){
+            return new Vector(0.0f, 0.0f, 0.0f);
+        }
+
         int xMeanCoordinate = getMean(xRedCoordinates);
         int yMeanCoordinate = getMean(yRedCoordinates);
 
         float xOffset = this.getNbColumns()/2.0f;
         float yOffset = this.getNbRows()/2.0f;
+
 
         return new Vector(xMeanCoordinate - xOffset, -yMeanCoordinate + yOffset, 0);
 

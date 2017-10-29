@@ -1,8 +1,5 @@
 import gui.Window;
-import internal.Drone;
-import internal.DroneBuilder;
-import internal.SimulationEndedException;
-import internal.World;
+import internal.*;
 
 import java.io.IOException;
 
@@ -16,14 +13,7 @@ public class Main {
 	public static void main(String[] args) {
 		
 		// drone builder covers all the stuff involving building the drone, adjust parameters there
-		DroneBuilder builder = new DroneBuilder(true);
-		Drone drone = builder.createDrone();
-		//initialize a new world
-		World world = new World();
-		//Todo sync the block with the cube and put them also in the world
-		//Cube cube = new Cube();
-		//Block cube = new Block();
-		world.addWorldObject(drone);
+		World  world = new WorldBuilder().createWorld();
 		
 		// initialize a window
 		Window window = new Window(world);
@@ -35,7 +25,7 @@ public class Main {
 			window.renderFrame();
 			//pass the outputs to the drone
 			byte[] camera = Window.getCameraView();
-			drone.setAPImage(camera);
+			WorldBuilder.DRONE.setAPImage(camera);
 			try {
 				world.advanceWorldState(TIME_STEP, STEPS_PER_ITERATION);
 			} catch (SimulationEndedException e) {
