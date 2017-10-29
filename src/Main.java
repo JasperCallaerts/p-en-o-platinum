@@ -14,6 +14,8 @@ public class Main {
 	 * @author Martijn Sauwens
 	 */
 	public static void main(String[] args) {
+		Window window = new Window();
+		
 		// drone builder covers all the stuff involving building the drone, adjust parameters there
 		DroneBuilder builder = new DroneBuilder(true);
 		Drone drone = builder.createDrone();
@@ -26,10 +28,10 @@ public class Main {
 
 		boolean goalNotReached = true;
 		while (goalNotReached) {
-
+			
 			//first render the image
 			//Todo implement the render such that it only renders one image if this method is called
-			new Window().run();
+			new Window().renderFrame();
 			//pass the outputs to the drone
 			byte[] camera = Window.getCameraView();
 			drone.setAPImage(camera);
@@ -44,7 +46,8 @@ public class Main {
 			}
 
 		}
-
+		
+		window.terminate();
 	}
 	// configuration for 20 fps
 	private final static float TIME_STEP = 0.001f;

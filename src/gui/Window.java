@@ -20,22 +20,11 @@ public class Window {
 
 	// The window handle
 	private long window;
+	private Renderer renderer;
+	private double time;
+	private double previousTime;
 
-	public void run() {
-
-		init();
-		loop();
-
-		// Free the window callbacks and destroy the window
-		glfwFreeCallbacks(window);
-		glfwDestroyWindow(window);
-
-		// Terminate GLFW and free the error callback
-		glfwTerminate();
-		glfwSetErrorCallback(null).free();
-	}
-
-	private void init() {
+	public Window() {
 		// Setup an error callback. The default implementation
 		// will print the error message in System.err.
 		GLFWErrorCallback.createPrint(System.err).set();
@@ -91,39 +80,33 @@ public class Window {
 
 		// Make the window visible
 		glfwShowWindow(window);
-	}
-
-	private void loop() {
+		
 		// This line is critical for LWJGL's interoperation with GLFW's
 		// OpenGL context, or any context that is managed externally.
 		// LWJGL detects the context that is current in the current thread,
 		// creates the GLCapabilities instance and makes the OpenGL
 		// bindings available for use.
 		GL.createCapabilities();
-		
-		Renderer renderer = new Renderer(window);
-		renderer.init();
-		double lastTime = glfwGetTime();
 
 		// Set the clear color
 		glClearColor(0.5f, 0.8f, 1.0f, 1.0f);
-		
-		glEnable(GL_DEPTH_TEST);
-        glDepthFunc(GL_LESS);
-        glEnable(GL_CULL_FACE);
-        glCullFace(GL_BACK);
 
+		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_LESS);
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK);
+		
+		Renderer renderer = new Renderer(window);
+		renderer.init();
+	}
+
+	public void renderFrame() {	
 		// Run the rendering loop until the user has attempted to close
 		// the window or has pressed the ESCAPE key.
 		while ( !glfwWindowShouldClose(window) ) {
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
-			
-			//Calculate delta time
-            double thisTime = glfwGetTime();
-            double delta = thisTime - lastTime;
-            lastTime = thisTime;
             
-            renderer.update(delta);
+            renderer.update(getDeltaTime());
             renderer.render();
 
 			glfwSwapBuffers(window); // swap the color buffers
@@ -131,9 +114,28 @@ public class Window {
 			// Poll for window events. The key callback above will only be
 			// invoked during this call.
 			glfwPollEvents();
-		}
-		
+		}	
+	}
+	
+	public void terminate() {
 		renderer.release();
+		
+		// Free the window callbacks and destroy the window
+		glfwFreeCallbacks(window);
+		glfwDestroyWindow(window);
+
+		// Terminate GLFW and free the error callback
+		glfwTerminate();
+		glfwSetErrorCallback(null).free();
+	}
+	
+	public void updateTime() {
+		this.previousTime = this.time;
+		this.time = glfwGetTime();
+	}
+	
+	public double getDeltaTime() {
+		return time - previousTime;
 	}
 
 	/**
