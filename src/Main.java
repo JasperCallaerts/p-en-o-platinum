@@ -14,8 +14,6 @@ public class Main {
 	 * @author Martijn Sauwens
 	 */
 	public static void main(String[] args) {
-		// initialize a window
-		Window window = new Window();
 		
 		// drone builder covers all the stuff involving building the drone, adjust parameters there
 		DroneBuilder builder = new DroneBuilder(true);
@@ -26,6 +24,9 @@ public class Main {
 		//Cube cube = new Cube();
 		//Block cube = new Block();
 		world.addWorldObject(drone);
+		
+		// initialize a window
+		Window window = new Window(world);
 
 		boolean goalNotReached = true;
 		while (goalNotReached) {

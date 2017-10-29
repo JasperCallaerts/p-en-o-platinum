@@ -203,4 +203,8 @@ public class Vector3f {
     public static Vector3f toVector3f(Vector vec) {
     	return new Vector3f(vec.getxValue(), vec.getyValue(), vec.getzValue());
     }
+
+	public static Vector3f ArrayToVector3f(float[] array) {
+		return new Vector3f(array[0], array[1], array[2]);
+	}
 }
