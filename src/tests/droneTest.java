@@ -31,10 +31,10 @@ public class droneTest {
 	public Vector orientation = new Vector(PI,PI/2,0);
 	public Vector rotation = new Vector(1,1,1);
 	
-	public Vector relPosWing1 = new Vector(1,0,0);
-	public Vector relPosWing2 = new Vector(-1,0,0);
-	public Vector relPosWing3 = new Vector(0,0,-1);
-	public Vector relPosWing4 = new Vector(0,0,-2);
+	public Vector relPosWing1 = new Vector(1f,0f,0f);
+	public Vector relPosWing2 = new Vector(-1f,0f,0f);
+	public Vector relPosWing3 = new Vector(0f,0f,-1f);
+	public Vector relPosWing4 = new Vector(0f,0f,-2f);
 	
 	public AutoPilot AP = new AutoPilot();
 	
@@ -69,7 +69,6 @@ public class droneTest {
 		assertEquals(v.getzValue(), -PI/2, delta);
 	}
 	
-
 
 	
 	

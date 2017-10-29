@@ -674,7 +674,7 @@ public class Drone implements WorldObject {
 	 * @param duration the amount of time elapsed
 	 * @return autopilotinput for autopilot
 	 */
-	private AutopilotInputs updateAutopilotInput(float duration){
+	public AutopilotInputs updateAutopilotInput(float duration){
 
 		AutopilotInputs input;
 		return  new AutopilotInputs() {
