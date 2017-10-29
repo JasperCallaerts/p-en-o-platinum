@@ -35,8 +35,6 @@ public class Main {
 			}
 
 		}
-		// close the window
-		window.terminate();
 	}
 	// configuration for 20 fps
 	private final static float TIME_STEP = 0.001f;
