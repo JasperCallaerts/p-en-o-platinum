@@ -15,15 +15,17 @@ import gui.Cube;
 import math.Vector3f;
 
 /**
- * 
  * @author Anthony Rathé & MartijnSauwens & Bart
  * Immutable variables: maxThrust, engineMass, enginePosition, leftWing, rightWing,
  * 						horizontalStab, verticalStab, inertiaTensor
  * 	note: Orientation = (heading, pitch, roll) (in that order)
  * 	the orientation has always values in the range [-PI, PI]
  */
-public class Drone extends Cube implements WorldObject {
+public class Drone implements WorldObject {
 
+	/*
+	########################## Methods used for initialisation ##########################
+	 */
 	/**
 	 * Constructor for a drone class object
 	 * @param engineMass the mass of the engine
@@ -41,7 +43,7 @@ public class Drone extends Cube implements WorldObject {
 	public Drone(float engineMass, float maxThrust, Vector position, Vector velocity, Vector orientation,
 		  Vector rotationVector, Wing rightMainWing, Wing leftMainWing, Wing horizontalStab, Wing verticalStab, AutoPilot AP) {
 
-    super(Vector3f.toVector3f(position), new Vector3f());
+
 		if (!this.canHaveAsEngineMass(engineMass) || !this.canHaveAsMaxThrust(maxThrust)) {
 			throw new IllegalArgumentException(ILLEGAL_CONFIG);
 		}
@@ -70,88 +72,28 @@ public class Drone extends Cube implements WorldObject {
 		//these variables are calculated from the ones above
 		this.setEnginePosition();
 		this.setInertiaTensor();
-//		this.autopilotConfig = new AutopilotConfig() {
-//
-//			@Override
-//			public float getWingX() {
-//				return Math.abs(getRightWing().getRelativePosition().getxValue());
-//			}
-//
-//			@Override
-//			public float getWingMass() {
-//				return getRightWing().getMass() + getLeftWing().getMass();
-//			}
-//
-//			@Override
-//			public float getWingLiftSlope() {
-//				return getRightWing().getLiftSlope()+ getLeftWing().getLiftSlope();
-//			}
-//
-//			@Override
-//			public float getVerticalAngleOfView() {
-//				return Angleofview;
-//			}
-//
-//			@Override
-//			public float getVerStabLiftSlope() {
-//				return getVerticalStab().getLiftSlope();
-//			}
-//
-//			@Override
-//			public float getTailSize() {
-//				return Math.abs(getVerticalStab().getRelativePosition().getxValue());
-//			}
-//
-//			@Override
-//			public float getTailMass() {
-//				return getVerticalStab().getMass() + getHorizontalStab().getMass();
-//			}
-//
-//			@Override
-//			public int getNbRows() {
-//				return nbRows;
-//			}
-//
-//			@Override
-//			public int getNbColumns() {
-//				return nbColumns;
-//			}
-//
-//			@Override
-//			public float getMaxThrust() {
-//				return maxThrust;
-//			}
-//
-//			@Override
-//			public float getMaxAOA() {
-//				return getRightWing().getMaximumAngleOfAttack();
-//			}
-//
-//			@Override
-//			public float getHorizontalAngleOfView() {
-//				return Angleofview;
-//			}
-//
-//			@Override
-//			public float getHorStabLiftSlope() {
-//				return getHorizontalStab().getLiftSlope();
-//			}
-//
-//			@Override
-//			public float getGravity() {
-//				return getGravity();
-//			}
-//
-//			@Override
-//			public float getEngineMass() {
-//				return engineMass;
-//			}
-//		};
+
+		//create the cube representing the drone
+		this.setAssociatedCube(new Cube(position.convertToVector3f(), new Vector3f()));
 		// TODO config stream
 	}
 
-	
-	//------- END Drone Controlling Methods -------
+	/**
+	 * setter for the autopilot Configuration
+	 * @param autopilotConfig the autopilot configuration
+	 * @author Martijn Sauwens
+	 */
+	public void configureAutopilot(AutopilotConfig autopilotConfig) throws IllegalArgumentException{
+		if(this.autopilotConfig != null){
+			throw new IllegalArgumentException(AUTOPILOT_CONFIG);
+		}
+		this.autopilotConfig = autopilotConfig;
+	}
+
+
+	/*
+	########################## Transformations and projections ##########################
+	 */
 
 	/**
 	 * projects a vector of the drone axis on the world axis
@@ -370,6 +312,9 @@ public class Drone extends Cube implements WorldObject {
 		return part1 + part2 + part3 + part4;
 	}
 
+	/*
+	########################## Next state methods ##########################
+	 */
 
 	/**
 	 * advances the drone for a given time step, it changes the position, velocity, orientation and rotation
@@ -427,10 +372,10 @@ public class Drone extends Cube implements WorldObject {
 		this.setOrientation(oldOrientation.driftRejection(orientation, deltaTime*INSIGNIFICANCE));
 		this.setRotationVector(oldRotation.driftRejection(rotation, deltaTime*INSIGNIFICANCE));
 
-		this.setVelocity(velocity);
-		this.setPosition(position);
-    
-		update(new Vector3f());
+		Vector differencePos = this.getPosition().vectorDifference(oldPosition);
+
+		// move the cube representing the drone
+		this.getAssociatedCube().update(differencePos.convertToVector3f());
 
 	}
 
@@ -605,129 +550,11 @@ public class Drone extends Cube implements WorldObject {
 
 	}
 
-	/**
-	 * Getter for the position variable
-	 * @return a vector containing the position
+
+
+	/*
+	########################## Update methods for drone and autopilot ##########################
 	 */
-	public Vector getPosition() {
-		return position;
-	}
-
-	/**
-	 * Setter for the position of the drone
-	 * @param position the position of the drone
-	 */
-	public void setPosition(Vector position) {
-		this.position = position;
-	}
-
-	/**
-	 * Getter for the velocity of the drone
-	 * @author Martijn Sauwens
-	 */
-	public Vector getVelocity() {
-		return velocity;
-	}
-
-
-	/**
-	 * Setter for the velocity of the drone
-	 *
-	 * @param velocity the desired velocity of the drone
-	 * @throws IllegalArgumentException if the speed is invalid
-	 * @author Martijn Sauwens
-	 */
-	public void setVelocity(Vector velocity) throws IllegalArgumentException {
-		if (this.isValidVelocity(velocity)) {
-			this.velocity = velocity;
-		} else {
-			throw new IllegalArgumentException(VELOCITY_ERROR);
-		}
-	}
-
-	public boolean isValidVelocity(Vector velocity) {
-		return velocity.getSize() <= LIGHTSPEED;
-	}
-
-
-	/**
-	 * getter for the maximum Thrust of the drone
-	 *
-	 * @return
-	 */
-	public float getMaxThrust() {
-		return maxThrust;
-	}
-
-	/**
-	 * Checks if the given max thrust can be assigned as maximum thrust of the drone
-	 *
-	 * @param maxThrust the desired maximum thrust of the drone
-	 * @return true if and only if the maxThrust > 0
-	 */
-	public boolean canHaveAsMaxThrust(float maxThrust) {
-		return maxThrust > 0;
-	}
-
-	/**
-	 * getter for the thrust of the drone
-	 *
-	 * @author Martijn Sauwens
-	 */
-	public float getThrust() {
-		return thrust;
-	}
-
-	/**
-	 * Gets the thrust vector of the drone in the drone axis
-	 *
-	 * @return a vector containing the thrust of the drone in the drone axis
-	 * @author Martijn Sauwens
-	 */
-	public Vector getThrustVector() {
-		return new Vector(0, 0, -this.getThrust());
-	}
-
-	/**
-	 * Setter for the thrust of the drone
-	 *
-	 * @param thrust the desired new thrust
-	 * @throws IllegalArgumentException if the new thrust is not valid
-	 * @author Martijn Sauwens
-	 */
-	public void setThrust(float thrust) throws IllegalArgumentException {
-		if (this.canHaveAsThrust(thrust)) {
-			this.thrust = thrust;
-		} else {
-			throw new IllegalArgumentException(Drone.THRUST_OUT_OF_RANGE);
-		}
-	}
-
-	/**
-	 * Getter for the gravitational force exerted on the drone given in the world axis
-	 *
-	 * @return a vector containing the gravitational force exterted on the drone
-	 * @author Martijn Sauwens
-	 */
-	public Vector getGravity() {
-
-		float scalarGravity = this.getTotalMass() * GRAVITY;
-
-		return new Vector(0.0f, -scalarGravity, 0.0f);
-	}
-
-
-	/**
-	 * Checks if the new thrust is allowed
-	 *
-	 * @param thrust the thrust to be checked
-	 * @return true if and only if the thrust is in the range [0, this.getMaxThrust]
-	 */
-	public boolean canHaveAsThrust(float thrust) {
-
-		return thrust >= 0 && thrust <= this.getMaxThrust();
-	}
-
 
 	/**
 	 * Method that checks if a suggested inclination is valid.
@@ -844,7 +671,7 @@ public class Drone extends Cube implements WorldObject {
 
 	/**
 	 * @author Bart
-	 * @param duration
+	 * @param duration the amount of time elapsed
 	 * @return autopilotinput for autopilot
 	 */
 	private AutopilotInputs updateAutopilotInput(float duration){
@@ -895,12 +722,7 @@ public class Drone extends Cube implements WorldObject {
 
 
 	}
-	private static final int nbRows = 200;
-	private static final int nbColumns = 200;
-	private static final float Angleofview = (float) (4*Math.PI / 6);
 
-
-	private byte[] APImage;
 
 	public void setAPImage(byte[] image){
 		APImage = image;
@@ -910,7 +732,33 @@ public class Drone extends Cube implements WorldObject {
 		return APImage;
 	}
 
+	/*
+	 ############################# Gui configuration methods #############################
+	 */
 
+	public Cube getAssociatedCube() {
+		return droneCube;
+	}
+
+	/**
+	 * Setter for the drone cube
+	 * @param droneCube the cube representing the drone
+	 * Immutable!
+	 */
+	private void setAssociatedCube(Cube droneCube) {
+		this.droneCube = droneCube;
+	}
+
+	/**
+	 * checks of the drone can have the given cube representing it
+	 * @return true if and only if the
+	 */
+	private boolean canHaveAsDroneCube(Cube droneCube){
+		return this.getAssociatedCube() == null && droneCube.getPosition().rangeEquals(this.getPosition(), maxPosDifference);
+	}
+	/*
+	 ############################# Drone configuration methods #############################
+	  */
 
 	/**
 	 * Getter for the orientation of the drone
@@ -1107,7 +955,7 @@ public class Drone extends Cube implements WorldObject {
 
 	/**
 	 * Getter for the vertical stabilizer
-	 * @Author Martijn Sauwens
+	 * @author Martijn Sauwens
 	 */
 	public VerticalWing getVerticalStab() {
 		return verticalStab;
@@ -1151,6 +999,129 @@ public class Drone extends Cube implements WorldObject {
 	 */
 	public Wing[] getWingArray() {
 		return new Wing[]{this.getRightWing(), this.getLeftWing(), this.getHorizontalStab(), this.getVerticalStab()};
+	}
+	/**
+	 * Getter for the position variable
+	 * @return a vector containing the position
+	 */
+	@Override
+	public Vector getPosition() {
+		return position;
+	}
+
+	/**
+	 * Setter for the position of the drone
+	 * @param position the position of the drone
+	 */
+	public void setPosition(Vector position) {
+		this.position = position;
+	}
+
+	/**
+	 * Getter for the velocity of the drone
+	 * @author Martijn Sauwens
+	 */
+	public Vector getVelocity() {
+		return velocity;
+	}
+
+
+	/**
+	 * Setter for the velocity of the drone
+	 *
+	 * @param velocity the desired velocity of the drone
+	 * @throws IllegalArgumentException if the speed is invalid
+	 * @author Martijn Sauwens
+	 */
+	public void setVelocity(Vector velocity) throws IllegalArgumentException {
+		if (this.isValidVelocity(velocity)) {
+			this.velocity = velocity;
+		} else {
+			throw new IllegalArgumentException(VELOCITY_ERROR);
+		}
+	}
+
+	public boolean isValidVelocity(Vector velocity) {
+		return velocity.getSize() <= LIGHTSPEED;
+	}
+
+
+	/**
+	 * getter for the maximum Thrust of the drone
+	 *
+	 * @return
+	 */
+	public float getMaxThrust() {
+		return maxThrust;
+	}
+
+	/**
+	 * Checks if the given max thrust can be assigned as maximum thrust of the drone
+	 *
+	 * @param maxThrust the desired maximum thrust of the drone
+	 * @return true if and only if the maxThrust > 0
+	 */
+	public boolean canHaveAsMaxThrust(float maxThrust) {
+		return maxThrust > 0;
+	}
+
+	/**
+	 * getter for the thrust of the drone
+	 *
+	 * @author Martijn Sauwens
+	 */
+	public float getThrust() {
+		return thrust;
+	}
+
+	/**
+	 * Gets the thrust vector of the drone in the drone axis
+	 *
+	 * @return a vector containing the thrust of the drone in the drone axis
+	 * @author Martijn Sauwens
+	 */
+	public Vector getThrustVector() {
+		return new Vector(0, 0, -this.getThrust());
+	}
+
+	/**
+	 * Setter for the thrust of the drone
+	 *
+	 * @param thrust the desired new thrust
+	 * @throws IllegalArgumentException if the new thrust is not valid
+	 * @author Martijn Sauwens
+	 */
+	public void setThrust(float thrust) throws IllegalArgumentException {
+		if (this.canHaveAsThrust(thrust)) {
+			this.thrust = thrust;
+		} else {
+			throw new IllegalArgumentException(Drone.THRUST_OUT_OF_RANGE);
+		}
+	}
+
+	/**
+	 * Getter for the gravitational force exerted on the drone given in the world axis
+	 *
+	 * @return a vector containing the gravitational force exterted on the drone
+	 * @author Martijn Sauwens
+	 */
+	public Vector getGravity() {
+
+		float scalarGravity = this.getTotalMass() * GRAVITY;
+
+		return new Vector(0.0f, -scalarGravity, 0.0f);
+	}
+
+
+	/**
+	 * Checks if the new thrust is allowed
+	 *
+	 * @param thrust the thrust to be checked
+	 * @return true if and only if the thrust is in the range [0, this.getMaxThrust]
+	 */
+	public boolean canHaveAsThrust(float thrust) {
+
+		return thrust >= 0 && thrust <= this.getMaxThrust();
 	}
 
 	/**
@@ -1237,7 +1208,7 @@ public class Drone extends Cube implements WorldObject {
 	 * The inertia tensor is calculated in the drone axis system.
 	 *
 	 * @throws IllegalArgumentException thrown if not all the parts of the drone are initialized
-	 * @Post new inertiaTensor == SquareMatrix({Ixx, 0.0f, 0.0f,
+	 * post: new inertiaTensor == SquareMatrix({Ixx, 0.0f, 0.0f,
 	 * 0.0f, Iyy, 0.0f,
 	 * 0.0f, 0.0f, Izz});
 	 * with Ixx sum(mi*(yi^2 + zi^2), Iyy = mi*(xi^2 + zi^2), Izz = mi*(xi^2 + yi^2)
@@ -1403,6 +1374,11 @@ public class Drone extends Cube implements WorldObject {
 	 */
 	private SquareMatrix inertiaTensor;
 
+	/**
+	 * A variable containing the next image set for the autopilot
+	 */
+	private byte[] APImage;
+
 	/*
 	 * Constants
 	 */
@@ -1422,22 +1398,28 @@ public class Drone extends Cube implements WorldObject {
 	 */
 	private static float GRAVITY = 9.81060f;
 
-	/**
-	 * setter for the autopilot Configuration
-	 * @param autopilotConfig the autopilot configuration
-	 * @author Martijn Sauwens
-	 */
-	public void configureAutopilot(AutopilotConfig autopilotConfig) throws IllegalArgumentException{
-		if(this.autopilotConfig != null){
-			throw new IllegalArgumentException(AUTOPILOT_CONFIG);
-		}
-		this.autopilotConfig = autopilotConfig;
-	}
 
 	/**
-	 * Variable thatb stores the configuration of the autopilot
+	 * Variable that stores the configuration of the autopilot
 	 */
 	private AutopilotConfig autopilotConfig;
+
+	/**
+	 * Variable that stores the cube representing the drone
+	 */
+	private Cube droneCube;
+
+	/**
+	 * variables used for the configuration of the streams
+	 */
+	private static final int nbRows = 200;
+	private static final int nbColumns = 200;
+	private static final float Angleofview = (float) (4*Math.PI / 6);
+
+	/**
+	 * variable used for the max allowed error on the position between de drone and the cube
+	 */
+	private final static float maxPosDifference = 1E-6f;
 
 	//---- START OF STREAM STUFF ---//
 	/**

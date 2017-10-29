@@ -37,4 +37,6 @@ public interface WorldObject {
 	 * @return the position of the world object in vector format
 	 */
 	public Vector getPosition();
+
+	public Cube getAssociatedCube();
 }

@@ -5,21 +5,55 @@ import java.io.IOException;
 import gui.Cube;
 import math.Vector3f;
 
-public class Block extends Cube implements WorldObject {
+public class Block implements WorldObject {
 	
-	public Block(Vector3f position, Vector3f colour) {
-		super(position, colour);
-		// TODO Auto-generated constructor stub
+	public Block(Vector position) {
+		this.position = position;
 	}
 
 	@Override
 	public void toNextState(float deltaTime) throws IOException {
-		update(new Vector3f());
+		// do nothing
 	}
 
 	@Override
 	public Vector getPosition() {
-		return Vector3f.toVector(getPos());
+		return this.position;
 	}
 
+	@Override
+	public Cube getAssociatedCube(){
+		return this.blockCube;
+	}
+
+	/**
+	 * Sets the associated cube of the block
+	 * @param cube the cube to be associated
+	 */
+	public void setAssocatedCube(Cube cube){
+		if(!canHaveAsCube(cube))
+			throw new IllegalArgumentException(INVALID_CUBE);
+		this.blockCube = cube;
+	}
+
+	/**
+	 * checks if the provided cube can be associated
+	 * @param cube the cube to be associated
+	 * @return true if and only if cube is not initialized and the position of the cube and the block are the same
+	 */
+	private boolean canHaveAsCube(Cube cube){
+		return this.getAssociatedCube() == null && cube.getPosition().rangeEquals(this.getPosition(), maxPosDifference);
+	}
+
+
+	private Vector position;
+
+	private Cube blockCube;
+
+	/**
+	 * variable used for the max allowed error on the position between de block and the cube
+	 */
+	private final static float maxPosDifference = 1E-6f;
+
+	private final static String INVALID_CUBE = "the provided cube does not have the same position as the block";
 }

@@ -1,9 +1,13 @@
 package gui;
 
+import internal.Vector;
+import internal.WorldObject;
 import math.Matrix4f;
 import math.Vector3f;
 
-public class Cube {
+import java.io.IOException;
+
+public class Cube{
 	
 	static float[] positions = new float[]{
 			// VO
@@ -81,6 +85,10 @@ public class Cube {
 		this.position = this.position.add(displacement);
 		modelMatrix = Matrix4f.translate(position.x, position.y, position.z);
 	}
+
+	public Vector getPosition(){
+		return Vector.vector3fToVector(this.getPos());
+	}
 	
 	public void setShaderProgram(ShaderProgram program) {
 		this.program = program;
@@ -89,4 +97,5 @@ public class Cube {
 	public Vector3f getPos() {
 		return this.position;
 	}
+
 }

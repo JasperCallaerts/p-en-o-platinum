@@ -4,6 +4,8 @@ package internal;
  * Whole class Made by Martijn
  */
 
+import math.Vector3f;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -23,6 +25,7 @@ public class Vector {
 	 * @param xValue the x coordinate of the vector
 	 * @param yValue the y coordinate of the vector
 	 * @param zValue the z coordinate of the vector
+	 * @author Martijn Sauwens
 	 */
 	public Vector(float xValue, float yValue, float zValue){
 		this.xValue = xValue;
@@ -32,6 +35,7 @@ public class Vector {
 	
 	/**
 	 * Default constructor for a vector, creates a null-vector
+	 * @author Martijn Sauwens
 	 */
 	public Vector(){
 		
@@ -41,6 +45,7 @@ public class Vector {
 	/**
 	 * Contructor for a vector given a length 3 array
 	 * @param vectorArray a length 3 array contianing the values for the vector
+	 * @author Martijn Sauwens
 	 */
 	public Vector(float[] vectorArray){
 		if(!isValidArray(vectorArray))
@@ -59,7 +64,8 @@ public class Vector {
 	
 	/**
 	 * returns a new vector containing the vector sum of this and other
-	 * @Param other the other vector in the sum
+	 * @param other the other vector in the sum
+	 * @author Martijn Sauwens
 	 */
 	public Vector vectorSum(Vector other){
 		float x_part = this.getxValue() + other.getxValue();
@@ -72,7 +78,8 @@ public class Vector {
 	/**
 	 * Returns the vector difference: this - other
 	 * @param other the other vector
-	 * @return the difference between two vectors
+	 * @return the difference between two vector
+	 * @author Martijn Sauwens
 	 */
 	public Vector vectorDifference(Vector other){
 		Vector other_negative = other.scalarMult(-1);
@@ -84,6 +91,7 @@ public class Vector {
 	 * returns a new vector containing the scalar multiplication of this and the scalar
 	 * @Param scalar the scalar to re scale the vector
 	 * @return new Vector(this.getxValue()*scalar, this.getyValue()*scalar, this.getzvalue()*scalar)
+	 * @author Martijn Sauwens
 	 */
 	public Vector scalarMult(float scalar){
 		float x_part = this.getxValue()*scalar;
@@ -100,6 +108,7 @@ public class Vector {
 	 * @return 	the scalar product of the two vectors
 	 * 			with xi, yi, zi the components of each vector
 	 * 			| result == x1*x2 + y1*y2 + z1*z2
+	 * @author Martijn Sauwens
 	 */
 	public float scalarProduct(Vector other) throws NullPointerException{
 		
@@ -117,6 +126,7 @@ public class Vector {
 	/**
 	 * returns a rescaled version of the given vector with 2-norm == 1
 	 * @return |result == this.scalarMult(1/(this.getSize())
+	 * @author Martijn Sauwens
 	 */
 	public Vector normalizeVector(){
 		float size = this.getSize();
@@ -126,6 +136,7 @@ public class Vector {
 	/**
 	 * returns the two norm of the vector
 	 * @return see implementation
+	 * @author Martijn Sauwens
 	 */
 	public float getSize(){
 	
@@ -174,7 +185,7 @@ public class Vector {
 	 * 		| result == new Vector( ay*bz - az*by,
 	 * 		|						az*bx - ax*bz,
 	 * 		|						ax*by - ay*bx )
-	 * 
+	 * @author Martijn Sauwens
 	 */
 	public Vector crossProduct(Vector other){
 		
@@ -191,6 +202,7 @@ public class Vector {
 	
 	/**
 	 * Returns a string describing the Vector
+	 * @author Martijn Sauwens
 	 */
 	@Override
 	public String toString() {
@@ -199,7 +211,8 @@ public class Vector {
 
 	
 	/**
-	 * Auto override of the  hash code, done by Eclipse
+	 * Auto override of the  hash code
+	 * @author Martijn Sauwens
 	 */
 	@Override
 	public int hashCode() {
@@ -218,6 +231,7 @@ public class Vector {
 	 * @return |result = (obj == this)
 	 * 
 	 * @return true if the x, y and z values of both vectors are the same
+	 * @author Martijn Sauwens
 	 */
 	@Override
 	public boolean equals(Object obj) {
@@ -242,6 +256,7 @@ public class Vector {
 	 * @param other the other vector
 	 * @param range the range of the error
 	 * @return true and only if all the components are equal within a given range (see floatEquals)
+	 * @author Martijn Sauwens
 	 */
 	public boolean rangeEquals(Vector other, float range){
 
@@ -258,6 +273,7 @@ public class Vector {
 	 * @param value2 the second value to compare
 	 * @param epsilon the range of the error
 	 * @return true if and only if value1-value2 is in range of [-epsilon, epsilon]
+	 * @author Martijn Sauwens
 	 */
 	private static boolean floatEquals(float value1, float value2, float epsilon){
 		float diff = value1 - value2;
@@ -271,6 +287,7 @@ public class Vector {
 	 * @return a vector containing the values of the newVector if and only if the new value
 	 * 		   has sufficient change to the previous one (the one which it is invoked against)
 	 * 		   see floatEquals for the details on the range.
+	 * @author Martijn Sauwens
 	 */
 	public Vector driftRejection(Vector newVector, float driftRange){
 		float thisXPart = this.getxValue();
@@ -294,6 +311,7 @@ public class Vector {
 
 	/**
 	 * calculates a orthogonal Projection of the given vector against the normal vector
+	 * @author Martijn Sauwens
 	 */
 	public Vector orthogonalProjection(Vector normalVector){
 
@@ -313,6 +331,7 @@ public class Vector {
 	 * selects the element at a given index of the vector
 	 * @param index the index of the element to be obtained
 	 * @return the element at position of the index
+	 * @author Martijn Sauwens
 	 */
 	public float getElementAt(int index){
 		switch(index) {
@@ -327,6 +346,38 @@ public class Vector {
 		}
 	}
 
+	/**
+	 * Converts the given vector to an Vector3f object, used in the gui class
+	 * @return a vector3f object equivalent to the instance it is invoked against
+	 * @author Martijn Sauwens
+	 */
+	public Vector3f convertToVector3f(){
+		float xPart = this.getxValue();
+		float yPart = this.getyValue();
+		float zPart = this.getzValue();
+
+		return new Vector3f(xPart, yPart, zPart);
+	}
+
+
+	/**
+	 * @author anthonyrathe
+	 * @return a floating point array containing the vector values
+	 */
+	public float[] toArray(){
+		float[] array = {getxValue(), getyValue(), getzValue()};
+		return array;
+	}
+
+	/**
+	 * @author anthonyrathe
+	 * @return an integer array containing the values of the vector rounded to the nearest integer
+	 */
+	public int[] toIntArray(){
+		int[] array = {Math.round(getxValue()), Math.round(getyValue()), Math.round(getzValue())};
+		return array;
+	}
+
 
 	/*
 	Static methods
@@ -336,6 +387,7 @@ public class Vector {
 	 * Sums  all the vectors in the given array
 	 * @param vectorArray the array containing all the vectors
 	 * @return a vector containing the sum of all the vectors in the array
+	 * @author Martijn Sauwens
 	 */
 	public static Vector sumVectorArray(Vector[] vectorArray){
 		Vector tempVector = new Vector();
@@ -351,6 +403,7 @@ public class Vector {
 	 * Sums  all the vectors in the given list
 	 * @param vectorList the list containing all the vectors
 	 * @return a vector containing the sum of all the vectors in the list
+	 * @author Martijn Sauwens
 	 */
 	public static Vector sumVectorList(List<Vector> vectorList){
 		Vector tempVector = new Vector();
@@ -361,24 +414,15 @@ public class Vector {
 
 		return tempVector;
 	}
-	
-	/**
-	 * @author anthonyrathe
-	 * @return
-	 */
-	public float[] toArray(){
-		 float[] array = {getxValue(), getyValue(), getzValue()};
-		 return array;
-	}
-	
-	/**
-	 * @author anthonyrathe
-	 */
-	public int[] toIntArray(){
-		int[] array = {(int)getxValue(), (int)getyValue(), (int)getzValue()};
-		return array;
-	}
 
+	/**
+	 * Converts a vector 3f vector to a standard immutable vector
+	 * @param vector3f the vector to convert
+	 * @return the converted vector 3f to Vector format
+	 */
+	public static Vector vector3fToVector(Vector3f vector3f){
+		return new Vector(vector3f.x, vector3f.y, vector3f.z);
+	}
 
 	/*
 	Getters and Setters
