@@ -53,18 +53,16 @@ public class Renderer {
 	private static final float NEAR = 0.01f;
 	private static final float FAR = 1000.f;
 
+	/**
+     * Initializes the OpenGL state. Creating programs and sets 
+     * appropriate state. 
+     */
 	public Renderer(long window, World world) {
 		this.world = world;
 		this.window = window;
 		program = new ShaderProgram(false, "resources/default.vert", "resources/default.frag");
 		mouse = new Mouse(window);
-	}
 
-	/**
-     * Initializes the OpenGL state. Creating programs and sets 
-     * appropriate state. 
-     */
-    public void init() {
         program.init();
         
         try {
@@ -77,10 +75,10 @@ public class Renderer {
         
         float ratio;
 		try (MemoryStack stack = MemoryStack.stackPush()) {
-			long window = GLFW.glfwGetCurrentContext();
+			long windowHandle = GLFW.glfwGetCurrentContext();
 			IntBuffer width = stack.mallocInt(1);
 			IntBuffer height = stack.mallocInt(1);
-			GLFW.glfwGetFramebufferSize(window, width, height);
+			GLFW.glfwGetFramebufferSize(windowHandle, width, height);
 			ratio = (float) width.get() / (float) height.get();
 		}
         projectionMatrix = Matrix4f.perspective(FOV, ratio, NEAR, FAR);
@@ -106,6 +104,9 @@ public class Renderer {
     	program.delete();
     }
 
+    /**
+     * Processes input.
+     */
 	public void processInput(double delta) {
 
 		mouse.update(window);

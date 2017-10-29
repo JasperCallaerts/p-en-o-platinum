@@ -99,7 +99,6 @@ public class Window {
 		glCullFace(GL_BACK);
 		
 		renderer = new Renderer(window, world);
-		renderer.init();
 	}
 
 	public void renderFrame() {	
