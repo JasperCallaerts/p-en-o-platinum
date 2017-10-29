@@ -137,8 +137,8 @@ public class AutoPilot implements Autopilot{
 	 * @author anthonyrathe
 	 */
 	private void stopRoll(){
-		this.setLeftWingInclinationOut((float)0);
-		this.setRightWingInclinationOut((float)0);
+		this.setLeftWingInclinationOut(STABLE_INCLINATION);
+		this.setRightWingInclinationOut(STABLE_INCLINATION);
 	}
 	
 	/**
@@ -180,7 +180,7 @@ public class AutoPilot implements Autopilot{
 	 * @author anthonyrathe
 	 */
 	private void stopAscendDescend(){
-		this.setHorStabInclinationOut((float)Math.PI/12);
+		this.setHorStabInclinationOut(0f);
 	}
 	
 	/**
@@ -373,10 +373,12 @@ public class AutoPilot implements Autopilot{
 	 * @author anthonyrathe
 	 */
 	public void update(AutopilotInputs inputs) throws IOException{
-
-		APCamera.loadNextImage(inputs.getImage());
+		
+		getAPCamera().loadNextImage(inputs.getImage());
 		float xPosition = APCamera.getDestination().getxValue();
 		float yPosition = APCamera.getDestination().getyValue();
+		//float xPosition = 1f;
+		//float yPosition = 6f;
 		
 		// Ascend/Descend
 		if(yPosition < -THRESHOLD_PIXELS){
@@ -448,6 +450,7 @@ public class AutoPilot implements Autopilot{
 	
 	//------- Parameters -------
 	private static final float STANDARD_INCLINATION = (float)Math.PI/3;
+	private static final float STABLE_INCLINATION = (float)Math.PI/12;
 	private static final float THRESHOLD_ANGLE = (float)Math.PI/36;
 	private static final float THRESHOLD_PIXELS = 5f;
 	private static final float NODE_REACHED_DISTANCE = 4f;

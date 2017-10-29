@@ -18,7 +18,8 @@ public class Array2D<T> {
      * @throws IllegalArgumentException
      */
     public Array2D(T[] inputArray, int nbRows, int nbColumns) throws IllegalArgumentException{
-        if(!isValid2DArray(inputArray, nbRows, nbColumns))
+        
+    	if(!isValid2DArray(inputArray, nbRows, nbColumns))
             throw new IllegalArgumentException(INVALID_SIZE);
 
         this.array2DArray = inputArray;
@@ -150,6 +151,7 @@ public class Array2D<T> {
     public List<T> getArray2DList(){
         return Arrays.asList(this.getArray2DArray());
     }
+    
 
     /*
     Instance Variables

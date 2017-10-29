@@ -37,6 +37,7 @@ public class AutoPilotCamera {
         this.nbColumns = nbColumns;
         this.horizAngleOfView = horizontalAngleOfView;
         this.verticalAngleOfView = verticalAngleOfView;
+        
         this.image2DArray = this.convertToPixel2DArray(image, nbRows, nbColumns);
         this.world = new World();
     }
