@@ -19,33 +19,35 @@ public class Main {
 		World  world = worldBuilder.createWorld();
 		
 		
-		// initialize a window
-		Window droneWindow = new Window(1000, 1000, 0.2f, 0.5f, "Drone simulator 2017");
-//		Window testWindow = new Window(500, 500, 0.9f, 0.1f, "test window");
+		// initialize the windows
+		Window testWindow = new Window(920, 1000, 1f, 0.4f, "test window");
+		Window droneWindow = new Window(1000, 1000, 0.0f, 0.4f, "Drone simulator 2017");
 		
-		// initialize a renderer
+		
+		// initialize the renderers
 		Renderer renderer = new Renderer(droneWindow.getHandler(), world);
+		Renderer testRenderer = new Renderer(testWindow.getHandler(), world);
 		
 		boolean goalNotReached = true;
-		while (goalNotReached) {
-			
-			//first render the image
-			droneWindow.renderFrame(renderer);
-			//pass the outputs to the drone
-			byte[] camera = droneWindow.getCameraView();
-			worldBuilder.DRONE.setAPImage(camera);
-
-			try {
-				world.advanceWorldState(TIME_STEP, STEPS_PER_ITERATION);
-			} catch (SimulationEndedException e) {
-				goalNotReached = false;
-			} catch (IOException e) {
-				System.out.println("IO exception");
-			}
-
-		}
 		while (true) {
+
+			//first render the images
 			droneWindow.renderFrame(renderer);
+			testWindow.renderFrame(testRenderer);
+
+			if (goalNotReached) {
+				//pass the outputs to the drone
+				byte[] camera = droneWindow.getCameraView();
+				worldBuilder.DRONE.setAPImage(camera);
+
+				try {
+					world.advanceWorldState(TIME_STEP, STEPS_PER_ITERATION);
+				} catch (SimulationEndedException e) {
+					goalNotReached = false;
+				} catch (IOException e) {
+					System.out.println("IO exception");
+				}
+			}
 		}
 	}
 	// configuration for 20 fps
