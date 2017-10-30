@@ -56,14 +56,16 @@ public class DroneBuilder {
             balanceDrone(drone);
         }
 
+        System.out.println("Drone velocity: " + drone.getVelocity());
+
         return drone;
     }
 
     /**
      * Constants to create the autopilotConfig & Autopilot
      */
-    private final static float HORIZONTALVIEW = 120.0f;
-    private final static float VERTICALVIEW = 120.0f;
+    private final static float HORIZONTALVIEW = (float) (120.0f*Math.PI/180.0f);
+    private final static float VERTICALVIEW = (float) (120.0f*Math.PI/180.0f);
     private final static int NB_ROWS = 200;
     private final static int NB_COLS= 200;
 
@@ -226,6 +228,7 @@ public class DroneBuilder {
         }
 
         velocity = this.findZero(drone, velocity-stepsize, velocity);
+        System.out.println("returned velocity:" + velocity);
         drone.setVelocity(new Vector(0,0, -velocity));
         drone.setThrust(drone.getTotalExternalForcesWorld().getzValue());
 
@@ -234,7 +237,7 @@ public class DroneBuilder {
     public float findZero(Drone drone, float lowerBound, float upperBound){
 
         float epsilon = 1E-6f;
-        float nbOfSteps = 1000;
+        float nbOfSteps = 10000;
         float prevYValue = Float.MAX_VALUE;
         float velocityCenter = upperBound;
 
@@ -261,6 +264,8 @@ public class DroneBuilder {
             }
         }
         System.out.println("Exit with bad approx");
+        System.out.println(drone.getTotalExternalForcesWorld());
+        System.out.println("Velocity: " + velocityCenter);
         return velocityCenter;
     }
 
