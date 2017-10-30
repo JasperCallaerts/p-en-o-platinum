@@ -138,7 +138,7 @@ public class World {
 		Set<Drone> droneSet = this.getDroneSet();
 		Set<WorldObject> worldObjectSet = this.getObjectSet();
 
-		System.out.println("nb Intervals: " + nbIntervals);
+		//System.out.println("nb Intervals: " + nbIntervals);
 
 		for(int index = 0; index != nbIntervals; index++) {
 

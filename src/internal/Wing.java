@@ -54,7 +54,7 @@ public abstract class Wing {
         //calculate the absolute position vector of the wing to the center of mass
         Vector radiusVector = attachedDrone.droneOnWorld(relativePos);
         //calculate the rotational velocity component of the wing
-        Vector rotationVelocity = radiusVector.crossProduct(absoluteRotation);
+        Vector rotationVelocity = absoluteRotation.crossProduct(radiusVector);
 
         //sum the velocity of the drone with the angular velocity caused by the rotation
         return centerVelocity.vectorSum(rotationVelocity);
@@ -68,8 +68,8 @@ public abstract class Wing {
     public Vector getLift(){
         Vector normal = this.projectOnWorld(this.getNormal());
         Vector airspeed = this.getAbsoluteVelocity();
-        this.calcAngleOfAttack();
-        float angleOfAttack = this.getAngleOfAttack();
+
+        float angleOfAttack = this.calcAngleOfAttack();
         float liftSlope = this.getLiftSlope();
 
         // calculate s^2
@@ -150,7 +150,7 @@ public abstract class Wing {
      * Calculates the angle of attack and stores it in the designated variable
      * @post new angleOfAttack = -atan2(Airspeed*Normal, Airspeed*attackvector)
      */
-    public void calcAngleOfAttack(){
+    public float calcAngleOfAttack(){
         //need for the projected version of all the vectors because the airspeed is in the world axis
         Vector airspeed = this.getAbsoluteVelocity();
         Vector normal = this.projectOnWorld(this.getNormal());
@@ -163,10 +163,11 @@ public abstract class Wing {
         float denominator = projectedAirspeed.scalarProduct(attackVector);
 
         //set the angle of attack anyway, can be used for diagnostics
-        this.angleOfAttack = (float)Math.atan2(numerator, denominator);
-        if(!canHaveAsAngleOfAttack(this.getAngleOfAttack())){
+        float angleOfAttack = (float)Math.atan2(numerator, denominator);
+        if(!canHaveAsAngleOfAttack(angleOfAttack)){
             throw new AngleOfAttackException(INVALID_AOA, this);
         }
+        return angleOfAttack;
 
     }
 
