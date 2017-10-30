@@ -327,7 +327,7 @@ public class Drone implements WorldObject {
 	public void toNextState(float deltaTime) throws IOException{
 		if(!WorldObject.isValidTimeStep(deltaTime))
 			throw new IllegalArgumentException(INVALID_TIMESTEP);
-		float INSIGNIFICANCE = 0.01f;
+		float INSIGNIFICANCE = 0.1f;
 
 		//engage autopilot
 		AutopilotInputs input = updateAutopilotInput(deltaTime);// TODO input stream
@@ -344,15 +344,17 @@ public class Drone implements WorldObject {
 			APO = AP.timePassed(input);
 		}
 		//setThrust(APO.getThrust());
-		setLeftWingInclination(APO.getLeftWingInclination());
-		setRightWingInclination(APO.getRightWingInclination());
-		setHorStabInclination(APO.getHorStabInclination());
-		setVerStabInclination(APO.getVerStabInclination());
+		
+		// UNCOMMENT this after testing is finished
+		//setLeftWingInclination(APO.getLeftWingInclination());
+		//setRightWingInclination(APO.getRightWingInclination());
+		//setHorStabInclination(APO.getHorStabInclination());
+		//setVerStabInclination(APO.getVerStabInclination());
 
-		System.out.println("LeftWing inclination: " + getLeftWingInclination());
-		System.out.println("RightWing inclination: " + getRightWingInclination());
-		System.out.println("Horizontal inclination: " + getHorStabInclination());
-		System.out.println("Vertical inclination: " + getVerStabInclination());
+//		System.out.println("LeftWing inclination: " + getLeftWingInclination());
+//		System.out.println("RightWing inclination: " + getRightWingInclination());
+//		System.out.println("Horizontal inclination: " + getHorStabInclination());
+//		System.out.println("Vertical inclination: " + getVerStabInclination());
 
 		//--- calculations for the physics model
 		//set the next state of the position & velocity of the center of mass of the drone
@@ -371,21 +373,21 @@ public class Drone implements WorldObject {
 		Vector oldOrientation = this.getOrientation();
 		Vector oldRotation = this.getOrientation();
 
-		System.out.println("horizontalLift: " + horizontalStab.getLift());
-		System.out.println("verticalLift: " + verticalStab.getLift());
-		System.out.println("rightMainLift: " + rightWing.getLift());
-		System.out.println("leftMainLift: " + leftWing.getLift());
+//		System.out.println("horizontalLift: " + horizontalStab.getLift());
+//		System.out.println("verticalLift: " + verticalStab.getLift());
+//		System.out.println("rightMainLift: " + rightWing.getLift());
+//		System.out.println("leftMainLift: " + leftWing.getLift());
 
 		this.setVelocity(oldVelocity.driftRejection(velocity, deltaTime*INSIGNIFICANCE));
 		this.setPosition(oldPosition.driftRejection(position, deltaTime*INSIGNIFICANCE));
 		this.setOrientation(oldOrientation.driftRejection(orientation, deltaTime*INSIGNIFICANCE));
 		this.setRotationVector(oldRotation.driftRejection(rotation, deltaTime*INSIGNIFICANCE));
 
-		System.out.println("Velocity : " + this.getVelocity().vectorDifference(oldVelocity));
-		System.out.println("Position: " + this.getPosition().vectorDifference(oldPosition));
-		System.out.println("Orientation: " + this.getOrientation().vectorDifference(oldOrientation));
-		System.out.println("Rotiation: " + this.getRotationVector().vectorDifference(oldRotation));
-		System.out.println("Thrust: " + this.getThrust());
+//		System.out.println("Velocity : " + this.getVelocity().vectorDifference(oldVelocity));
+//		System.out.println("Position: " + this.getPosition().vectorDifference(oldPosition));
+//		System.out.println("Orientation: " + this.getOrientation().vectorDifference(oldOrientation));
+//		System.out.println("Rotiation: " + this.getRotationVector().vectorDifference(oldRotation));
+//		System.out.println("Thrust: " + this.getThrust());
 
 		Vector differencePos = this.getPosition().vectorDifference(oldPosition);
 
@@ -1455,7 +1457,7 @@ public class Drone implements WorldObject {
 	            public float getWingMass() { return getLeftWing().getMass(); }
 	            public float getTailMass() { return getLeftWing().getMass(); }
 	            public float getMaxThrust() { return getMaxThrust(); }
-	            public float getMaxAOA() { return getLeftWing().getAngleOfAttack(); }
+	            public float getMaxAOA() { return getLeftWing().calcAngleOfAttack(); }
 	            public float getWingLiftSlope() { return getLeftWing().getLiftSlope(); }
 	            public float getHorStabLiftSlope() { return getHorizontalStab().getLiftSlope(); }
 	            public float getVerStabLiftSlope() { return getVerticalStab().getLiftSlope(); }
@@ -1538,42 +1540,46 @@ public class Drone implements WorldObject {
 
 
 	//------- Drone Controlling Methods -------
+	
+	private static final float STANDARD_INCLINATION = (float)Math.PI/20;
+	private static final float STABLE_INCLINATION = (float)Math.PI/20;
+	
 	/**
 	 * @author anthonyrathe
 	 */
 	public void clockRollStart(){
-		this.getLeftWing().setWingInclination(-this.getLeftWing().getMaximumAngleOfAttack());
-		this.getRightWing().setWingInclination(this.getRightWing().getMaximumAngleOfAttack());
+		this.getLeftWing().setWingInclination(-STANDARD_INCLINATION);
+		this.getRightWing().setWingInclination(STANDARD_INCLINATION);
 	}
 
 	/**
 	 * @author anthonyrathe
 	 */
 	public void counterClockRollStart(){
-		this.getLeftWing().setWingInclination(this.getLeftWing().getMaximumAngleOfAttack());
-		this.getRightWing().setWingInclination(-this.getRightWing().getMaximumAngleOfAttack());
+		this.getLeftWing().setWingInclination(STANDARD_INCLINATION);
+		this.getRightWing().setWingInclination(-STANDARD_INCLINATION);
 	}
 
 	/**
 	 * @author anthonyrathe
 	 */
 	public void stopRoll(){
-		this.getLeftWing().setWingInclination(0f);
-		this.getRightWing().setWingInclination(0f);
+		this.getLeftWing().setWingInclination(STABLE_INCLINATION);
+		this.getRightWing().setWingInclination(STABLE_INCLINATION);
 	}
 
 	/**
 	 * @author anthonyrathe
 	 */
 	public void startTurnLeft(){
-		this.getVerticalStab().setWingInclination(this.getVerticalStab().getMaximumAngleOfAttack());
+		this.getVerticalStab().setWingInclination(-STANDARD_INCLINATION);
 	}
 
 	/**
 	 * @author anthonyrathe
 	 */
 	public void startTurnRight(){
-		this.getVerticalStab().setWingInclination(-this.getVerticalStab().getMaximumAngleOfAttack());
+		this.getVerticalStab().setWingInclination(STANDARD_INCLINATION);
 	}
 
 	/**
@@ -1587,14 +1593,14 @@ public class Drone implements WorldObject {
 	 * @author anthonyrathe
 	 */
 	public void startAscend(){
-		this.getHorizontalStab().setWingInclination(this.getHorizontalStab().getMaximumAngleOfAttack());
+		this.getHorizontalStab().setWingInclination(STANDARD_INCLINATION);
 	}
 
 	/**
 	 * @author anthonyrathe
 	 */
 	public void startDescend(){
-		this.getHorizontalStab().setWingInclination(-this.getHorizontalStab().getMaximumAngleOfAttack());
+		this.getHorizontalStab().setWingInclination(-STANDARD_INCLINATION);
 
 	}
 

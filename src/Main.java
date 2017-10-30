@@ -31,6 +31,7 @@ public class Main {
         // for testing purposes
         float passed_time = 0;
         // END for testing purposes
+        int steps = 0;
 
         while (true) {
 
@@ -64,6 +65,9 @@ public class Main {
                 }
 
             }
+            //4debugging
+            steps += 1;
+
         }
     }
 
