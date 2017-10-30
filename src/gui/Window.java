@@ -23,8 +23,8 @@ public class Window {
 	// The window handle
 	private long window;
 	private Renderer renderer;
-	private double time;
-	private double previousTime;
+	private static double time;
+	private static double previousTime;
 
 	public Window(World world) {
 		// Setup an error callback. The default implementation
@@ -102,6 +102,7 @@ public class Window {
 	}
 
 	public void renderFrame() {	
+		updateTime();
 
 		// Run the rendering unless the user has attempted to close
 		// the window or has pressed the ESCAPE key.
@@ -112,9 +113,9 @@ public class Window {
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
 
-		renderer.processInput(getDeltaTime());
+		renderer.processInput();
 		renderer.render();
-
+		
 		glfwSwapBuffers(window); // swap the color buffers
 
 		// Poll for window events. The key callback above will only be
@@ -138,12 +139,12 @@ public class Window {
 		Renderer.checkError();
 	}
 	
-	public void updateTime() {
-		this.previousTime = this.time;
-		this.time = glfwGetTime();
+	public static void updateTime() {
+		previousTime = time;
+		time = glfwGetTime();
 	}
 	
-	public double getDeltaTime() {
+	public static double getDeltaTime() {
 		return time - previousTime;
 	}
 

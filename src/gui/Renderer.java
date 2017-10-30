@@ -26,6 +26,8 @@ import java.util.Iterator;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.system.MemoryStack;
 
+import internal.Drone;
+import internal.Vector;
 import internal.World;
 import internal.WorldObject;
 import math.Matrix4f;
@@ -38,13 +40,15 @@ public class Renderer {
 	private Matrix4f projectionMatrix = new Matrix4f();
     private Matrix4f viewMatrix = new Matrix4f();
     
-    private Vector3f position = new Vector3f(0, 0, 0);
+    private Vector3f position = new Vector3f();
 	private long window;
 	private Mouse mouse;
 	private World world;
 
 	private float yaw = 0;
 	private float pitch = 0;
+
+	private boolean cameraOnDrone = true;
     private static final float SPEED = 1f;
     private static final float TURN_SPEED = 0.1f;
     
@@ -83,10 +87,9 @@ public class Renderer {
 		}
         projectionMatrix = Matrix4f.perspective(FOV, ratio, NEAR, FAR);
         
-        Iterator<WorldObject> iterator = world.getObjectSet().iterator(); 
-        while (iterator.hasNext()){
-        	iterator.next().getAssociatedCube().init(program);
-        }
+        for (WorldObject object: world.getObjectSet()) {
+    		object.getAssociatedCube().init(program);
+    	}
         
         checkError();
     }
@@ -96,10 +99,9 @@ public class Renderer {
      */
     public void release() {
     	
-    	Iterator<WorldObject> iterator = world.getObjectSet().iterator(); 
-        while (iterator.hasNext()){
-        	iterator.next().getAssociatedCube().delete();
-        }
+    	for (WorldObject object: world.getObjectSet()) {
+    		object.getAssociatedCube().delete();
+    	}
 
     	program.delete();
     	
@@ -109,8 +111,10 @@ public class Renderer {
     /**
      * Processes input.
      */
-	public void processInput(double delta) {
-
+	public void processInput() {
+		
+		double delta = Window.getDeltaTime();
+		
 		mouse.update(window);
 		yaw = yaw - mouse.dx() * TURN_SPEED * (float)delta;
 		pitch = pitch + mouse.dy() * TURN_SPEED * (float)delta;
@@ -119,7 +123,7 @@ public class Renderer {
 		Vector3f up = new Vector3f((float) (Math.sin(pitch)*Math.sin(yaw)), (float) Math.cos(pitch), (float) (Math.sin(pitch)*Math.cos(yaw)));
 		Vector3f look = up.cross(right);
 		
-		Vector3f vec = new Vector3f(0.0f, 0.0f, 0.0f);
+		Vector3f vec = new Vector3f();
         if (isKeyPressed(GLFW_KEY_UP) || isKeyPressed(GLFW_KEY_W)) {
             vec = vec.add(look);
         } 
@@ -148,20 +152,44 @@ public class Renderer {
 	private boolean isKeyPressed(int keyCode) {
 		return glfwGetKey(window, keyCode) == GLFW_PRESS;
 	}
+	
+	public void setCameraOnDrone() {   
+		Vector3f orientation = new Vector3f();
+		Vector3f dronePosition = new Vector3f();
+        for (Drone drone: world.getDroneSet()) {
+        	orientation = drone.getOrientation().convertToVector3f();
+        	dronePosition = drone.getPosition().convertToVector3f();
+        }
+        
+        Vector3f right = new Vector3f((float) Math.cos(orientation.x), 0, (float) -Math.sin(orientation.x));
+		Vector3f up = new Vector3f((float) (Math.sin(orientation.y)*Math.sin(orientation.x)), (float) Math.cos(orientation.y), (float) (Math.sin(orientation.y)*Math.cos(orientation.x)));
+		Vector3f look = up.cross(right);
+		
+		viewMatrix = Matrix4f.viewMatrix(right, up, look, dronePosition);
+	}
+	
+	public void update() {
+		if (cameraOnDrone) {
+			setCameraOnDrone();
+		} else {
+			processInput();
+		}
+	}
 
 	/**
      * Renders all scene objects.
      */
     public void render() {
+    	
+    	update();
 
         program.bind();
         program.setUniform("projectionMatrix", projectionMatrix);
         program.setUniform("viewMatrix", viewMatrix);
         
-        Iterator<WorldObject> iterator = world.getObjectSet().iterator(); 
-        while (iterator.hasNext()){
-        	iterator.next().getAssociatedCube().render();
-        }
+        for (WorldObject object: world.getObjectSet()) {
+    		object.getAssociatedCube().render();
+    	}
         
         program.unbind();
         
