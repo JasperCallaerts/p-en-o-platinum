@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.lang.Math;
 
 import Autopilot.AutopilotConfig;
-import Autopilot.AutopilotConfigWriter;nex
+import Autopilot.AutopilotConfigWriter;
 import Autopilot.AutopilotInputs;
 import Autopilot.AutopilotInputsWriter;
 import Autopilot.AutopilotOutputs;
