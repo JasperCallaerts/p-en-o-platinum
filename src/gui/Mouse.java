@@ -19,6 +19,8 @@ public class Mouse {
         glfwGetCursorPos(window, b1, b2);
         prevX = (float) b1.get(0);
         prevY = -(float) b2.get(0);
+        x = prevX;
+        y = prevY;
 	}
 	
 	public void update(long window) {

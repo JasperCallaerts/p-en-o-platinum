@@ -38,7 +38,7 @@ public class Renderer {
 	private Matrix4f projectionMatrix = new Matrix4f();
     private Matrix4f viewMatrix = new Matrix4f();
     
-    private Vector3f position = new Vector3f(0, 0, 0);
+    private Vector3f position = new Vector3f();
 	private long window;
 	private Mouse mouse;
 	private World world;
@@ -119,7 +119,7 @@ public class Renderer {
 		Vector3f up = new Vector3f((float) (Math.sin(pitch)*Math.sin(yaw)), (float) Math.cos(pitch), (float) (Math.sin(pitch)*Math.cos(yaw)));
 		Vector3f look = up.cross(right);
 		
-		Vector3f vec = new Vector3f(0.0f, 0.0f, 0.0f);
+		Vector3f vec = new Vector3f();
         if (isKeyPressed(GLFW_KEY_UP) || isKeyPressed(GLFW_KEY_W)) {
             vec = vec.add(look);
         } 

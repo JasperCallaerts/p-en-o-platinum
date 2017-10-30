@@ -71,7 +71,7 @@ public class Cube{
 			// Right face
 			8, 9, 10, 11, 8, 10,
 			// Left face
-			12, 13, 14, 12, 13, 15,
+			12, 13, 14, 12, 14, 15,
 			// Bottom face
 			16, 17, 18, 16, 18, 19,
 			// Back face
