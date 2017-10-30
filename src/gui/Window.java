@@ -9,6 +9,10 @@ import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
 import org.lwjgl.system.*;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.nio.*;
 import java.util.List;
 
@@ -153,27 +157,40 @@ public class Window {
 	 * @return an byte array containing the image
 	 * @author Martijn
 	 */
-	public static byte[] getCameraView(){
-		ByteBuffer buffer = BufferUtils.createByteBuffer(HEIGHT *WIDTH*3);
-		//the array used for storing the pixels
-		byte[] pixelArray = new byte[HEIGHT *WIDTH*3];
-		GL11.glPixelStorei(GL11.GL_PACK_ALIGNMENT, 1);
-		GL11.glPixelStorei(GL11.GL_UNPACK_ALIGNMENT, 1);
-		//prepare the buffer for filling
-		buffer.clear();
-		//read the pixels on screen in the given window
-		GL11.glReadPixels(0,0, WIDTH, HEIGHT, GL11.GL_RGB, GL11.GL_UNSIGNED_BYTE, buffer);
+	public static byte[] getCameraView() throws IOException {
 
+		GL11.glReadBuffer(GL11.GL_FRONT);
+		int bpp = 4; // Assuming a 32-bit display with a byte each for red, green, blue, and alpha.
+		ByteBuffer buffer = BufferUtils.createByteBuffer(WIDTH * HEIGHT * bpp);
+		GL11.glReadPixels(0, 0, WIDTH, HEIGHT, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, buffer );
 
-		//prepare buffer for reading
-		buffer.clear();
-		//transfer al the buffered data to the array
-		buffer.get(pixelArray);
+		byte[] imageByteArray = new byte[WIDTH*HEIGHT*bpp];
+		buffer.get(imageByteArray);
 
-		//rescale the image to the appropriate size
-		byte[] rescaledPixelArray = rescale(pixelArray, WIDTH, CAMERA_WIDTH, HEIGHT, CAMERA_HEIGHT);
+		BufferedImage image = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB);
 
-		return rescaledPixelArray;
+//		String format = "PNG";
+//		File file = new File("image.png");
+//
+//		for(int x = 0; x < WIDTH; x++)
+//		{
+//			for(int y = 0; y < HEIGHT; y++)
+//			{
+//				int i = (x + (WIDTH * y)) * bpp;
+//				int r = (imageByteArray[i])& 0xFF;
+//				int g = (imageByteArray[i + 1]) & 0xFF;
+//				int b =(imageByteArray[i+2])& 0xFF;
+//				image.setRGB(x, HEIGHT - (y + 1), (0xFF << 24) | (r << 16) | (g << 8) | b);
+//			}
+//		}
+//
+//		try {
+//			ImageIO.write(image, format, file);
+//		} catch (IOException e) { e.printStackTrace(); }
+
+		byte[] rescaledArray = rescale(imageByteArray, WIDTH, CAMERA_WIDTH, HEIGHT, CAMERA_HEIGHT, bpp);
+
+		return rescaledArray;
 	}
 
 	/**
@@ -184,7 +201,7 @@ public class Window {
 	 * note: algorithm is modified version from the one used in:
 	 * http://tech-algorithm.com/articles/nearest-neighbor-image-scaling/
 	 */
-	public static byte[] rescale(byte[] imageArray, int oldNbRows, int newNbRows,int oldNbColumns, int newNbColumns){
+	public static byte[] rescale(byte[] imageArray, int oldNbRows, int newNbRows,int oldNbColumns, int newNbColumns, int bpp){
 
 
 		byte[] temp = new byte[newNbRows*newNbColumns*3];
@@ -198,7 +215,7 @@ public class Window {
 				py = (float) Math.floor(i*yRatio);
 
 				for(int k = 0; k != 3; k++) {
-					temp[((i * newNbColumns) + j) * 3 + k] = imageArray[((int) (py * oldNbColumns + px)) * 3 + k];
+					temp[((i * newNbColumns) + j) * 3 + k] = convertToBiasedByte(imageArray[((int) (py * oldNbColumns + px)) * bpp+ k]);
 				}
 
 			}
@@ -207,9 +224,70 @@ public class Window {
 		return temp;
 	}
 
+	public static byte convertToBiasedByte(byte glByte){
+		byte biasedByte;
+		if(glByte <= (byte)0){
+			biasedByte = (byte)(glByte - 128);
+		}else{
+			biasedByte = (byte)(glByte + 128);
+		}
+
+		return biasedByte;
+	}
+
 	private static int WIDTH = 1000;
 	private static int HEIGHT = 1000;
 	private static int CAMERA_WIDTH = 200;
 	private static int CAMERA_HEIGHT = 200;
+	private static boolean firstRun = true;
 
 }
+
+//		ByteBuffer buffer = BufferUtils.createByteBuffer(HEIGHT *WIDTH*4);
+//		//the array used for storing the pixels
+//		byte[] pixelArray = new byte[HEIGHT *WIDTH*4];
+//		int[] imageData = new int[CAMERA_WIDTH * CAMERA_HEIGHT];
+//		GL11.glPixelStorei(GL11.GL_PACK_ALIGNMENT, 1);
+//		GL11.glPixelStorei(GL11.GL_UNPACK_ALIGNMENT, 1);
+//		//prepare the buffer for filling
+//		buffer.clear();
+//		//read the pixels on screen in the given window
+//		GL11.glReadPixels(0,0, WIDTH, HEIGHT, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, buffer);
+//
+//
+//		//prepare buffer for reading
+//		//transfer al the buffered data to the array
+//		buffer.get(pixelArray);
+//
+//		//rescale the image to the appropriate size
+//		byte[] rescaledPixelArray = rescale(pixelArray, WIDTH, CAMERA_WIDTH, HEIGHT, CAMERA_HEIGHT);
+//		if(firstRun){
+//			for (int l = 0; l < CAMERA_WIDTH; l++) {
+//				for (int i1 = 0; i1 < CAMERA_HEIGHT; i1++) {
+//					int j1 = l + (CAMERA_HEIGHT - i1 - 1) * CAMERA_WIDTH;
+//					int k1 = rescaledPixelArray[j1 * 3 + 0] & 0xff;
+//					int l1 = rescaledPixelArray[j1 * 3 + 1] & 0xff;
+//					int i2 = rescaledPixelArray[j1 * 3 + 2] & 0xff;
+//					int j2 = 0xff000000 | k1 << 16 | l1 << 8 | i2;
+//					imageData[l + i1 * CAMERA_WIDTH] = j2;
+//				}
+//			}
+//			BufferedImage bufferedImage = new BufferedImage(CAMERA_WIDTH, CAMERA_HEIGHT, 1);
+//			bufferedImage.setRGB(0, 0, CAMERA_WIDTH, CAMERA_HEIGHT, imageData, 0, CAMERA_WIDTH);
+//			int index = 0;
+//			for(byte bytes: pixelArray){
+//				System.out.println(bytes);
+//				if(index == 200){
+//					break;
+//				}
+//				index++;
+//
+//			}
+//
+//			firstRun = false;
+//		}
+//
+//
+//
+//
+//		return rescaledPixelArray;

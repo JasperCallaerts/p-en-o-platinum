@@ -343,12 +343,16 @@ public class Drone implements WorldObject {
 			//else just calculate the next action
 			APO = AP.timePassed(input);
 		}
-		setThrust(APO.getThrust());
+		//setThrust(APO.getThrust());
 		setLeftWingInclination(APO.getLeftWingInclination());
 		setRightWingInclination(APO.getRightWingInclination());
 		setHorStabInclination(APO.getHorStabInclination());
 		setVerStabInclination(APO.getVerStabInclination());
 
+		System.out.println("LeftWing inclination: " + getLeftWingInclination());
+		System.out.println("RightWing inclination: " + getRightWingInclination());
+		System.out.println("Horizontal inclination: " + getHorStabInclination());
+		System.out.println("Vertical inclination: " + getVerStabInclination());
 
 		//--- calculations for the physics model
 		//set the next state of the position & velocity of the center of mass of the drone
@@ -377,11 +381,11 @@ public class Drone implements WorldObject {
 		this.setOrientation(oldOrientation.driftRejection(orientation, deltaTime*INSIGNIFICANCE));
 		this.setRotationVector(oldRotation.driftRejection(rotation, deltaTime*INSIGNIFICANCE));
 
-		System.out.println("Velocity : " + this.getVelocity().vectorDifference(oldVelocity));
-		System.out.println("Position: " + this.getPosition().vectorDifference(oldPosition));
-		System.out.println("Orientation: " + this.getOrientation().vectorDifference(oldOrientation));
-		System.out.println("Rotiation: " + this.getRotationVector().vectorDifference(oldRotation));
-		System.out.println("Thrust: " + this.getThrust());
+//		System.out.println("Velocity diff: " + this.getVelocity().vectorDifference(oldVelocity));
+//		System.out.println("Position diff: " + this.getPosition().vectorDifference(oldPosition));
+//		System.out.println("Orientation diff: " + this.getOrientation().vectorDifference(oldOrientation));
+//		System.out.println("Rotiation diff: " + this.getRotationVector().vectorDifference(oldRotation));
+//		System.out.println("Thrust: " + this.getThrust());
 
 		Vector differencePos = this.getPosition().vectorDifference(oldPosition);
 

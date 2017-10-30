@@ -26,10 +26,10 @@ public class Main {
 			//first render the image
 			window.renderFrame();
 			//pass the outputs to the drone
-			byte[] camera = Window.getCameraView();
-			worldBuilder.DRONE.setAPImage(camera);
 
 			try {
+				byte[] camera = Window.getCameraView();
+				worldBuilder.DRONE.setAPImage(camera);
 				world.advanceWorldState(TIME_STEP, STEPS_PER_ITERATION);
 			} catch (SimulationEndedException e) {
 				goalNotReached = false;

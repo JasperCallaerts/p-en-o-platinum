@@ -1,6 +1,8 @@
 package internal;
 
 
+import javax.swing.text.Position;
+
 /**
  * a class of Immutable pixels, represented by RGB values in bytes.
  * A bias of + 128 is applied to achieve the classical range of RGB values of 0 to 255
@@ -296,6 +298,15 @@ public class Pixel {
         if(!isValidColorValue(blue))
             throw new IllegalArgumentException(ILLEGAL_VALUE);
         this.setBlue((byte)(blue - BIAS));
+    }
+
+    @Override
+    public String toString() {
+        return "Pixel{" +
+                "red=" + (red) +
+                ", green=" + (green) +
+                ", blue=" + (blue) +
+                '}';
     }
 
     /*
