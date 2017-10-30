@@ -344,10 +344,12 @@ public class Drone implements WorldObject {
 			APO = AP.timePassed(input);
 		}
 		//setThrust(APO.getThrust());
-		setLeftWingInclination(APO.getLeftWingInclination());
-		setRightWingInclination(APO.getRightWingInclination());
-		setHorStabInclination(APO.getHorStabInclination());
-		setVerStabInclination(APO.getVerStabInclination());
+		
+		// UNCOMMENT this after testing is finished
+		//setLeftWingInclination(APO.getLeftWingInclination());
+		//setRightWingInclination(APO.getRightWingInclination());
+		//setHorStabInclination(APO.getHorStabInclination());
+		//setVerStabInclination(APO.getVerStabInclination());
 
 
 		//--- calculations for the physics model
@@ -1534,42 +1536,46 @@ public class Drone implements WorldObject {
 
 
 	//------- Drone Controlling Methods -------
+	
+	private static final float STANDARD_INCLINATION = (float)Math.PI/20;
+	private static final float STABLE_INCLINATION = (float)Math.PI/20;
+	
 	/**
 	 * @author anthonyrathe
 	 */
 	public void clockRollStart(){
-		this.getLeftWing().setWingInclination(-this.getLeftWing().getMaximumAngleOfAttack());
-		this.getRightWing().setWingInclination(this.getRightWing().getMaximumAngleOfAttack());
+		this.getLeftWing().setWingInclination(-STANDARD_INCLINATION);
+		this.getRightWing().setWingInclination(STANDARD_INCLINATION);
 	}
 
 	/**
 	 * @author anthonyrathe
 	 */
 	public void counterClockRollStart(){
-		this.getLeftWing().setWingInclination(this.getLeftWing().getMaximumAngleOfAttack());
-		this.getRightWing().setWingInclination(-this.getRightWing().getMaximumAngleOfAttack());
+		this.getLeftWing().setWingInclination(STANDARD_INCLINATION);
+		this.getRightWing().setWingInclination(-STANDARD_INCLINATION);
 	}
 
 	/**
 	 * @author anthonyrathe
 	 */
 	public void stopRoll(){
-		this.getLeftWing().setWingInclination(0f);
-		this.getRightWing().setWingInclination(0f);
+		this.getLeftWing().setWingInclination(STABLE_INCLINATION);
+		this.getRightWing().setWingInclination(STABLE_INCLINATION);
 	}
 
 	/**
 	 * @author anthonyrathe
 	 */
 	public void startTurnLeft(){
-		this.getVerticalStab().setWingInclination(this.getVerticalStab().getMaximumAngleOfAttack());
+		this.getVerticalStab().setWingInclination(-STANDARD_INCLINATION);
 	}
 
 	/**
 	 * @author anthonyrathe
 	 */
 	public void startTurnRight(){
-		this.getVerticalStab().setWingInclination(-this.getVerticalStab().getMaximumAngleOfAttack());
+		this.getVerticalStab().setWingInclination(STANDARD_INCLINATION);
 	}
 
 	/**
@@ -1583,14 +1589,14 @@ public class Drone implements WorldObject {
 	 * @author anthonyrathe
 	 */
 	public void startAscend(){
-		this.getHorizontalStab().setWingInclination(this.getHorizontalStab().getMaximumAngleOfAttack());
+		this.getHorizontalStab().setWingInclination(STANDARD_INCLINATION);
 	}
 
 	/**
 	 * @author anthonyrathe
 	 */
 	public void startDescend(){
-		this.getHorizontalStab().setWingInclination(-this.getHorizontalStab().getMaximumAngleOfAttack());
+		this.getHorizontalStab().setWingInclination(-STANDARD_INCLINATION);
 
 	}
 

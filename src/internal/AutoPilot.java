@@ -219,14 +219,14 @@ public class AutoPilot implements Autopilot {
 	 * @author anthonyrathe
 	 */
 	private void startTurnLeft(){
-		this.setVerStabInclinationOut((float)STANDARD_INCLINATION);
+		this.setVerStabInclinationOut((float)-STANDARD_INCLINATION);
 	}
 	
 	/**
 	 * @author anthonyrathe
 	 */
 	private void startTurnRight(){
-		this.setVerStabInclinationOut((float)-STANDARD_INCLINATION);
+		this.setVerStabInclinationOut((float)STANDARD_INCLINATION);
 	}
 	
 	/**

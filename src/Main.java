@@ -30,9 +30,11 @@ public class Main {
 
 		boolean goalNotReached = true;
 
+		//---------------------------
 		// for testing purposes
 		float passed_time = 0;
 		// END for testing purposes
+		//---------------------------
 
 		while (true) {
 
@@ -46,15 +48,20 @@ public class Main {
 				worldBuilder.DRONE.setAPImage(camera);
 
 				try {
+					
+					//------------------------
 					// For testing purposes
-
 					if (passed_time == 0) {
-						world.getDrone().startTurnLeft();
-					}else if (passed_time >= 0.1){
-						world.getDrone().stopTurn();
+						world.getDrone().counterClockRollStart();
+						//world.getDrone().increaseThrust(1.2);
+					}else if (passed_time >= 0.001){
+						world.getDrone().stopRoll();
 					}
+					System.out.println(world.getDrone().getLeftWingInclination() + " : " + world.getDrone().getRightWingInclination());
 					passed_time = passed_time + TIME_STEP;
-
+					
+					// END for testing purposes
+					//-------------------------
 					world.advanceWorldState(TIME_STEP, STEPS_PER_ITERATION);
 
 				} catch (SimulationEndedException e) {
