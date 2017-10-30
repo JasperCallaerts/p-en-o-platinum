@@ -61,9 +61,7 @@ public class Renderer {
 		program = new ShaderProgram(false, "resources/default.vert", "resources/default.frag");
 		
 		cameraOnDrone = onDrone;
-		if (onDrone) {
-			mouse = new Mouse(window);
-		}
+		mouse = new Mouse(window);
 
         program.init();
         
@@ -152,6 +150,8 @@ public class Renderer {
 		Vector3f look = up.cross(right);
 		
 		viewMatrix = Matrix4f.viewMatrix(right, up, look, dronePosition);
+		
+		checkError();
 	}
 	
 	public void update() {
