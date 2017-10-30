@@ -450,11 +450,20 @@ public class AutoPilot implements Autopilot {
 		getAPCamera().loadNextImage(inputs.getImage());
 		float xPosition = APCamera.getDestination().getxValue();
 		float yPosition = APCamera.getDestination().getyValue();
-		int cubeSize = 10;
 		
-		int threshold = Math.max(Math.round(THRESHOLD_PIXELS*NORMAL_CUBE_SIZE/cubeSize),1);
-		System.out.println(xPosition + " : " + yPosition);
-		System.out.println(getVerStabInclinationOut());
+		int cubeSize = APCamera.getTotalQualifiedPixels();
+		
+		//int threshold = Math.max(Math.round(THRESHOLD_PIXELS*NORMAL_CUBE_SIZE/cubeSize),1);
+		int threshold = (int)THRESHOLD_PIXELS;
+		
+		// Thrust
+		if (yPosition > 0) {
+			this.setThrustOut(Math.max(STANDARD_THRUST*200/yPosition, STANDARD_THRUST));
+		}else {
+			this.setThrustOut(STANDARD_THRUST);
+		}
+		
+		
 		// Ascend/Descend
 		if(yPosition < -threshold){
 			// Descend
@@ -534,6 +543,7 @@ public class AutoPilot implements Autopilot {
 	private static final float THRESHOLD_PIXELS = 1f;
 	private static final int NORMAL_CUBE_SIZE = 10;
 	private static final float NODE_REACHED_DISTANCE = 4f;
+	private static final float STANDARD_THRUST = 32.859283f;
 
 
     /*

@@ -2,6 +2,8 @@ package tests;
 import org.junit.Test;
 import static org.junit.Assert.assertNotEquals;
 
+import java.io.IOException;
+
 import internal.AutoPilot;
 import internal.Drone;
 import internal.HorizontalWing;
@@ -31,10 +33,10 @@ public class droneTest {
 	public Vector orientation = new Vector(PI,PI/2,0);
 	public Vector rotation = new Vector(1,1,1);
 	
-	public Vector relPosWing1 = new Vector(1f,0f,0f);
-	public Vector relPosWing2 = new Vector(-1f,0f,0f);
-	public Vector relPosWing3 = new Vector(0f,0f,-1f);
-	public Vector relPosWing4 = new Vector(0f,0f,-2f);
+	public Vector relPosWing1 = new Vector(1,0,0);
+	public Vector relPosWing2 = new Vector(-1,0,0);
+	public Vector relPosWing3 = new Vector(0,0,2);
+	public Vector relPosWing4 = new Vector(0,0,1);
 	
 	public AutoPilot AP = new AutoPilot();
 	
@@ -46,18 +48,18 @@ public class droneTest {
 	
 	@Before
 	public void wingSetup(){
-		//liftslope/mass/maxincl/incl
-		wing1 = new HorizontalWing(relPosWing1,5,10,1,0.5f);
-		wing2 = new HorizontalWing(relPosWing2,5,10,1,0.5f);
-		wing3 = new HorizontalWing(relPosWing3,10,5,1f,0.5f);
-		wing4 = new VerticalWing  (relPosWing4,5,5,1,0.5f);
+		//liftslope/mass/maxaoa/incl
+		wing1 = new HorizontalWing(relPosWing1,PI/3,10,1.5f,PI);
+		wing2 = new HorizontalWing(relPosWing2,PI/3,10,1.5f,PI);
+		wing3 = new HorizontalWing(relPosWing3,PI/3,5,1.5f,PI);
+		wing4 = new VerticalWing  (relPosWing4,PI/3,5,1.5f,PI);
 	}
 	
 	
 	@Before
 	public void setupDrones(){
-		//dronemass/enginemass/maxthrust
-		drone1 = new Drone(10, 30, position, velocity, orientation,
+		//enginemass/maxthrust
+		drone1 = new Drone(50, 10, position, velocity, orientation, 
 				rotation, wing2, wing1, wing3, wing4, AP); 
 	}
 	
@@ -70,13 +72,21 @@ public class droneTest {
 	}
 	
 
+//	@Test 
+//	public final void getEulerRotationTest(){
+//		Vector v = drone1.getEulerRotations(orientation);
+//		assertEquals(v.getyValue(), -PI, delta);
+//		assertEquals(v.getxValue(), 0, delta);
+//		assertEquals(v.getzValue(), PI/2, delta);
+//	}
+	
 	
 	
 	@Test
 	public final void getTotalMassTest(){
 		float m = drone1.getTotalMass();
-		float mass = 50f+10f+10f+10f+5f+5f;
-		float mass2 = 50f+10f+10f+10f+5f+5f+0.0001f;
+		float mass = 50f+10f+10f+5f+5f;
+		float mass2 = 50f+10f+10f+5f+5f+0.0001f;
 		assertEquals(mass, m, delta);
 		assertNotEquals(mass2, m, delta);
 	}
@@ -84,8 +94,8 @@ public class droneTest {
 	
 	@Test
 	public final void setInertiaTensorTest(){
-		float[] m = {5+20+22.5f,0,0,
-		             0,5+20+22.5f+10+10,0,
+		float[] m = {29.5f,0,0,
+		             0,49.5f,0,
 		             0,0,10+10};
 		SquareMatrix inert = drone1.getInertiaTensor();
 		assertEquals(new SquareMatrix(m), inert);
@@ -111,16 +121,16 @@ public class droneTest {
 		float p = 3;
 		float r = 4;
 		drone1.setOrientation(new Vector(h,p,r));
-		assertEquals(drone1.getHeading(), h, delta);
+		assertEquals(drone1.getHeading(), h-2*PI, delta);
 		assertEquals(drone1.getPitch(), p, delta);
-		assertEquals(drone1.getRoll(), r, delta);
+		assertEquals(drone1.getRoll(), r-2*PI, delta);
 		
 	}
 	
 	@Test
 	public final void setThrustTest(){
-		drone1.setThrust(30);
-		assertEquals(drone1.getThrust(), 30,delta);		
+		drone1.setThrust(10);
+		assertEquals(drone1.getThrust(), 10,delta);		
 	}
 	
 	@Test (expected = IllegalArgumentException.class)
@@ -136,7 +146,13 @@ public class droneTest {
 		assertEquals(g.getxValue(), v.getxValue(), 0.001);
 		assertEquals(g.getzValue(), v.getzValue(), 0.001);
 	}
-
+	
+//	@Test (expected = IllegalArgumentException.class)
+//	public final void canHaveAsDroneMassTest(){
+//		drone2 = new Drone(0, 10, position, velocity, orientation, 
+//				rotation, wing2, wing1, wing3, wing4, AP);
+//		drone2.canHaveAsDroneMass(drone2.getDroneMass());
+//	}
 	
 	@Test (expected = IllegalArgumentException.class)
 	public final void setVelocityTest(){
@@ -153,7 +169,150 @@ public class droneTest {
 		assertEquals(drone1.getVelocity(), v);		
 	}
 	
+	@Test
+	public final void getHeadingRotationVectTest(){
+		Vector i = new Vector(PI/3,0,0);
+		Vector v = drone1.getHeadingRotationVector(i);
+		
+		float x = (float) (0 +0+ (PI/3*Math.sin(drone1.getHeading())*Math.tan(drone1.getPitch())));
+//		System.out.println(drone1.getHeading());
+//		System.out.println(drone1.getPitch());
+//		System.out.println(i.getyValue());
+		assertEquals(v.getxValue(), x, delta);
+	}
+	
+	@Test 
+	public final void getPitchRotationVectTest(){
+		Vector i = new Vector(PI/3,0,0);
+		Vector v = drone1.getPitchRotationVector(i);
+		float x = (float) Math.cos(-PI)*PI/3;
+		assertEquals(x, v.getyValue(),delta);
+	}
+	
+	@Test 
+	public final void getRollRotationVectTest(){
+		Vector i = new Vector(PI/3,0,0);
+		Vector v = drone1.getRollRotationVector(i);
+		float x = (float) (0+Math.sin(-PI)*PI/3/1);
+		assertEquals(x, v.getyValue(),delta);
+	}
 	
 	
+	@Test 
+	public final void getRotationHPRTest(){
+		Vector r = new Vector(PI/3,0,0);
+		Vector v = drone1.getRotationHPR(r);
+		Vector x = new Vector(drone1.getHeadingRotationVector(r).getxValue(),drone1.getPitchRotationVector(r).getyValue(),
+				drone1.getRollRotationVector(r).getzValue());
+		assertEquals(x, v);
+	}
+	
+	
+	
+	@Test
+	public final void getAOATests(){
+
+		Vector v = wing1.getAbsoluteVelocity();
+		Vector r = drone1.getRotationVector();
+		Vector a = drone1.droneOnWorld(wing1.getRelativePosition());
+		Vector t = a.crossProduct(r).vectorSum(v);
+		Vector nor = wing1.projectOnWorld(wing1.getNormal());
+		
+		//System.out.println("aoaNom:"+v.scalarProduct(nor));
+		//System.out.println("aoaDenom:"+v.scalarProduct(wing1.getAttackVector()));
+	
+		//ABSVELOCITY
+		assertEquals(t.getxValue(), 1, delta);
+		assertEquals(t.getyValue(), 3, delta);
+		assertEquals(t.getzValue(), -2, delta);
+		//System.out.println(t.getyValue());
+		//fout 1.5*10^-7
+		//System.out.println(drone1.droneOnWorld(wing1.getRelativePosition()));
+		
+		//PROJONWORLD
+		Vector n = new Vector(0,1,0);
+		Vector n2 = wing1.projectOnWorld(n);
+		assertEquals(wing1.projectOnWorld(n).getxValue(),0,delta);
+		assertEquals(wing1.projectOnWorld(n).getyValue(),0,delta);
+		assertEquals(wing1.projectOnWorld(n).getzValue(),1,delta);
+
+		//ATKVECTOR
+		assertEquals(wing1.getAttackVector().getxValue(),0,delta);
+		assertEquals(wing1.getAttackVector().getyValue(),0,delta);
+		assertEquals(wing1.getAttackVector().getzValue(),1,delta);
+		//fout E-7
+		//System.out.println(wing1.getAttackVector());
+		
+		assertEquals(t.scalarProduct(n2), -2, delta);
+		assertEquals(t.scalarProduct(wing1.getAttackVector()), -2, delta);
+		//fout E-7
+		//System.out.println(t.scalarProduct(n2));
+		//System.out.println(t.scalarProduct(wing1.getAttackVector()));
+		//System.out.println(Math.atan2(t.scalarProduct(n2), t.scalarProduct(wing1.getAttackVector())));
+		wing1.setWingInclination(PI/4);
+		//System.out.println(wing1.getAngleOfAttack());
+		//System.out.println((float)Math.tan(PI));
+	}
+	
+	
+	
+	@Test
+	public final void getNextVelocityTest(){
+		float d = 0.01f;
+		Vector a = new Vector(1,0,0);
+		for (int i=0; i <= 10000; i++){
+			Vector a2 = drone1.getVelocity();
+			drone1.setVelocity(new Vector(a2.getxValue()+a.getxValue()*d,a2.getyValue()+a.getyValue()*d,
+					a2.getzValue()+a.getzValue()*d));		
+		}
+		Vector v1 = drone1.getVelocity();
+		drone1.setVelocity(velocity);
+		for (int i=0; i <= 10000; i++){
+			drone1.setVelocity(drone1.getNextVelocity(d, a));		
+		}
+		Vector v2 = drone1.getVelocity();
+		assertEquals(v1, v2);
+	}
+	
+	
+	
+	@Test
+	public final void getNextPosTest(){
+		float d = 2f;
+		Vector a = new Vector(1,1,1);
+		Vector r = drone1.getNextPosition(d,a);
+		Vector rr = new Vector(1+d*1+1*d,0+d*1+1*d,2+d*0+1*d);
+		assertEquals(rr, r);
+	}
+	
+	
+
+	
+	
+//	@Test
+//	public final void extForceTest(){
+//		
+//	}
+	
+	
+	
+	@Test
+	public final void liftTest(){
+		wing3.calcAngleOfAttack();
+		Vector n = wing3.getNormal();
+		Vector a = wing3.getAbsoluteVelocity();
+		float aoa = wing3.getAngleOfAttack();
+		
+		float a2 = a.scalarProduct(a);
+		float prod = PI/3*a2*aoa;
+		Vector l = n.scalarMult(-prod);
+		//System.out.println("calc:"+wing3.getLift());
+	//	System.out.println("res:"+l);
+		
+			
+	}
 }
+
+
+
 

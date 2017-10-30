@@ -1,7 +1,5 @@
 package internal;
 
-import com.sun.javafx.scene.CameraHelper;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,7 +43,8 @@ public class AutoPilotCamera {
     /**
      * Method to locate a red cube for the given image
      * based on the HSV input values
-     * @return a vector containing the location of the cube
+     * @return a vector containing the location of the cube and the total amount of red pixels
+     * format: new Vector(x_value, y_value, totalPixels)
      */
     public Vector locateRedCube(){
 
@@ -65,8 +64,9 @@ public class AutoPilotCamera {
         float xOffset = this.getNbColumns()/2.0f;
         float yOffset = this.getNbRows()/2.0f;
 
+        int totalRedPixels = xRedCoordinates.size();
 
-        return new Vector(xMeanCoordinate - xOffset, -yMeanCoordinate + yOffset, 0);
+        return new Vector(xMeanCoordinate - xOffset, -yMeanCoordinate + yOffset, totalRedPixels);
 
     }
 
@@ -130,7 +130,9 @@ public class AutoPilotCamera {
         CameraImage newImage = this.convertToCameraImage(newImageArray, this.getNbRows(), this.getNbColumns());
         this.setCameraImage(newImage);
         //System.out.println("cube location: " + locateRedCube());
-        this.setDestination(this.locateRedCube());
+        Vector dataCube = this.locateRedCube();
+        this.setDestination(new Vector(dataCube.getxValue(), dataCube.getyValue(), 0.0f));
+        this.setTotalQualifiedPixels(Math.round(dataCube.getzValue()));
     }
 
     /**
@@ -229,9 +231,25 @@ public class AutoPilotCamera {
     }
 
 
+    /**
+     * get pixels that qualify the recognition criteria
+     * @return the total qualified pixels
+     */
+    public int getTotalQualifiedPixels() {
+        return totalQualifiedPixels;
+    }
+
+    /**
+     * the total amount of qualified pixels
+     * @param totalQualifiedPixels an integer containing the total amount of qualified pixels
+     */
+    public void setTotalQualifiedPixels(int totalQualifiedPixels) {
+        this.totalQualifiedPixels = totalQualifiedPixels;
+    }
+
     /*
-        Variables
-         */
+            Variables
+             */
     private CameraImage cameraImage;
 
     /**
@@ -253,6 +271,7 @@ public class AutoPilotCamera {
 
     private World world;
     private Vector destination;
+    private int totalQualifiedPixels;
 
 
     /*

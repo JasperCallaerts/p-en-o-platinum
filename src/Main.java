@@ -46,13 +46,6 @@ public class Main {
                 try {
                     byte[] camera = droneWindow.getCameraView();
                     worldBuilder.DRONE.setAPImage(camera);
-                    // For testing purposes
-
-                    if (passed_time == 0) {
-                        world.getDrone().startTurnLeft();
-                    } else if (passed_time >= 0.1) {
-                        world.getDrone().stopTurn();
-                    }
 
                     passed_time = passed_time + TIME_STEP;
 
