@@ -1,3 +1,4 @@
+import gui.Renderer;
 import gui.Window;
 import internal.*;
 import sun.awt.windows.WBufferStrategy;
@@ -17,16 +18,21 @@ public class Main {
 		WorldBuilder worldBuilder = new WorldBuilder();
 		World  world = worldBuilder.createWorld();
 		
+		
 		// initialize a window
-		Window window = new Window(world);
-
+		Window droneWindow = new Window(1000, 1000, 0.2f, 0.5f, "Drone simulator 2017");
+//		Window testWindow = new Window(500, 500, 0.9f, 0.1f, "test window");
+		
+		// initialize a renderer
+		Renderer renderer = new Renderer(droneWindow.getHandler(), world);
+		
 		boolean goalNotReached = true;
 		while (goalNotReached) {
 			
 			//first render the image
-			window.renderFrame();
+			droneWindow.renderFrame(renderer);
 			//pass the outputs to the drone
-			byte[] camera = Window.getCameraView();
+			byte[] camera = droneWindow.getCameraView();
 			worldBuilder.DRONE.setAPImage(camera);
 
 			try {
@@ -37,6 +43,9 @@ public class Main {
 				System.out.println("IO exception");
 			}
 
+		}
+		while (true) {
+			droneWindow.renderFrame(renderer);
 		}
 	}
 	// configuration for 20 fps
