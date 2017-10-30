@@ -343,7 +343,7 @@ public class Drone implements WorldObject {
 			//else just calculate the next action
 			APO = AP.timePassed(input);
 		}
-		//setThrust(APO.getThrust());
+		setThrust(APO.getThrust());
 		
 		// UNCOMMENT this after testing is finished
 		setLeftWingInclination(APO.getLeftWingInclination());
