@@ -110,7 +110,7 @@ public class Window {
 		glCullFace(GL_BACK);
 	}
 
-	public void renderFrame(Renderer renderer) {
+	public void renderFrame(Renderer renderer, boolean cameraOnDrone) {
 		// Make the OpenGL context current
 		glfwMakeContextCurrent(window);
 		
@@ -126,8 +126,7 @@ public class Window {
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
 
-		renderer.processInput();
-		renderer.render();
+		renderer.render(cameraOnDrone);
 		
 		glfwSwapBuffers(window); // swap the color buffers
 

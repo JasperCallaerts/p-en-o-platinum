@@ -23,8 +23,8 @@ public class Main {
 
 
         // initialize the renderers
-        Renderer renderer = new Renderer(droneWindow, world, true);
-//        Renderer testRenderer = new Renderer(testWindow, world, false);
+        Renderer renderer = new Renderer(world);
+//        Renderer andererenderer = new Renderer(world);
 
         boolean goalNotReached = true;
 
@@ -36,8 +36,8 @@ public class Main {
         while (true) {
 
             //first render the images
-            droneWindow.renderFrame(renderer);
-//            testWindow.renderFrame(testRenderer);
+            droneWindow.renderFrame(renderer, true);
+//            testWindow.renderFrame(andererenderer, false);
 
             if (goalNotReached) {
                 //pass the outputs to the drone

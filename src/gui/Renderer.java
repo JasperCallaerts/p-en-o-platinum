@@ -20,6 +20,11 @@ import static org.lwjgl.opengl.GL11.GL_OUT_OF_MEMORY;
 import static org.lwjgl.opengl.GL11.glGetError;
 import static org.lwjgl.opengl.GL30.GL_INVALID_FRAMEBUFFER_OPERATION;
 
+import java.nio.IntBuffer;
+
+import org.lwjgl.glfw.GLFW;
+import org.lwjgl.system.MemoryStack;
+
 import internal.Drone;
 import internal.World;
 import internal.WorldObject;
@@ -32,19 +37,11 @@ public class Renderer {
 	
 	private Matrix4f projectionMatrix = new Matrix4f();
     private Matrix4f viewMatrix = new Matrix4f();
-    
-    private Vector3f position = new Vector3f();
-	private Window window;
-	private Mouse mouse;
+
 	private World world;
-
-	private float yaw = 0;
-	private float pitch = 0;
-
 	private boolean cameraOnDrone = true;
-    private static final float SPEED = 10f;
-    private static final float TURN_SPEED = 0.1f;
-    
+
+	private Input input;  
      
     private static final float FOV = (float) Math.toRadians(60.0f);
 	private static final float NEAR = 0.01f;
@@ -54,14 +51,12 @@ public class Renderer {
      * Initializes the OpenGL state. Creating programs and sets 
      * appropriate state. 
      */
-	public Renderer(Window window, World world, boolean onDrone) {
+	public Renderer(World world) {
 		
 		this.world = world;
-		this.window = window;
-		program = new ShaderProgram(false, "resources/default.vert", "resources/default.frag");
+		this.input = new Input();
 		
-		cameraOnDrone = onDrone;
-		mouse = new Mouse(window);
+		program = new ShaderProgram(false, "resources/default.vert", "resources/default.frag");	
 
         program.init();
         
@@ -73,7 +68,15 @@ public class Renderer {
 			e.printStackTrace();
 		}
         
-        projectionMatrix = Matrix4f.perspective(FOV, window.getRatio(), NEAR, FAR);
+        float ratio;
+		try (MemoryStack stack = MemoryStack.stackPush()) {
+			long window = GLFW.glfwGetCurrentContext();
+			IntBuffer width = stack.mallocInt(1);
+			IntBuffer height = stack.mallocInt(1);
+			GLFW.glfwGetFramebufferSize(window, width, height);
+			ratio = (float) width.get() / (float) height.get();
+		}
+        projectionMatrix = Matrix4f.perspective(FOV, ratio, NEAR, FAR);
         
         checkError();
     }
@@ -91,53 +94,8 @@ public class Renderer {
     	
         checkError();
     }
-
-    /**
-     * Processes input.
-     */
-	public void processInput() {
-		
-		double delta = Window.getDeltaTime();
-		
-		mouse.update();
-		yaw = yaw - mouse.dx() * TURN_SPEED * (float)delta;
-		pitch = pitch + mouse.dy() * TURN_SPEED * (float)delta;
-
-		Vector3f right = new Vector3f((float) Math.cos(yaw), 0, (float) -Math.sin(yaw));
-		Vector3f up = new Vector3f((float) (Math.sin(pitch)*Math.sin(yaw)), (float) Math.cos(pitch), (float) (Math.sin(pitch)*Math.cos(yaw)));
-		Vector3f look = up.cross(right);
-		
-		Vector3f vec = new Vector3f();
-        if (isKeyPressed(GLFW_KEY_UP) || isKeyPressed(GLFW_KEY_W)) {
-            vec = vec.add(look);
-        } 
-        if (isKeyPressed(GLFW_KEY_DOWN) || isKeyPressed(GLFW_KEY_S)) {
-        	vec = vec.add(look.negate());
-        }
-        if (isKeyPressed(GLFW_KEY_LEFT) || isKeyPressed(GLFW_KEY_A)) {
-        	vec = vec.add(right.negate());
-        }
-        if (isKeyPressed(GLFW_KEY_RIGHT) || isKeyPressed(GLFW_KEY_D)) {
-        	vec = vec.add(right);
-        }
-        if (isKeyPressed(GLFW_KEY_SPACE)) {
-        	vec = vec.add(up);
-        } 
-        if (isKeyPressed(GLFW_KEY_LEFT_ALT)) {
-        	vec = vec.add(up.negate());
-        }
-        
-        position = position.add(vec.scale(SPEED * (float)delta));
-        viewMatrix = Matrix4f.viewMatrix(right, up, look, position);
-        
-        checkError();
-	}
 	
-	private boolean isKeyPressed(int keyCode) {
-		return glfwGetKey(window.getHandler(), keyCode) == GLFW_PRESS;
-	}
-	
-	public void setCameraOnDrone() {   
+	public Matrix4f getDroneView() {   
 		Vector3f orientation = new Vector3f();
 		Vector3f dronePosition = new Vector3f();
         for (Drone drone: world.getDroneSet()) {
@@ -149,27 +107,26 @@ public class Renderer {
 		Vector3f up = new Vector3f((float) (Math.sin(orientation.y)*Math.sin(orientation.x)), (float) Math.cos(orientation.y), (float) (Math.sin(orientation.y)*Math.cos(orientation.x)));
 		Vector3f look = up.cross(right);
 		
-		viewMatrix = Matrix4f.viewMatrix(right, up, look, dronePosition);
-		
-		checkError();
+		return Matrix4f.viewMatrix(right, up, look, dronePosition);
 	}
 	
-	public void update() {
+	public void update(boolean cameraOnDrone) {
 		if (cameraOnDrone) {
-			setCameraOnDrone();
+			viewMatrix = getDroneView();
 		} else {
-			processInput();
+			viewMatrix = input.getViewMatrix();
 		}
 	}
 
 	/**
      * Renders all scene objects.
      */
-    public void render() {
-    	
-    	update();
+    public void render(boolean cameraOnDrone) {
+    	update(cameraOnDrone);
 
+    	checkError();
         program.bind();
+        checkError();
         program.setUniform("projectionMatrix", projectionMatrix);
         program.setUniform("viewMatrix", viewMatrix);
         
