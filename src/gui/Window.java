@@ -51,6 +51,7 @@ public class Window {
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
 		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); 
+		glfwWindowHint(GLFW_SAMPLES, 4);
 
 		// Create the window
 		window = glfwCreateWindow(WIDTH, HEIGHT, title, NULL, NULL);
@@ -86,6 +87,7 @@ public class Window {
 
 		// Make the OpenGL context current
 		glfwMakeContextCurrent(window);
+				
 		// Enable v-sync
 		glfwSwapInterval(1);
 
@@ -109,6 +111,9 @@ public class Window {
 	}
 
 	public void renderFrame(Renderer renderer) {
+		// Make the OpenGL context current
+		glfwMakeContextCurrent(window);
+		
 		updateTime();
 
 		// Run the rendering unless the user has attempted to close
