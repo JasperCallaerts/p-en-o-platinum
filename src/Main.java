@@ -23,7 +23,7 @@ public class Main {
 
 
         // initialize the renderers
-        Renderer renderer = new Renderer(droneWindow.getHandler(), world);
+        Renderer renderer = new Renderer(droneWindow, world);
         //Renderer testRenderer = new Renderer(testWindow.getHandler(), world);
 
         boolean goalNotReached = true;
