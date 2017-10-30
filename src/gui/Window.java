@@ -29,8 +29,13 @@ public class Window {
 	private Renderer renderer;
 	private static double time;
 	private static double previousTime;
+	private int WIDTH;
+	private int HEIGHT;
 
-	public Window(World world) {
+	public Window(int width, int height, float xOffset, float yOffset, String title) {
+		this.WIDTH = width;
+		this.HEIGHT = height;
+
 		// Setup an error callback. The default implementation
 		// will print the error message in System.err.
 		GLFWErrorCallback.createPrint(System.err).set();
@@ -48,7 +53,7 @@ public class Window {
 		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); 
 
 		// Create the window
-		window = glfwCreateWindow(WIDTH, HEIGHT, "Drone simulator 2017", NULL, NULL);
+		window = glfwCreateWindow(WIDTH, HEIGHT, title, NULL, NULL);
 		if ( window == NULL )
 			throw new RuntimeException("Failed to create the GLFW window");
 
@@ -58,7 +63,7 @@ public class Window {
 				glfwSetWindowShouldClose(window, true); // We will detect this in the rendering loop
 		});
 		
-		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
 		// Get the thread stack and push a new frame
 		try ( MemoryStack stack = stackPush() ) {
@@ -74,8 +79,8 @@ public class Window {
 			// Center the window
 			glfwSetWindowPos(
 				window,
-				(vidmode.width() - pWidth.get(0)) / 2,
-				(vidmode.height() - pHeight.get(0)) / 2
+				(int) ((vidmode.width() - pWidth.get(0)) * xOffset),
+				(int) ((vidmode.height() - pHeight.get(0)) * yOffset)
 			);
 		} // the stack frame is popped automatically
 
@@ -95,22 +100,21 @@ public class Window {
 		GL.createCapabilities();
 
 		// Set the clear color
-		glClearColor(0.5f, 0.8f, 1.0f, 1.0f);
+		glClearColor(0.2f, 0.7f, 1.0f, 1.0f);
 
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LESS);
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
-		
-		renderer = new Renderer(window, world);
 	}
 
-	public void renderFrame() {	
+	public void renderFrame(Renderer renderer) {
 		updateTime();
 
 		// Run the rendering unless the user has attempted to close
 		// the window or has pressed the ESCAPE key.
 		if (glfwWindowShouldClose(window)) {
+			renderer.release();
 			terminate();
 			return;
 		}
@@ -128,7 +132,6 @@ public class Window {
 	}
 	
 	public void terminate() {
-		renderer.release();
 		
 		// Free the window callbacks and destroy the window
 		glfwFreeCallbacks(window);
@@ -150,6 +153,10 @@ public class Window {
 	
 	public static double getDeltaTime() {
 		return time - previousTime;
+	}
+
+	public long getHandler() {
+		return window;
 	}
 
 	/**

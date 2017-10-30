@@ -1,5 +1,7 @@
 package tests;
 import gui.Cube;
+import gui.Window;
+
 import org.junit.Test;
 
 import Autopilot.AutopilotConfig;
@@ -19,11 +21,13 @@ import internal.Block;
 import internal.Drone;
 import internal.HorizontalWing;
 import internal.Pixel;
+import internal.SimulationEndedException;
 import internal.SquareMatrix;
 import internal.Vector;
 import internal.VerticalWing;
 import internal.Wing;
 import internal.World;
+import internal.WorldBuilder;
 import junit.framework.Assert;
 import math.Vector3f;
 
@@ -40,6 +44,7 @@ import org.junit.Before;
 public class autoPilotTests {
 
 	public World world;
+	public Window window;
 	public Block redBlock;
 	public AutoPilot AP;
 	public AutoPilotCamera APCamera;
@@ -55,13 +60,16 @@ public class autoPilotTests {
 	
 	public Vector relPosWing1 = new Vector(1,0,0);
 	public Vector relPosWing2 = new Vector(-1,0,0);
-	public Vector relPosWing3 = new Vector(0,0f,-1f);
-	public Vector relPosWing4 = new Vector(0,0,-2);
+	public Vector relPosWing3 = new Vector(0,0f,1f);
+	public Vector relPosWing4 = new Vector(0,0,2);
 	
 	private final static float RED_H_VALUE = 0.0f;
     private final static float RED_S_VALUE = 1.0f;
     private final static float Z_AXIS_V_VALUE = 0.7f;
     private final static float EPSILON  = 1E-5f;
+    private final static float TIME_STEP = 0.1f;
+	private final static float FRAMERATE = 20.0f;
+	private final static int STEPS_PER_ITERATION = Math.round((1/ FRAMERATE)*TIME_STEP);
 	
 	public float delta = 0.000001f;
 	
@@ -77,14 +85,14 @@ public class autoPilotTests {
 			for(int col = -50; col < 50; col++) {
 				if (col == x && row == y) {
 					// Add red RGB bytes
-					image.add((byte) (255 + 128));
-					image.add((byte) (128));
-					image.add((byte) (128));
+					image.add((byte) (255/188));
+					image.add((byte) (0));
+					image.add((byte) (0));
 				}else {
 					// Add non-red RGB bytes
-					image.add((byte) (128));
-					image.add((byte) (128));
-					image.add((byte) (128));
+					image.add((byte) (0));
+					image.add((byte) (0));
+					image.add((byte) (0));
 				}
 			}
 		}
@@ -96,33 +104,34 @@ public class autoPilotTests {
 	}
 	
 	@Before
-	public void setup(){
-		//liftslope/mass/maxincl/incl
-		wing1 = new HorizontalWing(relPosWing1,5,10,1,0.5f);
-		wing2 = new HorizontalWing(relPosWing2,5,10,1,0.5f);
-		wing3 = new HorizontalWing(relPosWing3,10,5,1f,0.5f);
-		wing4 = new VerticalWing  (relPosWing4,5,5,1,0.5f);
+	public void setup() throws IOException{
 		
-		APConfig = new AutoPilotConfig(delta, delta, delta, delta, delta, delta, delta, delta, delta, delta, delta, delta, delta, 101, 101);
-		AP = new AutoPilot();
-		drone = new Drone(50f, 10f, position, velocity, orientation, 
-				rotation, wing2, wing1, wing3, wing4, AP); 
+		// drone builder covers all the stuff involving building the drone, adjust parameters there
+		world = new WorldBuilder().createWorld();
 		
-		world = new World();
-		redBlock = new Block(new Vector(0f,0f,0f));
-		Cube redCube = new Cube(new Vector3f(0f,0f,0f), new Vector3f(255, 0, 0));
-		redBlock.setAssocatedCube(redCube);
-		world.addWorldObject(redBlock);
-		world.addWorldObject(drone);
+		// initialize a window
+		window = new Window(world);
+
+		//first render the image
+		window.renderFrame();
+		//pass the outputs to the drone
+		byte[] camera = Window.getCameraView();
+		WorldBuilder.DRONE.setAPImage(camera);
+		try {
+			world.advanceWorldState(TIME_STEP, STEPS_PER_ITERATION);
+		} catch (SimulationEndedException e) {
+			//ignore
+		} catch (IOException e) {
+			//ignore
+		}
 		
-		AutopilotInputs initialInputs = drone.updateAutopilotInput(1f);
-		byte[] initialImage = initialInputs.getImage();
-		APCamera = new AutoPilotCamera(initialImage, 1f, 1f, 101, 101);
-		AP.setAPCamera(APCamera);
+		world.getDrone().setThrust(20f);
+		
 	}
 	
 	
 	@Test
+	@Deprecated
 	public final void autoPilotOutputsTest() throws IOException{
 		Pixel redPixel = new Pixel((byte) (255 + 128), (byte) 128, (byte) 128);
 		Vector HSV = new Vector(redPixel.convertToHSV());
@@ -144,8 +153,12 @@ public class autoPilotTests {
 	
 	@Test
 	public final void autoPilotDroneInstructionTest() throws IOException{
-		System.out.println(drone.getPosition());
-		world.advanceWorldState(10f, 1);
+		for (int i = 0; i < 1000; i++) {
+			System.out.println(world.getDrone().getPosition());
+			world.advanceWorldState(TIME_STEP, STEPS_PER_ITERATION);
+		}
+		
+		
 		
 	}
 	

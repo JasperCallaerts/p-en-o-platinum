@@ -5,22 +5,22 @@ import static org.lwjgl.glfw.GLFW.glfwGetTime;
 public class Timer {
 	
 	// the starting time
-	private double firstTime;
+	private static double firstTime;
 	
 	// the time of the previous update
-	private double lastTime;
+	private static double lastTime;
 	
 	// updates per second
-	private int ups;
+	private static int ups;
 	
     // counter for the ups calculation.
-    private int upsCount;
+    private static int upsCount;
     
     // time for the ups calculation.
-    private double timeCount;
+    private static double timeCount;
 	
 	// time passed since last update
-	private double delta;
+	private static double delta;
 	
 
 	public Timer() {
@@ -28,7 +28,7 @@ public class Timer {
 		firstTime = getTime();
 	}
 	
-	public void update() {
+	public static void update() {
 		double time = getTime();
         delta = (time - lastTime);
         lastTime = time;
@@ -42,20 +42,20 @@ public class Timer {
         }
     }
 
-	private double getTime() {
+	public static double getTime() {
 		return glfwGetTime();
 	}
 	
-	double getDelta() {
+	public static double getDelta() {
 		return delta;
 	}
 	
 	// time passed since this timer was made
-	double getTimePassed() {
+	public static double getTimePassed() {
 		return getTime() - firstTime;
 	}
 	
-	int getUps() {
+	public static int getUps() {
 		if (ups > 0) {
 			return ups;
 		} else {
