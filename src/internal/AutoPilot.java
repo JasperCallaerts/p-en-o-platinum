@@ -240,14 +240,14 @@ public class AutoPilot implements Autopilot {
 	 * @author anthonyrathe
 	 */
 	private void startAscend(){
-		this.setHorStabInclinationOut((float)STANDARD_INCLINATION);
+		this.setHorStabInclinationOut((float)-STANDARD_INCLINATION);
 	}
 	
 	/**
 	 * @author anthonyrathe
 	 */
 	private void startDescend(){
-		this.setHorStabInclinationOut((float)-STANDARD_INCLINATION);
+		this.setHorStabInclinationOut((float)STANDARD_INCLINATION);
 	}
 	
 	/**
@@ -448,19 +448,21 @@ public class AutoPilot implements Autopilot {
 	public void update(AutopilotInputs inputs) throws IOException{
 		
 		getAPCamera().loadNextImage(inputs.getImage());
+		float pitch = inputs.getPitch();
 		float xPosition = APCamera.getDestination().getxValue();
-		float yPosition = APCamera.getDestination().getyValue();
+		float yPosition = -APCamera.getDestination().getyValue();
 		
 		int cubeSize = APCamera.getTotalQualifiedPixels();
+		System.out.println(cubeSize);
 		
 		//int threshold = Math.max(Math.round(THRESHOLD_PIXELS*NORMAL_CUBE_SIZE/cubeSize),1);
 		int threshold = (int)THRESHOLD_PIXELS;
 		
 		// Thrust
-		if (yPosition > 0) {
-			this.setThrustOut(Math.max(STANDARD_THRUST*200/yPosition, STANDARD_THRUST));
+		if (pitch > INCREASE_THRUST_ANGLE) {
+			this.setThrustOut(Math.max((float)(STANDARD_THRUST*pitch/INCREASE_THRUST_ANGLE), STANDARD_THRUST));
 		}else {
-			this.setThrustOut(STANDARD_THRUST);
+			this.setThrustOut(STANDARD_THRUST*(Math.min((float)STANDARD_CUBE_SIZE/(float)Math.pow(cubeSize,1.6),1f)));
 		}
 		
 		
@@ -540,8 +542,9 @@ public class AutoPilot implements Autopilot {
 	private static final float STANDARD_INCLINATION = (float)Math.PI/8;
 	private static final float STABLE_INCLINATION = (float)Math.PI/12;
 	private static final float THRESHOLD_ANGLE = (float)Math.PI/36;
-	private static final float THRESHOLD_PIXELS = 1f;
-	private static final int NORMAL_CUBE_SIZE = 10;
+	private static final float THRESHOLD_PIXELS = 5f;
+	private static final float INCREASE_THRUST_ANGLE = (float)(Math.PI/20);
+	private static final int STANDARD_CUBE_SIZE = 10;
 	private static final float NODE_REACHED_DISTANCE = 4f;
 	private static final float STANDARD_THRUST = 32.859283f;
 
