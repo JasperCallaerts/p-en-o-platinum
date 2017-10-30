@@ -38,13 +38,12 @@ public class Main {
 				// For testing purposes
 				
 				if (passed_time == 0) {
-					//world.getDrone().startTurnLeft();
-					world.getDrone().setThrust(100);
+					world.getDrone().startTurnLeft();
 				}else if (passed_time >= 0.1){
 					world.getDrone().stopTurn();
 				}
 				passed_time = passed_time + TIME_STEP;
-		        	
+				
 				world.advanceWorldState(TIME_STEP, STEPS_PER_ITERATION);
 				
 			} catch (SimulationEndedException e) {
