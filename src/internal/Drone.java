@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.lang.Math;
 
 import Autopilot.AutopilotConfig;
-import Autopilot.AutopilotConfigWriter;
+import Autopilot.AutopilotConfigWriter;nex
 import Autopilot.AutopilotInputs;
 import Autopilot.AutopilotInputsWriter;
 import Autopilot.AutopilotOutputs;
@@ -343,7 +343,7 @@ public class Drone implements WorldObject {
 			//else just calculate the next action
 			APO = AP.timePassed(input);
 		}
-		setThrust(APO.getThrust());
+		//setThrust(APO.getThrust());
 		setLeftWingInclination(APO.getLeftWingInclination());
 		setRightWingInclination(APO.getRightWingInclination());
 		setHorStabInclination(APO.getHorStabInclination());
