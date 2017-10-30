@@ -219,14 +219,14 @@ public class AutoPilot implements Autopilot {
 	 * @author anthonyrathe
 	 */
 	private void startTurnLeft(){
-		this.setVerStabInclinationOut((float)STANDARD_INCLINATION);
+		this.setVerStabInclinationOut((float)-STANDARD_INCLINATION);
 	}
 	
 	/**
 	 * @author anthonyrathe
 	 */
 	private void startTurnRight(){
-		this.setVerStabInclinationOut((float)-STANDARD_INCLINATION);
+		this.setVerStabInclinationOut((float)STANDARD_INCLINATION);
 	}
 	
 	/**
@@ -469,16 +469,16 @@ public class AutoPilot implements Autopilot {
 		
 		// Roll
 		if(xPosition > THRESHOLD_PIXELS){
-			// Roll clockwise
+			// Turn right
 			System.out.println("This is your captain speaking: the red cube is located at our right-hand-side");
-			this.clockRollStart();
+			this.startTurnRight();
 		}else if(xPosition >= -THRESHOLD_PIXELS && xPosition <= THRESHOLD_PIXELS){
-			// Stop rolling
-			this.stopRoll();
+			// Stop turning
+			this.stopTurn();
 		}else if(xPosition < -THRESHOLD_PIXELS){
-			// Roll counterclockwise
+			// Turn left
 			System.out.println("This is your captain speaking: the red cube is located at our left-hand-side");
-			this.counterClockRollStart();
+			this.startTurnLeft();
 		} 
 		
 	}
