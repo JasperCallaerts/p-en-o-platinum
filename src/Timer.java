@@ -1,3 +1,5 @@
+
+
 import static org.lwjgl.glfw.GLFW.glfwGetTime;
 
 public class Timer {
@@ -21,7 +23,7 @@ public class Timer {
 	private double delta;
 	
 
-	Timer() {
+	public Timer() {
 		lastTime = getTime();
 		firstTime = getTime();
 	}

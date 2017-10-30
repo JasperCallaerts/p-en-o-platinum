@@ -102,6 +102,7 @@ public class Window {
 	}
 
 	public void renderFrame() {	
+		updateTime();
 
 		// Run the rendering unless the user has attempted to close
 		// the window or has pressed the ESCAPE key.
@@ -114,7 +115,7 @@ public class Window {
 
 		renderer.processInput(getDeltaTime());
 		renderer.render();
-
+		
 		glfwSwapBuffers(window); // swap the color buffers
 
 		// Poll for window events. The key callback above will only be
