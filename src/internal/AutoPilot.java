@@ -526,7 +526,7 @@ public class AutoPilot implements Autopilot {
 	}
 	
 	//------- Parameters -------
-	private static final float STANDARD_INCLINATION = (float)Math.PI/3;
+	private static final float STANDARD_INCLINATION = (float)Math.PI/6;
 	private static final float STABLE_INCLINATION = (float)Math.PI/12;
 	private static final float THRESHOLD_ANGLE = (float)Math.PI/36;
 	private static final float THRESHOLD_PIXELS = 5f;

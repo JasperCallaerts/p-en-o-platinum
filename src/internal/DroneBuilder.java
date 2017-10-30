@@ -21,6 +21,7 @@ public class DroneBuilder {
     public final static float STABS_START_INCL = 0.0f;
     public final static float MAX_ANGLE_OF_ATTACK = (float) ( Math.PI/2.0 - 0.001f);
     public final static float LIFT_COEFFICIENT = 10.0f;
+    public final static float LIFT_COEFFICIENT_STAB =0.25f;
     public final static Vector LEFTWING_POS = new Vector(-4.0f, 0.0f, 0.0f);
     public final static Vector RIGHTWING_POS = new Vector(4.0f, 0.0f, 0.0f);
     public final static Vector STABILIZE_POS = new Vector(0.0f, 0.0f, 8.0f);
@@ -42,8 +43,8 @@ public class DroneBuilder {
 
         rightMain = new HorizontalWing(RIGHTWING_POS, LIFT_COEFFICIENT, MAIN_WING_MASS, MAX_ANGLE_OF_ATTACK, MAINWING_START_INCL);
         leftMain = new HorizontalWing(LEFTWING_POS, LIFT_COEFFICIENT, MAIN_WING_MASS, MAX_ANGLE_OF_ATTACK, MAINWING_START_INCL);
-        horizontalStabilizer = new HorizontalWing(STABILIZE_POS, LIFT_COEFFICIENT, STABILIZER_MASS, MAX_ANGLE_OF_ATTACK, STABS_START_INCL);
-        verticalStabilizer = new VerticalWing(STABILIZE_POS, LIFT_COEFFICIENT, STABILIZER_MASS, MAX_ANGLE_OF_ATTACK, STABS_START_INCL);
+        horizontalStabilizer = new HorizontalWing(STABILIZE_POS, LIFT_COEFFICIENT_STAB, STABILIZER_MASS, MAX_ANGLE_OF_ATTACK, STABS_START_INCL);
+        verticalStabilizer = new VerticalWing(STABILIZE_POS, LIFT_COEFFICIENT_STAB, STABILIZER_MASS, MAX_ANGLE_OF_ATTACK, STABS_START_INCL);
 
         drone = new Drone(ENGINE_MASS, MAX_THRUST, STARTPOS, START_VEL, START_ORIENTATION, START_ROTATION, rightMain, leftMain, horizontalStabilizer, verticalStabilizer, new AutoPilot());
 

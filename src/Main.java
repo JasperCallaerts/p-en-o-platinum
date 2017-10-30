@@ -14,7 +14,7 @@ public class Main {
 	 */
 	public static void main(String[] args) throws IOException {
         // initialize the windows
-        //Window testWindow = new Window(920, 1000, 1f, 0.4f, "test window");
+//        Window testWindow = new Window(920, 1000, 1f, 0.4f, "test window");
         Window droneWindow = new Window(1000, 1000, 0.0f, 0.4f, "Drone simulator 2017");
 
         // drone builder covers all the stuff involving building the drone, adjust parameters there
@@ -23,20 +23,21 @@ public class Main {
 
 
         // initialize the renderers
-        Renderer renderer = new Renderer(droneWindow, world);
-        //Renderer testRenderer = new Renderer(testWindow.getHandler(), world);
+        Renderer renderer = new Renderer(droneWindow, world, true);
+//        Renderer testRenderer = new Renderer(testWindow, world, false);
 
         boolean goalNotReached = true;
 
         // for testing purposes
         float passed_time = 0;
         // END for testing purposes
+        int steps = 0;
 
         while (true) {
 
             //first render the images
             droneWindow.renderFrame(renderer);
-            //testWindow.renderFrame(testRenderer);
+//            testWindow.renderFrame(testRenderer);
 
             if (goalNotReached) {
                 //pass the outputs to the drone
@@ -64,6 +65,9 @@ public class Main {
                 }
 
             }
+            //4debugging
+            steps += 1;
+
         }
     }
 
