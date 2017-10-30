@@ -1,5 +1,6 @@
 import gui.Window;
 import internal.*;
+import sun.awt.windows.WBufferStrategy;
 
 import java.io.IOException;
 
@@ -13,7 +14,8 @@ public class Main {
 	public static void main(String[] args) {
 		
 		// drone builder covers all the stuff involving building the drone, adjust parameters there
-		World  world = new WorldBuilder().createWorld();
+		WorldBuilder worldBuilder = new WorldBuilder();
+		World  world = worldBuilder.createWorld();
 		
 		// initialize a window
 		Window window = new Window(world);
@@ -25,13 +27,14 @@ public class Main {
 			window.renderFrame();
 			//pass the outputs to the drone
 			byte[] camera = Window.getCameraView();
-			WorldBuilder.DRONE.setAPImage(camera);
+			worldBuilder.DRONE.setAPImage(camera);
+
 			try {
 				world.advanceWorldState(TIME_STEP, STEPS_PER_ITERATION);
 			} catch (SimulationEndedException e) {
 				goalNotReached = false;
 			} catch (IOException e) {
-				//ignore
+				System.out.println("IO exception");
 			}
 
 		}
@@ -39,7 +42,7 @@ public class Main {
 	// configuration for 20 fps
 	private final static float TIME_STEP = 0.001f;
 	private final static float FRAMERATE = 20.0f;
-	private final static int STEPS_PER_ITERATION = Math.round((1/ FRAMERATE)*TIME_STEP);
+	private final static int STEPS_PER_ITERATION = Math.round((1/ FRAMERATE)/TIME_STEP);
 
 
 }

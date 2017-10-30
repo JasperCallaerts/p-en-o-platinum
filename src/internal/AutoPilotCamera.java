@@ -175,6 +175,7 @@ public class AutoPilotCamera {
     }
 
     public boolean isValidAngleOfView(float angle){
+        System.out.println("viewing Angle: " + angle);
         return angle > 0.0f && angle <= Math.PI;
     }
 
