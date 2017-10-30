@@ -54,7 +54,7 @@ public abstract class Wing {
         //calculate the absolute position vector of the wing to the center of mass
         Vector radiusVector = attachedDrone.droneOnWorld(relativePos);
         //calculate the rotational velocity component of the wing
-        Vector rotationVelocity = radiusVector.crossProduct(absoluteRotation);
+        Vector rotationVelocity = absoluteRotation.crossProduct(radiusVector);
 
         //sum the velocity of the drone with the angular velocity caused by the rotation
         return centerVelocity.vectorSum(rotationVelocity);

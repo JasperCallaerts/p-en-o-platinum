@@ -20,14 +20,7 @@ import static org.lwjgl.opengl.GL11.GL_OUT_OF_MEMORY;
 import static org.lwjgl.opengl.GL11.glGetError;
 import static org.lwjgl.opengl.GL30.GL_INVALID_FRAMEBUFFER_OPERATION;
 
-import java.nio.IntBuffer;
-import java.util.Iterator;
-
-import org.lwjgl.glfw.GLFW;
-import org.lwjgl.system.MemoryStack;
-
 import internal.Drone;
-import internal.Vector;
 import internal.World;
 import internal.WorldObject;
 import math.Matrix4f;
@@ -62,11 +55,15 @@ public class Renderer {
      * appropriate state. 
      */
 	public Renderer(Window window, World world, boolean onDrone) {
-		cameraOnDrone = onDrone;
+		
 		this.world = world;
 		this.window = window;
 		program = new ShaderProgram(false, "resources/default.vert", "resources/default.frag");
-		mouse = new Mouse(window);
+		
+		cameraOnDrone = onDrone;
+		if (onDrone) {
+			mouse = new Mouse(window);
+		}
 
         program.init();
         
@@ -104,7 +101,7 @@ public class Renderer {
 		
 		double delta = Window.getDeltaTime();
 		
-		mouse.update(window);
+		mouse.update();
 		yaw = yaw - mouse.dx() * TURN_SPEED * (float)delta;
 		pitch = pitch + mouse.dy() * TURN_SPEED * (float)delta;
 
