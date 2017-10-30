@@ -21,6 +21,11 @@ public class Main {
 		Window window = new Window(world);
 
 		boolean goalNotReached = true;
+		
+		// for testing purposes
+		float passed_time = 0;
+		// END for testing purposes
+		
 		while (goalNotReached) {
 			
 			//first render the image
@@ -30,7 +35,18 @@ public class Main {
 			worldBuilder.DRONE.setAPImage(camera);
 
 			try {
+				// For testing purposes
+				
+				if (passed_time == 0) {
+					//world.getDrone().startTurnLeft();
+					world.getDrone().setThrust(100);
+				}else if (passed_time >= 0.1){
+					world.getDrone().stopTurn();
+				}
+				passed_time = passed_time + TIME_STEP;
+		        	
 				world.advanceWorldState(TIME_STEP, STEPS_PER_ITERATION);
+				
 			} catch (SimulationEndedException e) {
 				goalNotReached = false;
 			} catch (IOException e) {

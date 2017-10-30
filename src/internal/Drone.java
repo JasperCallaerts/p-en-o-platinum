@@ -1531,76 +1531,76 @@ public class Drone implements WorldObject {
 	/*
 	code graveyard:
 	 */
-//
-//
-//	//------- Drone Controlling Methods -------
-//	/**
-//	 * @author anthonyrathe
-//	 */
-//	private void clockRollStart(){
-//		this.getLeftWing().setWingInclination(-this.getLeftWing().getMaximumAngleOfAttack());
-//		this.getRightWing().setWingInclination(this.getRightWing().getMaximumAngleOfAttack());
-//	}
-//
-//	/**
-//	 * @author anthonyrathe
-//	 */
-//	private void counterClockRollStart(){
-//		this.getLeftWing().setWingInclination(this.getLeftWing().getMaximumAngleOfAttack());
-//		this.getRightWing().setWingInclination(-this.getRightWing().getMaximumAngleOfAttack());
-//	}
-//
-//	/**
-//	 * @author anthonyrathe
-//	 */
-//	private void stopRoll(){
-//		this.getLeftWing().setWingInclination(0f);
-//		this.getRightWing().setWingInclination(0f);
-//	}
-//
-//	/**
-//	 * @author anthonyrathe
-//	 */
-//	private void startTurnLeft(){
-//		this.getVerticalStab().setWingInclination(this.getVerticalStab().getMaximumAngleOfAttack());
-//	}
-//
-//	/**
-//	 * @author anthonyrathe
-//	 */
-//	private void startTurnRight(){
-//		this.getVerticalStab().setWingInclination(-this.getVerticalStab().getMaximumAngleOfAttack());
-//	}
-//
-//	/**
-//	 * @author anthonyrathe
-//	 */
-//	private void stopTurn(){
-//		this.getVerticalStab().setWingInclination(0f);
-//	}
-//
-//	/**
-//	 * @author anthonyrathe
-//	 */
-//	private void startAscend(){
-//		this.getHorizontalStab().setWingInclination(this.getHorizontalStab().getMaximumAngleOfAttack());
-//	}
-//
-//	/**
-//	 * @author anthonyrathe
-//	 */
-//	private void startDescend(){
-//		this.getHorizontalStab().setWingInclination(-this.getHorizontalStab().getMaximumAngleOfAttack());
-//
-//	}
-//
-//	/**
-//	 * @author anthonyrathe
-//	 */
-//	private void stopAscendDescend(){
-//		this.getHorizontalStab().setWingInclination(0f);
-//	}
-//
+
+
+	//------- Drone Controlling Methods -------
+	/**
+	 * @author anthonyrathe
+	 */
+	public void clockRollStart(){
+		this.getLeftWing().setWingInclination(-this.getLeftWing().getMaximumAngleOfAttack());
+		this.getRightWing().setWingInclination(this.getRightWing().getMaximumAngleOfAttack());
+	}
+
+	/**
+	 * @author anthonyrathe
+	 */
+	public void counterClockRollStart(){
+		this.getLeftWing().setWingInclination(this.getLeftWing().getMaximumAngleOfAttack());
+		this.getRightWing().setWingInclination(-this.getRightWing().getMaximumAngleOfAttack());
+	}
+
+	/**
+	 * @author anthonyrathe
+	 */
+	public void stopRoll(){
+		this.getLeftWing().setWingInclination(0f);
+		this.getRightWing().setWingInclination(0f);
+	}
+
+	/**
+	 * @author anthonyrathe
+	 */
+	public void startTurnLeft(){
+		this.getVerticalStab().setWingInclination(this.getVerticalStab().getMaximumAngleOfAttack());
+	}
+
+	/**
+	 * @author anthonyrathe
+	 */
+	public void startTurnRight(){
+		this.getVerticalStab().setWingInclination(-this.getVerticalStab().getMaximumAngleOfAttack());
+	}
+
+	/**
+	 * @author anthonyrathe
+	 */
+	public void stopTurn(){
+		this.getVerticalStab().setWingInclination(0f);
+	}
+
+	/**
+	 * @author anthonyrathe
+	 */
+	public void startAscend(){
+		this.getHorizontalStab().setWingInclination(this.getHorizontalStab().getMaximumAngleOfAttack());
+	}
+
+	/**
+	 * @author anthonyrathe
+	 */
+	public void startDescend(){
+		this.getHorizontalStab().setWingInclination(-this.getHorizontalStab().getMaximumAngleOfAttack());
+
+	}
+
+	/**
+	 * @author anthonyrathe
+	 */
+	public void stopAscendDescend(){
+		this.getHorizontalStab().setWingInclination(0f);
+	}
+
 //
 //	/**
 //	 * Changes the state of the drone to the next state, as calculated earlier by the autopilot.

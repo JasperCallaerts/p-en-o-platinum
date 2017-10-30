@@ -85,7 +85,7 @@ public class autoPilotTests {
 			for(int col = -50; col < 50; col++) {
 				if (col == x && row == y) {
 					// Add red RGB bytes
-					image.add((byte) (1));
+					image.add((byte) (255/188));
 					image.add((byte) (0));
 					image.add((byte) (0));
 				}else {
