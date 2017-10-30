@@ -103,31 +103,31 @@ public class autoPilotTests {
 		return imageArray;
 	}
 	
-	@Before
-	public void setup() throws IOException{
-		
-		// drone builder covers all the stuff involving building the drone, adjust parameters there
-		world = new WorldBuilder().createWorld();
-		
-		// initialize a window
-		window = new Window(world);
-
-		//first render the image
-		window.renderFrame();
-		//pass the outputs to the drone
-		byte[] camera = Window.getCameraView();
-		WorldBuilder.DRONE.setAPImage(camera);
-		try {
-			world.advanceWorldState(TIME_STEP, STEPS_PER_ITERATION);
-		} catch (SimulationEndedException e) {
-			//ignore
-		} catch (IOException e) {
-			//ignore
-		}
-		
-		world.getDrone().setThrust(20f);
-		
-	}
+//	@Before
+//	public void setup() throws IOException{
+//		WorldBuilder worldBuilder = new WorldBuilder();
+//		// drone builder covers all the stuff involving building the drone, adjust parameters there
+//		world = worldBuilder.createWorld();
+//
+//		// initialize a window
+//		window = new Window(world);
+//
+//		//first render the image
+//		window.renderFrame();
+//		//pass the outputs to the drone
+//		byte[] camera = window.getCameraView();
+//		worldBuilder.DRONE.setAPImage(camera);
+//		try {
+//			world.advanceWorldState(TIME_STEP, STEPS_PER_ITERATION);
+//		} catch (SimulationEndedException e) {
+//			//ignore
+//		} catch (IOException e) {
+//			//ignore
+//		}
+//
+//		world.getDrone().setThrust(20f);
+//
+//	}
 	
 	
 	@Test

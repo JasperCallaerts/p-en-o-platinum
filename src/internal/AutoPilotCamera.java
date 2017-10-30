@@ -42,10 +42,6 @@ public class AutoPilotCamera {
         this.world = new World();
     }
 
-    public AutoPilotCamera(){
-
-    }
-
     /**
      * Method to locate a red cube for the given image
      * based on the HSV input values
@@ -99,6 +95,8 @@ public class AutoPilotCamera {
      * @param redYCoordinates the list to contain the row coordinate if a match is found
      */
     private void findRedPixels(List<Integer> redXCoordinates, List<Integer> redYCoordinates) {
+//        System.out.println(this.getCameraImage().getElementAtIndex(100, 100));
+//        System.out.println("hsv of middle pixel: " + new Vector(this.getCameraImage().getElementAtIndex(100, 100).convertToHSV()));
         int nbRows = this.getNbRows();
         int nbColumns = this.getNbColumns();
 
@@ -131,6 +129,7 @@ public class AutoPilotCamera {
         }
         CameraImage newImage = this.convertToCameraImage(newImageArray, this.getNbRows(), this.getNbColumns());
         this.setCameraImage(newImage);
+        //System.out.println("cube location: " + locateRedCube());
         this.setDestination(this.locateRedCube());
     }
 
@@ -175,7 +174,7 @@ public class AutoPilotCamera {
     }
 
     public boolean isValidAngleOfView(float angle){
-        System.out.println("viewing Angle: " + angle);
+        //System.out.println("viewing Angle: " + angle);
         return angle > 0.0f && angle <= Math.PI;
     }
 
@@ -269,7 +268,7 @@ public class AutoPilotCamera {
     private final static float RED_H_VALUE = 0.0f;
     private final static float RED_S_VALUE = 1.0f;
     private final static float Z_AXIS_V_VALUE = 0.7f;
-    private final static float EPSILON  = 1E-5f;
+    private final static float EPSILON  = 1E-2f;
 
 
     /*

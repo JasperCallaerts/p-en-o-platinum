@@ -10,7 +10,7 @@ import gui.Cube;
 public class WorldBuilder {
 
     public Drone DRONE = new DroneBuilder(true).createDrone();
-    
+
     public final static Vector BLOCKPOS = new Vector(-4.0f, 0.0f, -50.0f);
     public final static Vector COLOR = new Vector(1.0f, 0.0f,0.0f);
 

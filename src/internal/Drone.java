@@ -351,6 +351,10 @@ public class Drone implements WorldObject {
 		//setHorStabInclination(APO.getHorStabInclination());
 		//setVerStabInclination(APO.getVerStabInclination());
 
+		System.out.println("LeftWing inclination: " + getLeftWingInclination());
+		System.out.println("RightWing inclination: " + getRightWingInclination());
+		System.out.println("Horizontal inclination: " + getHorStabInclination());
+		System.out.println("Vertical inclination: " + getVerStabInclination());
 
 		//--- calculations for the physics model
 		//set the next state of the position & velocity of the center of mass of the drone
@@ -369,21 +373,21 @@ public class Drone implements WorldObject {
 		Vector oldOrientation = this.getOrientation();
 		Vector oldRotation = this.getOrientation();
 
-//		System.out.println("horizontalLift: " + horizontalStab.getLift());
-//		System.out.println("verticalLift: " + verticalStab.getLift());
-//		System.out.println("rightMainLift: " + rightWing.getLift());
-//		System.out.println("leftMainLift: " + leftWing.getLift());
+		System.out.println("horizontalLift: " + horizontalStab.getLift());
+		System.out.println("verticalLift: " + verticalStab.getLift());
+		System.out.println("rightMainLift: " + rightWing.getLift());
+		System.out.println("leftMainLift: " + leftWing.getLift());
 
 		this.setVelocity(oldVelocity.driftRejection(velocity, deltaTime*INSIGNIFICANCE));
 		this.setPosition(oldPosition.driftRejection(position, deltaTime*INSIGNIFICANCE));
 		this.setOrientation(oldOrientation.driftRejection(orientation, deltaTime*INSIGNIFICANCE));
 		this.setRotationVector(oldRotation.driftRejection(rotation, deltaTime*INSIGNIFICANCE));
 
-//		System.out.println("Velocity : " + this.getVelocity().vectorDifference(oldVelocity));
-//		System.out.println("Position: " + this.getPosition().vectorDifference(oldPosition));
-//		System.out.println("Orientation: " + this.getOrientation().vectorDifference(oldOrientation));
-//		System.out.println("Rotiation: " + this.getRotationVector().vectorDifference(oldRotation));
-//		System.out.println("Thrust: " + this.getThrust());
+		System.out.println("Velocity : " + this.getVelocity().vectorDifference(oldVelocity));
+		System.out.println("Position: " + this.getPosition().vectorDifference(oldPosition));
+		System.out.println("Orientation: " + this.getOrientation().vectorDifference(oldOrientation));
+		System.out.println("Rotiation: " + this.getRotationVector().vectorDifference(oldRotation));
+		System.out.println("Thrust: " + this.getThrust());
 
 		Vector differencePos = this.getPosition().vectorDifference(oldPosition);
 
