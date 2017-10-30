@@ -456,24 +456,28 @@ public class AutoPilot implements Autopilot {
 		// Ascend/Descend
 		if(yPosition < -THRESHOLD_PIXELS){
 			// Descend
+			System.out.println("This is your captain speaking: the red cube is located underneath us");
 			this.startDescend();
 		}else if(yPosition >= -THRESHOLD_PIXELS && yPosition <= THRESHOLD_PIXELS){
 			// Stop descending/ascending
 			this.stopAscendDescend();
 		}else if(yPosition > THRESHOLD_PIXELS){
 			// Ascend
+			System.out.println("This is your captain speaking: the red cube is located above us");
 			this.startAscend();
 		}
 		
 		// Roll
 		if(xPosition > THRESHOLD_PIXELS){
 			// Roll clockwise
+			System.out.println("This is your captain speaking: the red cube is located at our right-hand-side");
 			this.clockRollStart();
 		}else if(xPosition >= -THRESHOLD_PIXELS && xPosition <= THRESHOLD_PIXELS){
 			// Stop rolling
 			this.stopRoll();
 		}else if(xPosition < -THRESHOLD_PIXELS){
 			// Roll counterclockwise
+			System.out.println("This is your captain speaking: the red cube is located at our left-hand-side");
 			this.counterClockRollStart();
 		} 
 		

@@ -99,6 +99,17 @@ public class World {
 	}
 	
 	/**
+	 * @author Anthony Rathe
+	 * @throws IOException 
+	 */
+	public Drone getDrone() throws IOException {
+		for (Drone drone : this.getDroneSet()) {
+			return drone;
+		}
+		throw new IOException("No drone was found");
+	}
+	
+	/**
 	 * Method that returns a set containing all the blocks in the world
 	 * @author anthonyrathe
 	 */
