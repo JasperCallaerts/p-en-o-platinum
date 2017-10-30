@@ -327,7 +327,7 @@ public class Drone implements WorldObject {
 	public void toNextState(float deltaTime) throws IOException{
 		if(!WorldObject.isValidTimeStep(deltaTime))
 			throw new IllegalArgumentException(INVALID_TIMESTEP);
-		float INSIGNIFICANCE = 0.1f;
+		float INSIGNIFICANCE = 0.01f;
 
 		//engage autopilot
 		AutopilotInputs input = updateAutopilotInput(deltaTime);// TODO input stream
@@ -346,10 +346,10 @@ public class Drone implements WorldObject {
 		//setThrust(APO.getThrust());
 		
 		// UNCOMMENT this after testing is finished
-		//setLeftWingInclination(APO.getLeftWingInclination());
-		//setRightWingInclination(APO.getRightWingInclination());
-		//setHorStabInclination(APO.getHorStabInclination());
-		//setVerStabInclination(APO.getVerStabInclination());
+		setLeftWingInclination(APO.getLeftWingInclination());
+		setRightWingInclination(APO.getRightWingInclination());
+		setHorStabInclination(APO.getHorStabInclination());
+		setVerStabInclination(APO.getVerStabInclination());
 
 //		System.out.println("LeftWing inclination: " + getLeftWingInclination());
 //		System.out.println("RightWing inclination: " + getRightWingInclination());
