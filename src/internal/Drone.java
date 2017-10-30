@@ -346,10 +346,10 @@ public class Drone implements WorldObject {
 		//setThrust(APO.getThrust());
 		
 		// UNCOMMENT this after testing is finished
-		//setLeftWingInclination(APO.getLeftWingInclination());
-		//setRightWingInclination(APO.getRightWingInclination());
-		//setHorStabInclination(APO.getHorStabInclination());
-		//setVerStabInclination(APO.getVerStabInclination());
+		setLeftWingInclination(APO.getLeftWingInclination());
+		setRightWingInclination(APO.getRightWingInclination());
+		setHorStabInclination(APO.getHorStabInclination());
+		setVerStabInclination(APO.getVerStabInclination());
 
 //		System.out.println("LeftWing inclination: " + getLeftWingInclination());
 //		System.out.println("RightWing inclination: " + getRightWingInclination());

@@ -450,32 +450,34 @@ public class AutoPilot implements Autopilot {
 		getAPCamera().loadNextImage(inputs.getImage());
 		float xPosition = APCamera.getDestination().getxValue();
 		float yPosition = APCamera.getDestination().getyValue();
-		//float xPosition = 1f;
-		//float yPosition = 6f;
+		int cubeSize = 10;
 		
+		int threshold = Math.max(Math.round(THRESHOLD_PIXELS*NORMAL_CUBE_SIZE/cubeSize),1);
+		System.out.println(xPosition + " : " + yPosition);
+		System.out.println(getVerStabInclinationOut());
 		// Ascend/Descend
-		if(yPosition < -THRESHOLD_PIXELS){
+		if(yPosition < -threshold){
 			// Descend
 			System.out.println("This is your captain speaking: the red cube is located underneath us");
 			this.startDescend();
-		}else if(yPosition >= -THRESHOLD_PIXELS && yPosition <= THRESHOLD_PIXELS){
+		}else if(yPosition >= -threshold && yPosition <= threshold){
 			// Stop descending/ascending
 			this.stopAscendDescend();
-		}else if(yPosition > THRESHOLD_PIXELS){
+		}else if(yPosition > threshold){
 			// Ascend
 			System.out.println("This is your captain speaking: the red cube is located above us");
 			this.startAscend();
 		}
 		
 		// Roll
-		if(xPosition > THRESHOLD_PIXELS){
+		if(xPosition > threshold){
 			// Turn right
 			System.out.println("This is your captain speaking: the red cube is located at our right-hand-side");
 			this.startTurnRight();
-		}else if(xPosition >= -THRESHOLD_PIXELS && xPosition <= THRESHOLD_PIXELS){
+		}else if(xPosition >= -threshold && xPosition <= threshold){
 			// Stop turning
 			this.stopTurn();
-		}else if(xPosition < -THRESHOLD_PIXELS){
+		}else if(xPosition < -threshold){
 			// Turn left
 			System.out.println("This is your captain speaking: the red cube is located at our left-hand-side");
 			this.startTurnLeft();
@@ -526,10 +528,11 @@ public class AutoPilot implements Autopilot {
 	}
 	
 	//------- Parameters -------
-	private static final float STANDARD_INCLINATION = (float)Math.PI/6;
+	private static final float STANDARD_INCLINATION = (float)Math.PI/8;
 	private static final float STABLE_INCLINATION = (float)Math.PI/12;
 	private static final float THRESHOLD_ANGLE = (float)Math.PI/36;
-	private static final float THRESHOLD_PIXELS = 5f;
+	private static final float THRESHOLD_PIXELS = 1f;
+	private static final int NORMAL_CUBE_SIZE = 10;
 	private static final float NODE_REACHED_DISTANCE = 4f;
 
 
