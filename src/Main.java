@@ -68,9 +68,9 @@ public class Main {
     }
 
 	// configuration for 20 fps
-	final static float TIME_STEP = 0.001f;
-	final static float FRAMERATE = 20.0f;
-	final static int STEPS_PER_ITERATION = Math.round((1/ FRAMERATE)/TIME_STEP);
+	private final static float TIME_STEP = 0.001f;
+	private final static float FRAMERATE = 20.0f;
+	private final static int STEPS_PER_ITERATION = Math.round((1/ FRAMERATE)/TIME_STEP);
 
 
 }

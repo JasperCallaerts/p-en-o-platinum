@@ -41,7 +41,7 @@ public class Renderer {
     private Matrix4f viewMatrix = new Matrix4f();
     
     private Vector3f position = new Vector3f();
-	private long window;
+	private Window window;
 	private Mouse mouse;
 	private World world;
 
@@ -49,7 +49,7 @@ public class Renderer {
 	private float pitch = 0;
 
 	private boolean cameraOnDrone = true;
-    private static final float SPEED = 1f;
+    private static final float SPEED = 10f;
     private static final float TURN_SPEED = 0.1f;
     
      
@@ -61,7 +61,8 @@ public class Renderer {
      * Initializes the OpenGL state. Creating programs and sets 
      * appropriate state. 
      */
-	public Renderer(long window, World world) {
+	public Renderer(Window window, World world, boolean onDrone) {
+		cameraOnDrone = onDrone;
 		this.world = world;
 		this.window = window;
 		program = new ShaderProgram(false, "resources/default.vert", "resources/default.frag");
@@ -77,19 +78,7 @@ public class Renderer {
 			e.printStackTrace();
 		}
         
-        float ratio;
-		try (MemoryStack stack = MemoryStack.stackPush()) {
-			long windowHandle = GLFW.glfwGetCurrentContext();
-			IntBuffer width = stack.mallocInt(1);
-			IntBuffer height = stack.mallocInt(1);
-			GLFW.glfwGetFramebufferSize(windowHandle, width, height);
-			ratio = (float) width.get() / (float) height.get();
-		}
-        projectionMatrix = Matrix4f.perspective(FOV, ratio, NEAR, FAR);
-        
-        for (WorldObject object: world.getObjectSet()) {
-    		object.getAssociatedCube().init(program);
-    	}
+        projectionMatrix = Matrix4f.perspective(FOV, window.getRatio(), NEAR, FAR);
         
         checkError();
     }
@@ -150,7 +139,7 @@ public class Renderer {
 	}
 	
 	private boolean isKeyPressed(int keyCode) {
-		return glfwGetKey(window, keyCode) == GLFW_PRESS;
+		return glfwGetKey(window.getHandler(), keyCode) == GLFW_PRESS;
 	}
 	
 	public void setCameraOnDrone() {   
@@ -188,6 +177,7 @@ public class Renderer {
         program.setUniform("viewMatrix", viewMatrix);
         
         for (WorldObject object: world.getObjectSet()) {
+    		program.setUniform("modelMatrix", object.getAssociatedCube().getModelMatrix());
     		object.getAssociatedCube().render();
     	}
         

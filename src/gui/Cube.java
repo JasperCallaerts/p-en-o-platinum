@@ -79,26 +79,19 @@ public class Cube{
 	};
 	
 	private Mesh mesh;
-	private ShaderProgram program;
 	private Matrix4f modelMatrix = new Matrix4f();
 	private Vector3f position = new Vector3f();
 	
 	public Cube(Vector3f position, Vector3f colour) {
+		setColours(HSVconverter.RGBtoHSV(colour.x, colour.y, colour.z));
 		mesh = new Mesh();
+		mesh.init(positions, colours, indices);
 		
 		this.position = position;
-		
-		setColours(HSVconverter.RGBtoHSV(colour.x, colour.y, colour.z));
-	}
-
-	public void init(ShaderProgram program) {
-		setShaderProgram(program);
-		mesh.init(positions, colours, indices);
 		modelMatrix = Matrix4f.translate(position.x, position.y, position.z);
 	}
 	
 	public void render() {
-		program.setUniform("modelMatrix", modelMatrix);
 		mesh.render();
 	}
 	
@@ -115,8 +108,8 @@ public class Cube{
 		return Vector.vector3fToVector(this.getPos());
 	}
 	
-	public void setShaderProgram(ShaderProgram program) {
-		this.program = program;
+	public Matrix4f getModelMatrix() {
+		return modelMatrix;
 	}
 	
 	public Vector3f getPos() {
