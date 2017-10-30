@@ -164,7 +164,7 @@ public class Window {
 	 * @return an byte array containing the image
 	 * @author Martijn
 	 */
-	public static byte[] getCameraView() throws IOException {
+	public byte[] getCameraView() throws IOException {
 
 		GL11.glReadBuffer(GL11.GL_FRONT);
 		int bpp = 4; // Assuming a 32-bit display with a byte each for red, green, blue, and alpha.
@@ -242,8 +242,6 @@ public class Window {
 		return biasedByte;
 	}
 
-	private static int WIDTH = 1000;
-	private static int HEIGHT = 1000;
 	private static int CAMERA_WIDTH = 200;
 	private static int CAMERA_HEIGHT = 200;
 	private static boolean firstRun = true;
