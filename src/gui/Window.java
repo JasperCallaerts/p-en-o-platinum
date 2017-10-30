@@ -153,6 +153,10 @@ public class Window {
 	public long getHandler() {
 		return window;
 	}
+	
+	public float getRatio() {
+		return (float) WIDTH / HEIGHT;
+	}
 
 	/**
 	 * Reads the pixels on the screen and returns them as an array of bytes
