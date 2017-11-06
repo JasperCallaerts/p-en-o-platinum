@@ -11,6 +11,7 @@ import static java.lang.Math.sin;
 
 /**
  * Created by Martijn on 30/10/2017.
+ * Appended and edited by Anthony Rath� on 6/11/2017
  * A class of Autopilot Controllers
  */
 public class AutoPilotController {
@@ -30,17 +31,25 @@ public class AutoPilotController {
         int threshold = Math.round(THRESHOLD_DISTANCE);
 
         // Thrust
-        float thrust = (float) ((STANDARD_THRUST) + this.getTotalMass()*GRAVITY*sin(pitch));
+        float thrust = (float) ((STANDARD_THRUST) + THRUST_FACTOR*this.getTotalMass()*GRAVITY*sin(Math.PI - pitch));
         //System.out.println(thrust);
-        outputs.setThrust(thrust);
+        outputs.setThrust(Math.max(thrust, 0));
     }
 
     private void startDescend(ControlOutputs outputs, float xPosCube, float yPosCube){
-        outputs.setHorStabInclination(STANDARD_INCLINATION);
+        outputs.setHorStabInclination(Math.min(STANDARD_INCLINATION*Math.abs(yPosCube)/20f,MAX_HOR_STAB_INCLINATION));
     }
 
     private void startAscend(ControlOutputs outputs,  float xPosCube, float yPosCube){
-        outputs.setHorStabInclination(-STANDARD_INCLINATION);
+        outputs.setHorStabInclination(-Math.min(STANDARD_INCLINATION*Math.abs(yPosCube)/20f,MAX_HOR_STAB_INCLINATION));
+    }
+
+    private void startTurnDescend(ControlOutputs outputs, float xPosCube, float yPosCube){
+        outputs.setHorStabInclination(Math.min(STANDARD_INCLINATION*Math.abs(yPosCube)/20f,MAX_HOR_STAB_INCLINATION));
+    }
+
+    private void startTurnAscend(ControlOutputs outputs,  float xPosCube, float yPosCube){
+        outputs.setHorStabInclination(-Math.min(STANDARD_INCLINATION*Math.abs(yPosCube)/20f,MAX_HOR_STAB_INCLINATION));
     }
 
     private void stopAscendDescend(ControlOutputs outputs,  float xPosCube, float yPosCube){
@@ -50,9 +59,11 @@ public class AutoPilotController {
     private void startTurnRight(ControlOutputs outputs,  float xPosCube, float yPosCube){
         //outputs.setVerStabInclination(STANDARD_INCLINATION);
     	if (yPosCube >= 0) {
-    		startAscend(outputs, xPosCube, yPosCube);
+    		startTurnAscend(outputs, xPosCube, yPosCube);
+    		System.out.println("Turn Right ascending");
     	}else {
-    		startDescend(outputs, xPosCube, yPosCube);
+    		startTurnDescend(outputs, xPosCube, yPosCube);
+    		System.out.println("Turn Right descending");
     	}
     	
     	outputs.setRightWingInclination(TURNING_INCLINATION + MAIN_STABLE_INCLINATION);
@@ -62,12 +73,13 @@ public class AutoPilotController {
     private void startTurnLeft(ControlOutputs outputs, float xPosCube, float yPosCube){
         //outputs.setVerStabInclination(-STANDARD_INCLINATION);
     	if (yPosCube >= 0) {
-    		startAscend(outputs, xPosCube, yPosCube);
+    		startTurnAscend(outputs, xPosCube, yPosCube);
+    		System.out.println("Turn Left ascending");
     	}else {
-    		startDescend(outputs, xPosCube, yPosCube);
+    		startTurnDescend(outputs, xPosCube, yPosCube);
+    		System.out.println("Turn Left descending");
     	}
-    	
-    	startAscend(outputs, xPosCube, yPosCube);
+
         outputs.setRightWingInclination(-TURNING_INCLINATION + MAIN_STABLE_INCLINATION);
         outputs.setLeftWingInclination(TURNING_INCLINATION + MAIN_STABLE_INCLINATION);
     }
@@ -76,6 +88,8 @@ public class AutoPilotController {
         outputs.setVerStabInclination(STABILIZER_STABLE_INCLINATION);
         outputs.setRightWingInclination(MAIN_STABLE_INCLINATION);
         outputs.setLeftWingInclination(MAIN_STABLE_INCLINATION);
+        //stopAscendDescend(outputs, xPosCube, yPosCube);
+        //System.out.println("Turn NOT descending nor ascending");
     }
 
     private void rollControl(ControlOutputs outputs){
@@ -97,6 +111,7 @@ public class AutoPilotController {
      * @return the outputs for the autopilot
      */
     public AutopilotOutputs getControlActions(){
+
         ControlOutputs controlOutputs = new ControlOutputs();
         AutoPilotCamera APCamera = this.getAssociatedAutopilot().getAPCamera();
         AutopilotInputs currentInputs = this.getCurrentInputs();
@@ -111,29 +126,15 @@ public class AutoPilotController {
         int threshold = Math.round(THRESHOLD_DISTANCE);
         int bias = 0;
         if (currentInputs.getPitch() > Math.PI/20) {
-        	bias = 10;
+        	bias = BIAS;
         }else if(currentInputs.getPitch() < -Math.PI/20) {
-        	bias = -10;
+        	bias = -BIAS;
         }
         //System.out.println(bias);
 
         // Thrust
        this.setThrustOut(controlOutputs);
 
-
-        // Ascend/Descend
-        if(yPosition < -threshold - bias){
-            // Descend
-            //System.out.println("This is your captain speaking: the red cube is located underneath us");
-            this.startDescend(controlOutputs, xPosition, yPosition);
-        }else if(yPosition >= -threshold - bias && yPosition <= threshold - bias){
-            // Stop descending/ascending
-            this.stopAscendDescend(controlOutputs, xPosition, yPosition);
-        }else if(yPosition > threshold - bias){
-            // Ascend
-            //System.out.println("This is your captain speaking: the red cube is located above us");
-            this.startAscend(controlOutputs, xPosition, yPosition);
-        }
 
         // Roll
         if(xPosition > threshold){
@@ -143,6 +144,24 @@ public class AutoPilotController {
         }else if(xPosition >= -threshold && xPosition <= threshold){
             // Stop turning
             this.stopTurn(controlOutputs, xPosition, yPosition);
+
+            // Start Ascending/Descending
+            // Ascend/Descend
+            if(yPosition < -threshold - bias && (xPosition >= -threshold && xPosition <= threshold)){
+                // Descend
+                //System.out.println("This is your captain speaking: the red cube is located underneath us");
+                this.startDescend(controlOutputs, xPosition, yPosition);
+                System.out.println("Actually descending");
+            }else if((yPosition >= -threshold - bias && yPosition <= threshold - bias) && (xPosition >= -threshold && xPosition <= threshold)){
+                // Stop descending/ascending
+                this.stopAscendDescend(controlOutputs, xPosition, yPosition);
+                System.out.println("Actually NOT descending nor ascending");
+            }else if(yPosition > threshold - bias && (xPosition >= -threshold && xPosition <= threshold)){
+                // Ascend
+                //System.out.println("This is your captain speaking: the red cube is located above us");
+                this.startAscend(controlOutputs, xPosition, yPosition);
+                System.out.println("Actually ascending");
+            }
         }else if(xPosition < -threshold){
             // Turn left
             //System.out.println("This is your captain speaking: the red cube is located at our left-hand-side");
@@ -152,7 +171,6 @@ public class AutoPilotController {
         this.rollControl(controlOutputs);
 
         return controlOutputs;
-
     }
     /*
     Helper methods
@@ -205,9 +223,12 @@ public class AutoPilotController {
 
     private static final float STANDARD_INCLINATION = (float)Math.PI/8;
     private static final float MAIN_STABLE_INCLINATION = (float)Math.PI/12;
-    private static final float TURNING_INCLINATION = (float)Math.PI/10;
+    private static final float MAX_HOR_STAB_INCLINATION = (float)Math.PI/4;
+    private static final float TURNING_INCLINATION = (float)Math.PI/8;
+    private static final int BIAS = 0;
     private static final float THRESHOLD_DISTANCE = 5f;
     private static final float STANDARD_THRUST = 32.859283f;
+    private static final float THRUST_FACTOR = 1.8f;
     private static final float THRESHOLD_THRUST_ANGLE = (float)(Math.PI/20);
     private static final float STANDARD_CUBE_SIZE = 10f;
     private static final float STABILIZER_STABLE_INCLINATION = 0.0f;
