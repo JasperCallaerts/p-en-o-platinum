@@ -1,8 +1,11 @@
+import Autopilot.Autopilot;
+import Autopilot.AutopilotInputs;
+import Autopilot.AutopilotOutputs;
 import gui.Renderer;
 import gui.Graphics;
 import gui.Time;
 import internal.*;
-import sun.awt.windows.WBufferStrategy;
+
 
 import java.io.IOException;
 
@@ -24,7 +27,10 @@ public class Main {
 
         // drone builder covers all the stuff involving building the drone, adjust parameters there
         WorldBuilder worldBuilder = new WorldBuilder();
+        Drone drone = worldBuilder.DRONE;
+        AutoPilot autopilot = new AutoPilot();
         World world = worldBuilder.createWorld();
+
 
 
         // initialize the renderers
@@ -34,45 +40,45 @@ public class Main {
 //        Renderer andererenderer = new Renderer(world);
 
         boolean goalNotReached = true;
+        boolean configuredAutopilot = false;
 
-        // for testing purposes
-        float passed_time = 0;
         // END for testing purposes
-        int steps = 0;
+        float elapsedTime = 0.0f;
 
         while (true) {
 
             //first render the images
-        	graphics.renderWindows(renderer);
-        	
-//            long startRenderTime = System.nanoTime();
 
-              System.out.println(worldBuilder.DRONE.getRoll()*180/Math.PI);
-//            long endRenderTime = System.nanoTime();
-//            double renderTime = (endRenderTime-startRenderTime)*1E-9;
-//            System.out.println("render time: " + renderTime);
+              graphics.renderWindows(renderer);
+              //System.out.println(drone.getRoll()*180/Math.PI);
+              AutopilotOutputs autopilotOutputs;
 
             if (goalNotReached) {
                 //pass the outputs to the drone
-
-
                 try {
-                    byte[] camera = graphics.getWindow("droneWindow").getCameraView();
-                    worldBuilder.DRONE.setAPImage(camera);
 
-                    passed_time = passed_time + TIME_STEP;
+                    byte[] cameraImage = droneWindow.getCameraView();
+                    MainAutopilotInputs autopilotInputs =  new MainAutopilotInputs(drone, cameraImage, elapsedTime);
+                    if(!configuredAutopilot){
+                         autopilotOutputs= autopilot.simulationStarted(new DroneBuilder(true).createConfig(), autopilotInputs);
+                        configuredAutopilot = false;
+                    }else{
+                        autopilotOutputs = autopilot.timePassed(autopilotInputs);
+                    }
+                    drone.setAutopilotOutputs(autopilotOutputs);
 
                     world.advanceWorldState(TIME_STEP, STEPS_PER_ITERATION);
 
                 } catch (SimulationEndedException e) {
+                    autopilot.simulationEnded();
                     goalNotReached = false;
                 } catch (IOException e) {
                     System.out.println("IO exception");
                 }
 
             }
-            //4debugging
-            steps += 1;
+            //4autopilot
+            elapsedTime += TIME_STEP*STEPS_PER_ITERATION;
 
         }
     }
@@ -82,5 +88,60 @@ public class Main {
 	private final static float FRAMERATE = 20.0f;
 	private final static int STEPS_PER_ITERATION = Math.round((1/ FRAMERATE)/TIME_STEP);
 
+	// Todo documentatie toevoegen (als je een katje bent)
+	private static class MainAutopilotInputs implements AutopilotInputs {
+
+        public MainAutopilotInputs(Drone drone, byte[] cameraImage, float elapsedTime) {
+            this.drone = drone;
+            this.cameraImage = cameraImage;
+            this.elapsedTime = elapsedTime;
+        }
+
+        @Override
+        public byte[] getImage() {
+            return cameraImage;
+        }
+
+        @Override
+        public float getX() {
+            return drone.getPosition().getxValue();
+        }
+
+        @Override
+        public float getY() {
+            return drone.getPosition().getyValue();
+        }
+
+        @Override
+        public float getZ() {
+            return drone.getPosition().getzValue();
+        }
+
+        @Override
+        public float getHeading() {
+            return drone.getHeading();
+        }
+
+        @Override
+        public float getPitch() {
+            return drone.getPitch();
+        }
+
+        @Override
+        public float getRoll() {
+            return drone.getRoll();
+        }
+
+        @Override
+        public float getElapsedTime() {
+            return elapsedTime;
+        }
+
+        private Drone drone;
+
+        private byte[] cameraImage;
+
+        private float elapsedTime;
+    }
 
 }

@@ -60,7 +60,7 @@ public class droneTest {
 	public void setupDrones(){
 		//enginemass/maxthrust
 		drone1 = new Drone(50, 10, position, velocity, orientation, 
-				rotation, wing2, wing1, wing3, wing4, AP); 
+				rotation, wing2, wing1, wing3, wing4);
 	}
 	
 	@Test
