@@ -14,7 +14,7 @@ public class DroneBuilder {
      */
 
     public final static float ENGINE_MASS = 5.0f;
-    public final static float MAX_THRUST = 150.0f;
+    public final static float MAX_THRUST = 250.0f;
     public final static float MAIN_WING_MASS = 2.5f;
     public final static float STABILIZER_MASS = 1.25f;
     public final static float MAINWING_START_INCL = (float) Math.PI/12.0f;
