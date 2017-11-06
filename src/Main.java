@@ -61,7 +61,7 @@ public class Main {
                     MainAutopilotInputs autopilotInputs =  new MainAutopilotInputs(drone, cameraImage, elapsedTime);
                     if(!configuredAutopilot){
                          autopilotOutputs= autopilot.simulationStarted(new DroneBuilder(true).createConfig(), autopilotInputs);
-                        configuredAutopilot = false;
+                        configuredAutopilot = true;
                     }else{
                         autopilotOutputs = autopilot.timePassed(autopilotInputs);
                     }
