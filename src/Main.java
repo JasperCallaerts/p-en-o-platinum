@@ -2,6 +2,7 @@ import Autopilot.Autopilot;
 import Autopilot.AutopilotInputs;
 import Autopilot.AutopilotOutputs;
 import gui.Renderer;
+import gui.Cube;
 import gui.Graphics;
 import gui.Time;
 import internal.*;
@@ -31,7 +32,31 @@ public class Main {
         AutoPilot autopilot = new AutoPilot();
         World world = worldBuilder.createWorld();
 
-
+        // initialize second, third, fourth and fifth block, for testing purposes
+        Vector BLOCKPOS = new Vector(2.0f, 6.0f, -40.0f);
+    	Vector BLOCKPOS2 = new Vector(4.0f, 10.0f, -60.0f);
+    	Vector BLOCKPOS3 = new Vector(5.0f, 8.0f, -80.0f);
+    	Vector BLOCKPOS4 = new Vector(0.0f, 0.0f, -100.0f);
+        Vector COLOR = new Vector(1.0f, 0.0f,0.0f);
+    	
+    	Block block1 = new Block(BLOCKPOS);
+        Cube cube1 = new Cube(BLOCKPOS.convertToVector3f(), COLOR.convertToVector3f());
+        block1.setAssocatedCube(cube1);
+        
+        Block block2 = new Block(BLOCKPOS2);
+        Cube cube2 = new Cube(BLOCKPOS2.convertToVector3f(), COLOR.convertToVector3f());
+        block2.setAssocatedCube(cube2);
+        
+        Block block3 = new Block(BLOCKPOS3);
+        Cube cube3 = new Cube(BLOCKPOS3.convertToVector3f(), COLOR.convertToVector3f());
+        block3.setAssocatedCube(cube3);
+        
+        Block block4 = new Block(BLOCKPOS4);
+        Cube cube4 = new Cube(BLOCKPOS4.convertToVector3f(), COLOR.convertToVector3f());
+        block4.setAssocatedCube(cube4);
+        
+        Block block0 = world.getRandomBlock();
+        // END for testing purposes
 
         // initialize the renderers
 
@@ -76,6 +101,29 @@ public class Main {
                     System.out.println("IO exception");
                 }
 
+            }else {
+            	// Entire else clause is for testing purposes only
+            	
+            	
+            	if (world.hasWorldObject(block0)) {
+                	world.removeBlocks();
+                	world.addWorldObject(block1);
+                	goalNotReached = true;
+                }else if (world.hasWorldObject(block1)) {
+                	world.removeBlocks();
+                	world.addWorldObject(block2);
+                	goalNotReached = true;
+                }else if (world.hasWorldObject(block2)) {
+                	world.removeBlocks();
+                	world.addWorldObject(block3);
+                	goalNotReached = true;
+                }else if (world.hasWorldObject(block3)) {
+                	world.removeBlocks();
+                	world.addWorldObject(block4);
+                	goalNotReached = true;
+                }
+            	
+                
             }
             //4autopilot
             elapsedTime += TIME_STEP*STEPS_PER_ITERATION;
