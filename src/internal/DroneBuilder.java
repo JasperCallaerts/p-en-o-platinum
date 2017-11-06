@@ -46,10 +46,7 @@ public class DroneBuilder {
         horizontalStabilizer = new HorizontalWing(STABILIZE_POS, LIFT_COEFFICIENT_STAB, STABILIZER_MASS, MAX_ANGLE_OF_ATTACK, STABS_START_INCL);
         verticalStabilizer = new VerticalWing(STABILIZE_POS, LIFT_COEFFICIENT_STAB, STABILIZER_MASS, MAX_ANGLE_OF_ATTACK, STABS_START_INCL);
 
-        drone = new Drone(ENGINE_MASS, MAX_THRUST, STARTPOS, START_VEL, START_ORIENTATION, START_ROTATION, rightMain, leftMain, horizontalStabilizer, verticalStabilizer, new AutoPilot());
-
-         // configure the autopilot
-        drone.configureAutopilot(this.createConfig());
+        drone = new Drone(ENGINE_MASS, MAX_THRUST, STARTPOS, START_VEL, START_ORIENTATION, START_ROTATION, rightMain, leftMain, horizontalStabilizer, verticalStabilizer);
 
         // if the drone needs to be balanced, do so (balancing is the act of setting the vertical force to 0
         // and the Z value to 0

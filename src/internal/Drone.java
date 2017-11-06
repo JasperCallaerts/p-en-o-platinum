@@ -38,10 +38,9 @@ public class Drone implements WorldObject {
 	 * @param leftMainWing the left main wing to be attached to the drone
 	 * @param horizontalStab the horizontal stabilizer tail wing of the drone
 	 * @param verticalStab the vectical stabilizet tail wing of the drone
-	 * @param AP the autopilot of the drone
 	 */
 	public Drone(float engineMass, float maxThrust, Vector position, Vector velocity, Vector orientation,
-		  Vector rotationVector, Wing rightMainWing, Wing leftMainWing, Wing horizontalStab, Wing verticalStab, AutoPilot AP) {
+		  Vector rotationVector, Wing rightMainWing, Wing leftMainWing, Wing horizontalStab, Wing verticalStab) {
 
 
 		if (!this.canHaveAsEngineMass(engineMass) || !this.canHaveAsMaxThrust(maxThrust)) {
@@ -49,7 +48,7 @@ public class Drone implements WorldObject {
 		}
 
 		// set the immutable variables of the drone
-		this.AP = AP;
+
 		this.maxThrust = maxThrust;
 		this.engineMass = engineMass;
 
@@ -77,19 +76,6 @@ public class Drone implements WorldObject {
 		this.setAssociatedCube(new Cube(position.convertToVector3f(), new Vector3f()));
 		// TODO config stream
 	}
-
-	/**
-	 * setter for the autopilot Configuration
-	 * @param autopilotConfig the autopilot configuration
-	 * @author Martijn Sauwens
-	 */
-	public void configureAutopilot(AutopilotConfig autopilotConfig) throws IllegalArgumentException{
-		if(this.autopilotConfig != null){
-			throw new IllegalArgumentException(AUTOPILOT_CONFIG);
-		}
-		this.autopilotConfig = autopilotConfig;
-	}
-
 
 	/*
 	########################## Transformations and projections ##########################
@@ -330,26 +316,15 @@ public class Drone implements WorldObject {
 		float INSIGNIFICANCE = 0.01f;
 
 		//engage autopilot
-		AutopilotInputs input = updateAutopilotInput(deltaTime);// TODO input stream
-		AutoPilot AP = this.getAutopilot();
-		AutopilotOutputs APO;
+		AutopilotOutputs autopilotOutputs= this.getAutopilotOutputs();
 
-		if(!AP.isConfiguredAP()){
-			// if the AP isn't configured yet, take the config of the autopilot
-			// and configure it
-			APO = AP.simulationStarted(autopilotConfig, input);
-		}
-		else{
-			//else just calculate the next action
-			APO = AP.timePassed(input);
-		}
-		setThrust(APO.getThrust());
-		
 		// UNCOMMENT this after testing is finished
-		setLeftWingInclination(APO.getLeftWingInclination());
-		setRightWingInclination(APO.getRightWingInclination());
-		setHorStabInclination(APO.getHorStabInclination());
-		setVerStabInclination(APO.getVerStabInclination());
+		setLeftWingInclination(autopilotOutputs.getLeftWingInclination());
+		setRightWingInclination(autopilotOutputs.getRightWingInclination());
+		setHorStabInclination(autopilotOutputs.getHorStabInclination());
+		setVerStabInclination(autopilotOutputs.getVerStabInclination());
+		setThrust(autopilotOutputs.getThrust());
+
 
 //		System.out.println("LeftWing inclination: " + getLeftWingInclination());
 //		System.out.println("RightWing inclination: " + getRightWingInclination());
@@ -677,67 +652,6 @@ public class Drone implements WorldObject {
 
 	public float getVerStabInclination() {
 		return this.getVerticalStab().getWingInclination();
-	}
-
-	/**
-	 * Method returning the autopilot loaded onto the drone
-	 */
-	public AutoPilot getAutopilot() {
-		return this.AP;
-	}
-
-	/**
-	 * @author Bart
-	 * @param duration the amount of time elapsed
-	 * @return autopilotinput for autopilot
-	 */
-	public AutopilotInputs updateAutopilotInput(float duration){
-
-		AutopilotInputs input;
-		return  new AutopilotInputs() {
-
-			@Override
-			public float getZ() {
-				return getPosition().getElementAt(2);
-			}
-
-			@Override
-			public float getY() {
-				return getPosition().getElementAt(1);
-			}
-
-			@Override
-			public float getX() {
-				return getPosition().getElementAt(0);
-			}
-
-			@Override
-			public float getRoll() {
-				return getOrientation().getElementAt(2);
-			}
-
-			@Override
-			public float getPitch() {
-				return getOrientation().getElementAt(1);
-			}
-
-			@Override
-			public byte[] getImage() {
-				return getAPImage();
-			}
-
-			@Override
-			public float getHeading() {
-				return getOrientation().getElementAt(0);
-			}
-
-			@Override
-			public float getElapsedTime() {
-				return duration;
-			}
-		};
-
-
 	}
 
 
@@ -1310,11 +1224,20 @@ public class Drone implements WorldObject {
 		return totalMass;
 	}
 
+	//Todo add comment
+
+	public AutopilotOutputs getAutopilotOutputs() {
+		return autopilotOutputs;
+	}
+
+	public void setAutopilotOutputs(AutopilotOutputs autopilotOutputs) {
+		this.autopilotOutputs = autopilotOutputs;
+	}
 
 	/**
-	 * A variable containing the autopilot loaded onto the drone
+	 * Variable containing the autopilot outputs
 	 */
-	private final AutoPilot AP;
+	AutopilotOutputs autopilotOutputs;
 
 	/**
 	 * Variable containing the right wing of the drone (immutable)
@@ -1405,21 +1328,10 @@ public class Drone implements WorldObject {
 	private static float LIGHTSPEED = 300000000;
 
 	/**
-	 * Constant: amount of seconds it takes for the autopilot to generate new state
-	 */
-	private static float AP_CALC_TIME = 0.1f;
-
-
-	/**
 	 * Constant: the gravity zone constant for Belgium (simulation place)
 	 */
 	private static float GRAVITY = 9.81060f;
 
-
-	/**
-	 * Variable that stores the configuration of the autopilot
-	 */
-	private AutopilotConfig autopilotConfig;
 
 	/**
 	 * Variable that stores the cube representing the drone

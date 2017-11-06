@@ -11,7 +11,7 @@ public class WorldBuilder {
 
     public Drone DRONE = new DroneBuilder(true).createDrone();
 
-    public final static Vector BLOCKPOS = new Vector(-3.0f, 3.0f, -15.0f);
+    public final static Vector BLOCKPOS = new Vector(0.0f, 50.0f, -150.0f);
     public final static Vector COLOR = new Vector(1.0f, 0.0f,0.0f);
 
     public WorldBuilder(){

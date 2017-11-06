@@ -43,7 +43,7 @@ public class StateTest {
         horizontalStabilizer = new HorizontalWing(stabilizerPos, liftCoefficient, stabilizerMass, maxAngleOfAttack,0.0f);
         verticalStabilizer = new VerticalWing(stabilizerPos, liftCoefficient, stabilizerMass, maxAngleOfAttack, stabInclination);
 
-        drone = new Drone(engineMass, maxThrust, startPos, startVelocity, startOrientation, startRotation, rightMain, leftMain, horizontalStabilizer, verticalStabilizer, null);
+        drone = new Drone(engineMass, maxThrust, startPos, startVelocity, startOrientation, startRotation, rightMain, leftMain, horizontalStabilizer, verticalStabilizer);
         drone.setThrust(63.11539f);
     }
 

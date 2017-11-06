@@ -38,7 +38,7 @@ public class PhysicsTests {
         verticalStab = new VerticalWing(new Vector(0,0,wingpos), liftSlope, wingmass, maxInclination, 0.0f);
 
         drone = new Drone(engineMass, maxThrust, startPos, startVelocity, startOrientation, startRotation,
-                rightMain, leftMain, horizontalStab, verticalStab, null);
+                rightMain, leftMain, horizontalStab, verticalStab);
 
 
     }
