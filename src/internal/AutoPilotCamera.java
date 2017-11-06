@@ -61,6 +61,8 @@ public class AutoPilotCamera {
         int xMeanCoordinate = getMean(xRedCoordinates);
         int yMeanCoordinate = getMean(yRedCoordinates);
 
+        //System.out.println(yMeanCoordinate);
+
         float xOffset = this.getNbColumns()/2.0f;
         float yOffset = this.getNbRows()/2.0f;
 
@@ -131,7 +133,8 @@ public class AutoPilotCamera {
         this.setCameraImage(newImage);
         //System.out.println("cube location: " + locateRedCube());
         Vector dataCube = this.locateRedCube();
-        this.setDestination(new Vector(dataCube.getxValue(), dataCube.getyValue(), 0.0f));
+        //System.out.println(dataCube);
+        this.setDestination(dataCube);
         this.setTotalQualifiedPixels(Math.round(dataCube.getzValue()));
     }
 

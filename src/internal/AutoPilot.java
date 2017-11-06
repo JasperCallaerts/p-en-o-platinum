@@ -13,6 +13,9 @@ import java.util.List;
 
 import Autopilot.*;
 
+//TODO: only recalculate after the new frame is rendered or make seperate controls for the case no new
+//visual input was generated
+
 /**
  * Created by Martijn on 14/10/2017.
  * Extended by Bart on 15/10/2017.
@@ -21,19 +24,23 @@ import Autopilot.*;
 public class AutoPilot implements Autopilot {
 
     public AutoPilot() {
+
+    	// set the controller of the autopilot
+    	this.setController(new AutoPilotController(this));
     	lastPosition = new Vector();
+
     }
 
     @Override
     public AutopilotOutputs simulationStarted(AutopilotConfig config, AutopilotInputs inputs) throws IOException {
             configureAutopilot(config, inputs);
-        return calculate(inputs);
+        return getControlOutputs(inputs);
     }
 
 
     @Override
     public AutopilotOutputs timePassed(AutopilotInputs inputs) throws IOException {
-        return calculate(inputs);
+        return getControlOutputs(inputs);
     }
 
     @Override
@@ -58,8 +65,12 @@ public class AutoPilot implements Autopilot {
         float verticViewAngle = configuration.getVerticalAngleOfView();
         this.setAPCamera(new AutoPilotCamera(inputImage, horizViewAngle, verticViewAngle, nbRows, nbColumns));
 
+
         //initialize other parameters
         this.setMaxThrust(configuration.getMaxThrust());
+		this.setEngineMass(configuration.getEngineMass());
+		this.setMainWingMass(configuration.getWingMass());
+		this.setStabilizerMass(configuration.getTailMass());
 
         this.configuredAP = true;
 
@@ -104,6 +115,12 @@ public class AutoPilot implements Autopilot {
         //AutopilotOutputsWriter.write(dataInputStream, output);
         return output;
     }
+
+    private AutopilotOutputs getControlOutputs(AutopilotInputs inputs){
+    	AutoPilotController controller = this.getController();
+    	controller.setCurrentInputs(inputs);
+    	return controller.getControlActions();
+	}
 
     /**
      * @throws IOException
@@ -344,7 +361,7 @@ public class AutoPilot implements Autopilot {
 	/**
 	 * @author anthonyrathe
 	 */
-	private AutoPilotCamera getAPCamera() throws NullPointerException{
+	protected AutoPilotCamera getAPCamera() throws NullPointerException{
 		if (this.APCamera == null){
 			throw new NullPointerException("No APCamera was assigned to this AutoPilot");
 		}
@@ -485,6 +502,7 @@ public class AutoPilot implements Autopilot {
 		this.lastPosition = new Vector(xPosition, yPosition, 0);
 		
 		int cubeSize = Math.max(APCamera.getTotalQualifiedPixels(),1);
+
 		
 		//int threshold = (int)THRESHOLD_PIXELS*STANDARD_CUBE_SIZE/cubeSize;
 		int threshold = 3;
@@ -503,7 +521,8 @@ public class AutoPilot implements Autopilot {
 		// Ascend/Descend
 		if(yPosition < -threshold){
 			// Descend
-			System.out.println("This is your captain speaking: the red cube is located underneath us");
+
+			//System.out.println("This is your captain speaking: the red cube is located underneath us");
 			//this.startDescend();
 			this.setHorStabInclinationOut((float)(angle*((100+yPosition)/100)));
 		}else if(yPosition >= -threshold*factor && yPosition <= threshold*factor){
@@ -511,7 +530,8 @@ public class AutoPilot implements Autopilot {
 			//this.stopAscendDescend();
 		}else if(yPosition > threshold){
 			// Ascend
-			System.out.println("This is your captain speaking: the red cube is located above us");
+
+			//System.out.println("This is your captain speaking: the red cube is located above us");
 			//this.startAscend();
 			this.setHorStabInclinationOut((float)(-angle*((100-yPosition)/100)));
 		}
@@ -519,15 +539,18 @@ public class AutoPilot implements Autopilot {
 		// Turn
 		if(xPosition > threshold){
 			// Turn right
-			System.out.println("This is your captain speaking: the red cube is located at our right-hand-side");
+
+			//System.out.println("This is your captain speaking: the red cube is located at our right-hand-side");
 			//this.startTurnRight();
 			this.setVerStabInclinationOut((float)(angle*((100-xPosition)/100)));
 		}else if(xPosition >= -threshold*factor && xPosition <= threshold*factor){
+
 			// Stop turning
 			this.stopTurn();
 		}else if(xPosition < -threshold){
 			// Turn left
-			System.out.println("This is your captain speaking: the red cube is located at our left-hand-side");
+
+			//System.out.println("This is your captain speaking: the red cube is located at our left-hand-side");
 			//this.startTurnLeft();
 			this.setVerStabInclinationOut((float)(-angle*((100+xPosition)/100)));
 		} 
@@ -577,7 +600,111 @@ public class AutoPilot implements Autopilot {
 	public void setVerStabInclinationOut(float inclination){
 		verStabInclination = inclination;
 	}
-	
+
+
+
+	/*
+    Getters & Setters
+     */
+
+	//TODO make checkers for the mass variables
+	/**
+	 * Method that returns the control actions of the controller
+	 * @return AutoPilotOutputs containing the control actions of the autopilot
+	 */
+	private AutopilotOutputs getControlOutputs(){
+		return controller.getControlActions();
+	}
+
+	/**
+	 * Getter for the autopilot controller
+	 * @return the controller of the autopilot
+	 */
+	public AutoPilotController getController() {
+		return controller;
+	}
+
+	/**
+	 * setter for the autopilotController other part of the bidirectional relationship
+	 * @param controller the desired controller
+	 */
+	public void setController(AutoPilotController controller) {
+		if(!this.canHaveAsController(controller))
+			throw new IllegalArgumentException(INVALID_CONTROLLER);
+		this.controller = controller;
+	}
+
+	public boolean canHaveAsController(AutoPilotController controller){
+
+		return controller.getAssociatedAutopilot() == this && this.controller == null;
+	}
+
+	/**
+	 * Getter for the main wing mass of the drone
+	 * @return a floating point number containing the mass of the main wing
+	 */
+	public float getMainWingMass() {
+		return mainWingMass;
+	}
+
+	/**
+	 * Setter for the main wing mass of the drone
+	 * @param mainWingMass floating point number containing the mass of the main wing
+	 */
+	public void setMainWingMass(float mainWingMass) {
+		this.mainWingMass = mainWingMass;
+	}
+
+	/**
+	 * Getter for the mass of the stabilizer
+	 * @return floating point number containing the stabilizer mass
+	 */
+	public float getStabilizerMass() {
+		return stabilizerMass;
+	}
+
+	/**
+	 * Setter for the mass of the stabilizer
+	 * @param stabilizerMass the mass of the stabilizer
+	 */
+	public void setStabilizerMass(float stabilizerMass) {
+		this.stabilizerMass = stabilizerMass;
+	}
+
+	/**
+	 * Getter for the mass of the engine
+	 * @return floating point containing the mass of the enige
+	 */
+	public float getEngineMass() {
+		return engineMass;
+	}
+
+	/**
+	 * Setter for the engine mass
+	 * @param engineMass the mass of the engine
+	 */
+	public void setEngineMass(float engineMass) {
+		this.engineMass = engineMass;
+	}
+
+	/**
+	 * Object that stores the autopilot controller
+	 */
+	private AutoPilotController controller;
+	/**
+	 * variable that stores the mass of the main wings
+	 */
+	private float mainWingMass;
+	/**
+	 * variable that stores the mass of the stabilizers
+	 */
+	private float stabilizerMass;
+
+	/**
+	 * variable that stores the mass of the engine
+	 */
+	private float engineMass;
+
 	//------- Parameters -------
 	private static final float STANDARD_INCLINATION = (float)Math.PI/8;
 	private static final float SHARP_INCLINATION = (float)Math.PI/4;
@@ -595,6 +722,7 @@ public class AutoPilot implements Autopilot {
     Error messages
      */
     public final static String INVALID_THRUST = "The supplied thrust is out of bounds";
+	public final static String INVALID_CONTROLLER = "The controller is already initialized";
 
 }
 

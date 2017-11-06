@@ -23,7 +23,9 @@ public class Main {
 
 
         // initialize the renderers
+
         Renderer renderer = new Renderer(world);
+
 //        Renderer andererenderer = new Renderer(world);
 
         boolean goalNotReached = true;
@@ -36,8 +38,13 @@ public class Main {
         while (true) {
 
             //first render the images
-            droneWindow.renderFrame(renderer, true);
+//            long startRenderTime = System.nanoTime();
+              droneWindow.renderFrame(renderer, true);
+              System.out.println(worldBuilder.DRONE.getRoll()*180/Math.PI);
 //            testWindow.renderFrame(andererenderer, false);
+//            long endRenderTime = System.nanoTime();
+//            double renderTime = (endRenderTime-startRenderTime)*1E-9;
+//            System.out.println("render time: " + renderTime);
 
             if (goalNotReached) {
                 //pass the outputs to the drone
