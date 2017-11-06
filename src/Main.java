@@ -17,7 +17,7 @@ public class Main {
 	 * @param args
 	 * @author Martijn Sauwens
 	 */
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws IOException, InterruptedException {
 
 		Graphics graphics = new Graphics();
 		Time.initTime();
@@ -72,13 +72,14 @@ public class Main {
 
         while (true) {
 
+            long startTime = System.currentTimeMillis();
             //first render the images
-
-              graphics.renderWindows(renderer);
-              //System.out.println(drone.getRoll()*180/Math.PI);
-              AutopilotOutputs autopilotOutputs;
+            graphics.renderWindows(renderer);
+            //System.out.println(drone.getRoll()*180/Math.PI);
+            AutopilotOutputs autopilotOutputs;
 
             if (goalNotReached) {
+
                 //pass the outputs to the drone
                 try {
 
@@ -125,8 +126,15 @@ public class Main {
             	
                 
             }
+            long endTime = System.currentTimeMillis();
+            long timeDiff = endTime - startTime;
+            long timeLeft = FRAME_MILLIS - timeDiff;
+            if(timeLeft>0)
+                Thread.sleep(timeLeft);
+            System.out.println(timeLeft);
             //4autopilot
             elapsedTime += TIME_STEP*STEPS_PER_ITERATION;
+
 
         }
     }
@@ -135,6 +143,7 @@ public class Main {
 	private final static float TIME_STEP = 0.001f;
 	private final static float FRAMERATE = 20.0f;
 	private final static int STEPS_PER_ITERATION = Math.round((1/ FRAMERATE)/TIME_STEP);
+	private final static long FRAME_MILLIS = 50;
 
 	// Todo documentatie toevoegen (als je een katje bent)
 	private static class MainAutopilotInputs implements AutopilotInputs {

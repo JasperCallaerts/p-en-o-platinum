@@ -510,7 +510,7 @@ public class AutoPilot implements Autopilot {
 		float factor = 1.0f;
 		
 		// Thrust
-		System.out.println(getHorStabInclinationOut());
+		//System.out.println(getHorStabInclinationOut());
 		if (pitch > INCREASE_THRUST_ANGLE) {
 			this.setThrustOut(Math.min(Math.max((float)(STANDARD_THRUST/INCREASE_THRUST_ANGLE), STANDARD_THRUST),150));
 		}else {

@@ -11,7 +11,7 @@ import static java.lang.Math.sin;
 
 /**
  * Created by Martijn on 30/10/2017.
- * Appended and edited by Anthony Rathé on 6/11/2017
+ * Appended and edited by Anthony Rathï¿½ on 6/11/2017
  * A class of Autopilot Controllers
  */
 public class AutoPilotController {
@@ -43,7 +43,7 @@ public class AutoPilotController {
     private void startAscend(ControlOutputs outputs,  float xPosCube, float yPosCube){
         outputs.setHorStabInclination(-Math.min(STANDARD_INCLINATION*Math.abs(yPosCube)/20f,MAX_HOR_STAB_INCLINATION));
     }
-    
+
     private void startTurnDescend(ControlOutputs outputs, float xPosCube, float yPosCube){
         outputs.setHorStabInclination(Math.min(STANDARD_INCLINATION*Math.abs(yPosCube)/20f,MAX_HOR_STAB_INCLINATION));
     }
@@ -79,7 +79,7 @@ public class AutoPilotController {
     		startTurnDescend(outputs, xPosCube, yPosCube);
     		System.out.println("Turn Left descending");
     	}
-    	
+
         outputs.setRightWingInclination(-TURNING_INCLINATION + MAIN_STABLE_INCLINATION);
         outputs.setLeftWingInclination(TURNING_INCLINATION + MAIN_STABLE_INCLINATION);
     }
@@ -111,17 +111,17 @@ public class AutoPilotController {
      * @return the outputs for the autopilot
      */
     public AutopilotOutputs getControlActions(){
-    	
+
         ControlOutputs controlOutputs = new ControlOutputs();
         AutoPilotCamera APCamera = this.getAssociatedAutopilot().getAPCamera();
         AutopilotInputs currentInputs = this.getCurrentInputs();
         APCamera.loadNextImage(currentInputs.getImage());
         float xPosition = APCamera.getDestination().getxValue();
         float yPosition = -APCamera.getDestination().getyValue();
-        
+
         int cubeSize = APCamera.getTotalQualifiedPixels();
         //System.out.println(cubeSize);
-        
+
         //int threshold = Math.max(Math.round(THRESHOLD_PIXELS*NORMAL_CUBE_SIZE/cubeSize),1);
         int threshold = Math.round(THRESHOLD_DISTANCE);
         int bias = 0;
@@ -130,6 +130,7 @@ public class AutoPilotController {
         }else if(currentInputs.getPitch() < -Math.PI/20) {
         	bias = -BIAS;
         }
+        //System.out.println(bias);
 
         // Thrust
        this.setThrustOut(controlOutputs);
@@ -143,7 +144,7 @@ public class AutoPilotController {
         }else if(xPosition >= -threshold && xPosition <= threshold){
             // Stop turning
             this.stopTurn(controlOutputs, xPosition, yPosition);
-            
+
             // Start Ascending/Descending
             // Ascend/Descend
             if(yPosition < -threshold - bias && (xPosition >= -threshold && xPosition <= threshold)){

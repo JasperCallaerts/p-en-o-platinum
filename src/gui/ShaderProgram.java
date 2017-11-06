@@ -56,7 +56,7 @@ public class ShaderProgram {
         glShaderSource(vertexId, vertexShader);
         glCompileShader(vertexId);
         if(glGetShaderi(vertexId, GL_COMPILE_STATUS) != GL_TRUE) {
-            System.out.println(glGetShaderInfoLog(vertexId, Integer.MAX_VALUE));
+            //System.out.println(glGetShaderInfoLog(vertexId, Integer.MAX_VALUE));
             throw new RuntimeException();
         }
         
@@ -64,7 +64,7 @@ public class ShaderProgram {
         glShaderSource(fragmentId, fragmentShader);
         glCompileShader(fragmentId);
         if(glGetShaderi(fragmentId, GL_COMPILE_STATUS) != GL_TRUE) {
-            System.out.println(glGetShaderInfoLog(fragmentId, Integer.MAX_VALUE));
+            //System.out.println(glGetShaderInfoLog(fragmentId, Integer.MAX_VALUE));
             throw new RuntimeException();
         }
         
@@ -72,7 +72,7 @@ public class ShaderProgram {
         glAttachShader(programID, fragmentId);
         glLinkProgram(programID);
         if(glGetProgrami(programID, GL_LINK_STATUS) != GL_TRUE) {
-            System.out.println(glGetProgramInfoLog(programID, Integer.MAX_VALUE));
+            //System.out.println(glGetProgramInfoLog(programID, Integer.MAX_VALUE));
             throw new RuntimeException();
         }
 	}
@@ -95,7 +95,7 @@ public class ShaderProgram {
 	}
 	
 	public void bind() {
-		System.out.println(programID);
+		//System.out.println(programID);
         glUseProgram(programID);
     }
 
