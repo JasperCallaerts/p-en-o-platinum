@@ -57,7 +57,7 @@ public class Main {
                 //pass the outputs to the drone
                 try {
 
-                    byte[] cameraImage = droneWindow.getCameraView();
+                    byte[] cameraImage = graphics.getWindow("droneWindow").getCameraView();
                     MainAutopilotInputs autopilotInputs =  new MainAutopilotInputs(drone, cameraImage, elapsedTime);
                     if(!configuredAutopilot){
                          autopilotOutputs= autopilot.simulationStarted(new DroneBuilder(true).createConfig(), autopilotInputs);

@@ -30,7 +30,7 @@ public class AutoPilotController {
         int threshold = Math.round(THRESHOLD_DISTANCE);
 
         // Thrust
-        float thrust = (float) ((STANDARD_THRUST) + this.getTotalMass()*GRAVITY*sin(Math.PI - pitch));
+        float thrust = (float) ((STANDARD_THRUST) + this.getTotalMass()*GRAVITY*sin(pitch));
         //System.out.println(thrust);
         outputs.setThrust(thrust);
     }
