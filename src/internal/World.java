@@ -148,7 +148,6 @@ public class World {
 					//if the goal is reached, exit the loop by throwing throwing an exception
 					if (this.goalReached(block, drone)) {
 						//don't forget to notify the autopilot first
-						drone.getAutopilot().simulationEnded();
 						throw new SimulationEndedException();
 					}
 				}
