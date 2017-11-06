@@ -108,7 +108,7 @@ public class Vector {
 	public Vector normalizeToLength(float length) {
 		Vector vector = this.normalizeVector();
 		Vector newVector = new Vector(vector.getxValue()*length, vector.getyValue()*length, vector.getzValue()*length);
-		System.out.println(vector.getxValue() + " " + vector.getyValue() + " " + vector.getzValue() + "-->" + vector.getSize() + " : " + newVector.getSize());
+//		System.out.println(vector.getxValue() + " " + vector.getyValue() + " " + vector.getzValue() + "-->" + vector.getSize() + " : " + newVector.getSize());
 		return newVector;
 	}
 	
