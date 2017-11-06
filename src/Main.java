@@ -56,6 +56,7 @@ public class Main {
         block4.setAssocatedCube(cube4);
         
         Block block0 = world.getRandomBlock();
+        world.addWorldObject(block1);
         // END for testing purposes
 
         // initialize the renderers
@@ -109,14 +110,17 @@ public class Main {
             	if (world.hasWorldObject(block0)) {
                 	world.removeBlocks();
                 	world.addWorldObject(block1);
+                	world.addWorldObject(block2);
                 	goalNotReached = true;
                 }else if (world.hasWorldObject(block1)) {
                 	world.removeBlocks();
                 	world.addWorldObject(block2);
+                	world.addWorldObject(block3);
                 	goalNotReached = true;
                 }else if (world.hasWorldObject(block2)) {
                 	world.removeBlocks();
                 	world.addWorldObject(block3);
+                	world.addWorldObject(block4);
                 	goalNotReached = true;
                 }else if (world.hasWorldObject(block3)) {
                 	world.removeBlocks();
