@@ -48,12 +48,28 @@ public class AutoPilotController {
     }
 
     private void startTurnRight(ControlOutputs outputs,  float xPosCube, float yPosCube){
-        outputs.setVerStabInclination(STANDARD_INCLINATION);
-
+        //outputs.setVerStabInclination(STANDARD_INCLINATION);
+    	if (yPosCube >= 0) {
+    		startAscend(outputs, xPosCube, yPosCube);
+    	}else {
+    		startDescend(outputs, xPosCube, yPosCube);
+    	}
+    	
+    	outputs.setRightWingInclination(TURNING_INCLINATION + MAIN_STABLE_INCLINATION);
+        outputs.setLeftWingInclination(-TURNING_INCLINATION + MAIN_STABLE_INCLINATION);
     }
 
     private void startTurnLeft(ControlOutputs outputs, float xPosCube, float yPosCube){
-        outputs.setVerStabInclination(-STANDARD_INCLINATION);
+        //outputs.setVerStabInclination(-STANDARD_INCLINATION);
+    	if (yPosCube >= 0) {
+    		startAscend(outputs, xPosCube, yPosCube);
+    	}else {
+    		startDescend(outputs, xPosCube, yPosCube);
+    	}
+    	
+    	startAscend(outputs, xPosCube, yPosCube);
+        outputs.setRightWingInclination(-TURNING_INCLINATION + MAIN_STABLE_INCLINATION);
+        outputs.setLeftWingInclination(TURNING_INCLINATION + MAIN_STABLE_INCLINATION);
     }
 
     private void stopTurn(ControlOutputs outputs, float xPosCube, float yPosCube){
@@ -93,20 +109,27 @@ public class AutoPilotController {
 
         //int threshold = Math.max(Math.round(THRESHOLD_PIXELS*NORMAL_CUBE_SIZE/cubeSize),1);
         int threshold = Math.round(THRESHOLD_DISTANCE);
+        int bias = 0;
+        if (currentInputs.getPitch() > Math.PI/20) {
+        	bias = 10;
+        }else if(currentInputs.getPitch() < -Math.PI/20) {
+        	bias = -10;
+        }
+        System.out.println(bias);
 
         // Thrust
        this.setThrustOut(controlOutputs);
 
 
         // Ascend/Descend
-        if(yPosition < -threshold){
+        if(yPosition < -threshold - bias){
             // Descend
             //System.out.println("This is your captain speaking: the red cube is located underneath us");
             this.startDescend(controlOutputs, xPosition, yPosition);
-        }else if(yPosition >= -threshold && yPosition <= threshold){
+        }else if(yPosition >= -threshold - bias && yPosition <= threshold - bias){
             // Stop descending/ascending
             this.stopAscendDescend(controlOutputs, xPosition, yPosition);
-        }else if(yPosition > threshold){
+        }else if(yPosition > threshold - bias){
             // Ascend
             //System.out.println("This is your captain speaking: the red cube is located above us");
             this.startAscend(controlOutputs, xPosition, yPosition);
@@ -182,6 +205,7 @@ public class AutoPilotController {
 
     private static final float STANDARD_INCLINATION = (float)Math.PI/8;
     private static final float MAIN_STABLE_INCLINATION = (float)Math.PI/12;
+    private static final float TURNING_INCLINATION = (float)Math.PI/10;
     private static final float THRESHOLD_DISTANCE = 5f;
     private static final float STANDARD_THRUST = 32.859283f;
     private static final float THRESHOLD_THRUST_ANGLE = (float)(Math.PI/20);
