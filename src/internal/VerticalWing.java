@@ -46,11 +46,4 @@ public class VerticalWing extends Wing {
 
     public final Vector normal = new Vector(1,0,0);
 
-    @Override
-    public Vector getLift(){
-        Vector lift = super.getLift();
-        System.out.println(lift);
-        return lift;
-
-    }
 }
