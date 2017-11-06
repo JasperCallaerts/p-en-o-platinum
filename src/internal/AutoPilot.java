@@ -21,6 +21,7 @@ import Autopilot.*;
 public class AutoPilot implements Autopilot {
 
     public AutoPilot() {
+    	lastPosition = new Vector();
     }
 
     @Override
@@ -225,8 +226,22 @@ public class AutoPilot implements Autopilot {
 	/**
 	 * @author anthonyrathe
 	 */
+	private void startSharpTurnLeft(){
+		this.setVerStabInclinationOut((float)-SHARP_INCLINATION);
+	}
+	
+	/**
+	 * @author anthonyrathe
+	 */
 	private void startTurnRight(){
 		this.setVerStabInclinationOut((float)STANDARD_INCLINATION);
+	}
+	
+	/**
+	 * @author anthonyrathe
+	 */
+	private void startSharpTurnRight(){
+		this.setVerStabInclinationOut((float)SHARP_INCLINATION);
 	}
 	
 	/**
@@ -246,8 +261,22 @@ public class AutoPilot implements Autopilot {
 	/**
 	 * @author anthonyrathe
 	 */
+	private void startSteapAscend(){
+		this.setHorStabInclinationOut((float)-SHARP_INCLINATION);
+	}
+	
+	/**
+	 * @author anthonyrathe
+	 */
 	private void startDescend(){
 		this.setHorStabInclinationOut((float)STANDARD_INCLINATION);
+	}
+	
+	/**
+	 * @author anthonyrathe
+	 */
+	private void startSteapDescend(){
+		this.setHorStabInclinationOut((float)SHARP_INCLINATION);
 	}
 	
 	/**
@@ -438,6 +467,8 @@ public class AutoPilot implements Autopilot {
 		
 	}*/
 	
+	private Vector lastPosition;
+	
 	/**
 	 * Method that updates the desired inclinations and thrust
 	 * Strategy applied:
@@ -451,48 +482,57 @@ public class AutoPilot implements Autopilot {
 		float pitch = inputs.getPitch();
 		float xPosition = APCamera.getDestination().getxValue();
 		float yPosition = -APCamera.getDestination().getyValue();
+		this.lastPosition = new Vector(xPosition, yPosition, 0);
 		
-		int cubeSize = APCamera.getTotalQualifiedPixels();
-		System.out.println(cubeSize);
+		int cubeSize = Math.max(APCamera.getTotalQualifiedPixels(),1);
 		
-		//int threshold = Math.max(Math.round(THRESHOLD_PIXELS*NORMAL_CUBE_SIZE/cubeSize),1);
-		int threshold = (int)THRESHOLD_PIXELS;
+		//int threshold = (int)THRESHOLD_PIXELS*STANDARD_CUBE_SIZE/cubeSize;
+		int threshold = 3;
+		float angle = (float)Math.PI/6;
+		float factor = 1.0f;
 		
 		// Thrust
+		System.out.println(getHorStabInclinationOut());
 		if (pitch > INCREASE_THRUST_ANGLE) {
-			this.setThrustOut(Math.max((float)(STANDARD_THRUST*pitch/INCREASE_THRUST_ANGLE), STANDARD_THRUST));
+			this.setThrustOut(Math.min(Math.max((float)(STANDARD_THRUST/INCREASE_THRUST_ANGLE), STANDARD_THRUST),150));
 		}else {
-			this.setThrustOut(STANDARD_THRUST*(Math.min((float)STANDARD_CUBE_SIZE/(float)Math.pow(cubeSize,1.6),1f)));
+			this.setThrustOut(STANDARD_THRUST);
 		}
-		
+		//this.setThrustOut(STANDARD_THRUST*1.7f);
 		
 		// Ascend/Descend
 		if(yPosition < -threshold){
 			// Descend
 			System.out.println("This is your captain speaking: the red cube is located underneath us");
-			this.startDescend();
-		}else if(yPosition >= -threshold && yPosition <= threshold){
+			//this.startDescend();
+			this.setHorStabInclinationOut((float)(angle*((100+yPosition)/100)));
+		}else if(yPosition >= -threshold*factor && yPosition <= threshold*factor){
 			// Stop descending/ascending
-			this.stopAscendDescend();
+			//this.stopAscendDescend();
 		}else if(yPosition > threshold){
 			// Ascend
 			System.out.println("This is your captain speaking: the red cube is located above us");
-			this.startAscend();
+			//this.startAscend();
+			this.setHorStabInclinationOut((float)(-angle*((100-yPosition)/100)));
 		}
 		
-		// Roll
+		// Turn
 		if(xPosition > threshold){
 			// Turn right
 			System.out.println("This is your captain speaking: the red cube is located at our right-hand-side");
-			this.startTurnRight();
-		}else if(xPosition >= -threshold && xPosition <= threshold){
+			//this.startTurnRight();
+			this.setVerStabInclinationOut((float)(angle*((100-xPosition)/100)));
+		}else if(xPosition >= -threshold*factor && xPosition <= threshold*factor){
 			// Stop turning
 			this.stopTurn();
 		}else if(xPosition < -threshold){
 			// Turn left
 			System.out.println("This is your captain speaking: the red cube is located at our left-hand-side");
-			this.startTurnLeft();
+			//this.startTurnLeft();
+			this.setVerStabInclinationOut((float)(-angle*((100+xPosition)/100)));
 		} 
+	
+		
 		
 	}
 	
@@ -540,13 +580,15 @@ public class AutoPilot implements Autopilot {
 	
 	//------- Parameters -------
 	private static final float STANDARD_INCLINATION = (float)Math.PI/8;
+	private static final float SHARP_INCLINATION = (float)Math.PI/4;
 	private static final float STABLE_INCLINATION = (float)Math.PI/12;
 	private static final float THRESHOLD_ANGLE = (float)Math.PI/36;
 	private static final float THRESHOLD_PIXELS = 5f;
-	private static final float INCREASE_THRUST_ANGLE = (float)(Math.PI/20);
+	private static final float INCREASE_THRUST_ANGLE = (float)(Math.PI*0.025);
 	private static final int STANDARD_CUBE_SIZE = 10;
 	private static final float NODE_REACHED_DISTANCE = 4f;
 	private static final float STANDARD_THRUST = 32.859283f;
+	private static final float CUBE_LOCATION_DELTA_THRESHOLD = 0.5f;
 
 
     /*
