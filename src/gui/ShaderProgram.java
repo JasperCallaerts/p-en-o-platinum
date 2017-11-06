@@ -95,6 +95,7 @@ public class ShaderProgram {
 	}
 	
 	public void bind() {
+		System.out.println(programID);
         glUseProgram(programID);
     }
 

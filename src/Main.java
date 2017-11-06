@@ -2,7 +2,8 @@ import Autopilot.Autopilot;
 import Autopilot.AutopilotInputs;
 import Autopilot.AutopilotOutputs;
 import gui.Renderer;
-import gui.Window;
+import gui.Graphics;
+import gui.Time;
 import internal.*;
 
 
@@ -16,9 +17,13 @@ public class Main {
 	 * @author Martijn Sauwens
 	 */
 	public static void main(String[] args) throws IOException {
-        // initialize the windows
-//        Window testWindow = new Window(920, 1000, 1f, 0.4f, "test window");
-        Window droneWindow = new Window(1000, 1000, 0.0f, 0.4f, "Drone simulator 2017");
+
+		Graphics graphics = new Graphics();
+		Time.initTime();
+
+		// initialize the windows
+		//        graphics.addWindow("window2", 920, 1000, 1f, 0.4f, "secondary window", false);
+		graphics.addWindow("droneWindow", 1000, 1000, 0.0f, 0.4f, "Drone simulator 2017", true);
 
         // drone builder covers all the stuff involving building the drone, adjust parameters there
         WorldBuilder worldBuilder = new WorldBuilder();
@@ -43,12 +48,15 @@ public class Main {
         while (true) {
 
             //first render the images
-              droneWindow.renderFrame(renderer, true);
+
+              graphics.renderWindows(renderer);
               //System.out.println(drone.getRoll()*180/Math.PI);
               AutopilotOutputs autopilotOutputs;
+
             if (goalNotReached) {
                 //pass the outputs to the drone
                 try {
+
                     byte[] cameraImage = droneWindow.getCameraView();
                     MainAutopilotInputs autopilotInputs =  new MainAutopilotInputs(drone, cameraImage, elapsedTime);
                     if(!configuredAutopilot){
@@ -58,6 +66,7 @@ public class Main {
                         autopilotOutputs = autopilot.timePassed(autopilotInputs);
                     }
                     drone.setAutopilotOutputs(autopilotOutputs);
+
                     world.advanceWorldState(TIME_STEP, STEPS_PER_ITERATION);
 
                 } catch (SimulationEndedException e) {

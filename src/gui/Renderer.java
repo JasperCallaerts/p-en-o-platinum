@@ -1,17 +1,5 @@
 package gui;
 
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_DOWN;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_LEFT;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_LEFT_ALT;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_RIGHT;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_SPACE;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_UP;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_D;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_A;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_W;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_S;
-import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
-import static org.lwjgl.glfw.GLFW.glfwGetKey;
 import static org.lwjgl.opengl.GL11.GL_INVALID_ENUM;
 import static org.lwjgl.opengl.GL11.GL_INVALID_OPERATION;
 import static org.lwjgl.opengl.GL11.GL_INVALID_VALUE;
@@ -39,13 +27,6 @@ public class Renderer {
     private Matrix4f viewMatrix = new Matrix4f();
 
 	private World world;
-	private boolean cameraOnDrone = true;
-
-	private Input input;  
-     
-    private static final float FOV = (float) Math.toRadians(60.0f);
-	private static final float NEAR = 0.01f;
-	private static final float FAR = 1000.f;
 
 	/**
      * Initializes the OpenGL state. Creating programs and sets 
@@ -54,7 +35,6 @@ public class Renderer {
 	public Renderer(World world) {
 		
 		this.world = world;
-		this.input = new Input();
 		
 		program = new ShaderProgram(false, "resources/default.vert", "resources/default.frag");	
 
@@ -68,16 +48,6 @@ public class Renderer {
 			e.printStackTrace();
 		}
         
-        float ratio;
-		try (MemoryStack stack = MemoryStack.stackPush()) {
-			long window = GLFW.glfwGetCurrentContext();
-			IntBuffer width = stack.mallocInt(1);
-			IntBuffer height = stack.mallocInt(1);
-			GLFW.glfwGetFramebufferSize(window, width, height);
-			ratio = (float) width.get() / (float) height.get();
-		}
-        projectionMatrix = Matrix4f.perspective(FOV, ratio, NEAR, FAR);
-        
         checkError();
     }
     
@@ -85,7 +55,7 @@ public class Renderer {
      * Releases in use OpenGL resources.
      */
     public void release() {
-    	
+
     	for (WorldObject object: world.getObjectSet()) {
     		object.getAssociatedCube().delete();
     	}
@@ -103,28 +73,36 @@ public class Renderer {
         	dronePosition = drone.getPosition().convertToVector3f();
         }
         
-        Vector3f right = new Vector3f((float) Math.cos(orientation.x), 0, (float) -Math.sin(orientation.x));
-		Vector3f up = new Vector3f((float) (Math.sin(orientation.y)*Math.sin(orientation.x)), (float) Math.cos(orientation.y), (float) (Math.sin(orientation.y)*Math.cos(orientation.x)));
+        Vector3f right = new Vector3f((float) Math.cos(orientation.z), (float) -Math.sin(orientation.z), 0);
+        Vector3f up = new Vector3f((float) Math.sin(orientation.z), (float) Math.cos(orientation.z), 0);
+        up = new Vector3f(up.x * (float) Math.cos(orientation.y), up.y * (float) Math.cos(orientation.y), (float) Math.sin(orientation.y));
+        right = new Vector3f(right.x * (float) Math.cos(orientation.x), right.y * (float) Math.cos(orientation.x), (float) -Math.sin(orientation.x));
+        
+//        Vector3f right = new Vector3f((float) Math.cos(orientation.x), 0, (float) -Math.sin(orientation.x));
+//		Vector3f up = new Vector3f((float) (Math.sin(orientation.y)*Math.sin(orientation.x)), (float) Math.cos(orientation.y), (float) (Math.sin(orientation.y)*Math.cos(orientation.x)));
 		Vector3f look = up.cross(right);
 		
 		return Matrix4f.viewMatrix(right, up, look, dronePosition);
 	}
 	
-	public void update(boolean cameraOnDrone) {
-		if (cameraOnDrone) {
+	public void update(Window window) {
+		if (window.cameraIsOnDrone()) {
 			viewMatrix = getDroneView();
 		} else {
-			viewMatrix = input.getViewMatrix();
+			viewMatrix = window.getViewMatrix();
 		}
+		
+		projectionMatrix = window.getProjectionMatrix();
 	}
 
 	/**
      * Renders all scene objects.
      */
-    public void render(boolean cameraOnDrone) {
-    	update(cameraOnDrone);
+    public void render(Window window) {
+    	update(window);
 
     	checkError();
+    	System.out.println(window.getTitle());
         program.bind();
         checkError();
         program.setUniform("projectionMatrix", projectionMatrix);
