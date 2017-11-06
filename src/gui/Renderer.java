@@ -102,7 +102,7 @@ public class Renderer {
     	update(window);
 
     	checkError();
-    	System.out.println(window.getTitle());
+    	//System.out.println(window.getTitle());
         program.bind();
         checkError();
         program.setUniform("projectionMatrix", projectionMatrix);

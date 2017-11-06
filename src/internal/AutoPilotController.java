@@ -115,7 +115,7 @@ public class AutoPilotController {
         }else if(currentInputs.getPitch() < -Math.PI/20) {
         	bias = -10;
         }
-        System.out.println(bias);
+        //System.out.println(bias);
 
         // Thrust
        this.setThrustOut(controlOutputs);
