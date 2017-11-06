@@ -27,7 +27,7 @@ public class Input {
 	private float pitch = 0;
 	
     private static final float SPEED = 4f;
-    private static final float TURN_SPEED = 0.1f;
+    private static final float TURN_SPEED = 0.01f;
     
     private Vector3f right;
     private Vector3f up;
@@ -42,7 +42,7 @@ public class Input {
      */
 	private void processInput() {
 		
-		double delta = Window.getDeltaTime();
+		double delta = Time.getDelta();
 		
 		mouse.update();
 		yaw = yaw - mouse.dx() * TURN_SPEED * (float)delta;

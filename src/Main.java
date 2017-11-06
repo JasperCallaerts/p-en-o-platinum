@@ -1,5 +1,6 @@
 import gui.Renderer;
-import gui.Window;
+import gui.Graphics;
+import gui.Time;
 import internal.*;
 import sun.awt.windows.WBufferStrategy;
 
@@ -13,9 +14,13 @@ public class Main {
 	 * @author Martijn Sauwens
 	 */
 	public static void main(String[] args) throws IOException {
-        // initialize the windows
-//        Window testWindow = new Window(920, 1000, 1f, 0.4f, "test window");
-        Window droneWindow = new Window(1000, 1000, 0.0f, 0.4f, "Drone simulator 2017");
+
+		Graphics graphics = new Graphics();
+		Time.initTime();
+
+		// initialize the windows
+		//        graphics.addWindow("window2", 920, 1000, 1f, 0.4f, "secondary window", false);
+		graphics.addWindow("droneWindow", 1000, 1000, 0.0f, 0.4f, "Drone simulator 2017", true);
 
         // drone builder covers all the stuff involving building the drone, adjust parameters there
         WorldBuilder worldBuilder = new WorldBuilder();
@@ -38,10 +43,11 @@ public class Main {
         while (true) {
 
             //first render the images
+        	graphics.renderWindows(renderer);
+        	
 //            long startRenderTime = System.nanoTime();
-              droneWindow.renderFrame(renderer, true);
+
               System.out.println(worldBuilder.DRONE.getRoll()*180/Math.PI);
-//            testWindow.renderFrame(andererenderer, false);
 //            long endRenderTime = System.nanoTime();
 //            double renderTime = (endRenderTime-startRenderTime)*1E-9;
 //            System.out.println("render time: " + renderTime);
@@ -51,7 +57,7 @@ public class Main {
 
 
                 try {
-                    byte[] camera = droneWindow.getCameraView();
+                    byte[] camera = graphics.getWindow("droneWindow").getCameraView();
                     worldBuilder.DRONE.setAPImage(camera);
 
                     passed_time = passed_time + TIME_STEP;

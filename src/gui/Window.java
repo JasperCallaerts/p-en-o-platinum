@@ -3,6 +3,7 @@ package gui;
 import internal.CameraImage;
 import internal.Pixel;
 import internal.World;
+import math.Matrix4f;
 
 import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.*;
@@ -25,46 +26,41 @@ import static org.lwjgl.system.MemoryUtil.*;
 public class Window {
 
 	// The window handle
-	private long window;
-	private Renderer renderer;
-	private static double time;
-	private static double previousTime;
+	private long windowHandle;
+	
+	GLCapabilities capabilities;
+	
 	private int WIDTH;
 	private int HEIGHT;
 
-	public Window(int width, int height, float xOffset, float yOffset, String title) {
-		this.WIDTH = width;
-		this.HEIGHT = height;
+	private Input input;
 
-		// Setup an error callback. The default implementation
-		// will print the error message in System.err.
-		GLFWErrorCallback.createPrint(System.err).set();
+	private boolean droneView;  
+	
+    private static final float FOV = (float) Math.toRadians(60.0f);
+	private static final float NEAR = 0.01f;
+	private static final float FAR = 1000.f;
+	
+	private String title;
 
-		// Initialize GLFW. Most GLFW functions will not work before doing this.
-		if ( !glfwInit() )
-			throw new IllegalStateException("Unable to initialize GLFW");
-
-		// Configure GLFW
-		glfwDefaultWindowHints(); // optional, the current window hints are already the default
-		glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE); // the window will stay hidden after creation
-		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE); // the window will not be resizable
-		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); 
-		glfwWindowHint(GLFW_SAMPLES, 4);
-
+	public Window(int width, int height, float xOffset, float yOffset, String title, boolean cameraOnDrone) {
+		this.droneView = cameraOnDrone;
+		WIDTH = width;
+		HEIGHT = height;
+		this.title = title;
+		
 		// Create the window
-		window = glfwCreateWindow(WIDTH, HEIGHT, title, NULL, NULL);
-		if ( window == NULL )
+		windowHandle = glfwCreateWindow(width, height, title, NULL, NULL);
+		if ( getHandler() == NULL )
 			throw new RuntimeException("Failed to create the GLFW window");
 
 		// Setup a key callback. It will be called every time a key is pressed, repeated or released.
-		glfwSetKeyCallback(window, (window, key, scancode, action, mods) -> {
+		glfwSetKeyCallback(getHandler(), (handle, key, scancode, action, mods) -> {
 			if ( key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE )
-				glfwSetWindowShouldClose(window, true); // We will detect this in the rendering loop
+				glfwSetWindowShouldClose(handle, true); // We will detect this in the rendering loop
 		});
 		
-		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		glfwSetInputMode(getHandler(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
 		// Get the thread stack and push a new frame
 		try ( MemoryStack stack = stackPush() ) {
@@ -72,99 +68,102 @@ public class Window {
 			IntBuffer pHeight = stack.mallocInt(1); // int*
 
 			// Get the window size passed to glfwCreateWindow
-			glfwGetWindowSize(window, pWidth, pHeight);
+			glfwGetWindowSize(getHandler(), pWidth, pHeight);
 
 			// Get the resolution of the primary monitor
 			GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 
 			// Center the window
 			glfwSetWindowPos(
-				window,
+					getHandler(),
 				(int) ((vidmode.width() - pWidth.get(0)) * xOffset),
 				(int) ((vidmode.height() - pHeight.get(0)) * yOffset)
 			);
 		} // the stack frame is popped automatically
 
 		// Make the OpenGL context current
-		glfwMakeContextCurrent(window);
+		glfwMakeContextCurrent(getHandler());
 				
 		// Enable v-sync
 		glfwSwapInterval(1);
 
 		// Make the window visible
-		glfwShowWindow(window);
+		glfwShowWindow(getHandler());
 		
 		// This line is critical for LWJGL's interoperation with GLFW's
 		// OpenGL context, or any context that is managed externally.
 		// LWJGL detects the context that is current in the current thread,
 		// creates the GLCapabilities instance and makes the OpenGL
 		// bindings available for use.
-		GL.createCapabilities();
+		capabilities = GL.createCapabilities();
 
 		// Set the clear color
-		glClearColor(0.2f, 0.7f, 1.0f, 1.0f);
+		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LESS);
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
+		
+		input = new Input();
 	}
 
-	public void renderFrame(Renderer renderer, boolean cameraOnDrone) {
+	public boolean renderFrame(Renderer renderer) {
 		// Make the OpenGL context current
-		glfwMakeContextCurrent(window);
-		
-		updateTime();
-
-		// Run the rendering unless the user has attempted to close
-		// the window or has pressed the ESCAPE key.
-		if (glfwWindowShouldClose(window)) {
-			renderer.release();
-			terminate();
-			return;
-		}
+		glfwMakeContextCurrent(getHandler());
+		GL.setCapabilities(capabilities);
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
 
-		renderer.render(cameraOnDrone);
+		renderer.render(this);
 		
-		glfwSwapBuffers(window); // swap the color buffers
-
-		// Poll for window events. The key callback above will only be
-		// invoked during this call.
-		glfwPollEvents();
+		glfwSwapBuffers(getHandler()); // swap the color buffers
+		Renderer.checkError();
+		
+		// Run the rendering unless the user has attempted to close
+		// the window or has pressed the ESCAPE key.
+		if (glfwWindowShouldClose(getHandler())) {
+			terminate();
+			return false;
+		}
+		return true;
 	}
 	
+	// Free the window callbacks and destroy the window
 	public void terminate() {
-		
-		// Free the window callbacks and destroy the window
-		glfwFreeCallbacks(window);
 		Renderer.checkError();
-		glfwDestroyWindow(window);
+		glfwFreeCallbacks(getHandler());
 		Renderer.checkError();
-		
-		// Terminate GLFW and free the error callback
-		glfwTerminate();
+		glfwDestroyWindow(getHandler());
 		Renderer.checkError();
-		glfwSetErrorCallback(null).free();
-		Renderer.checkError();
-	}
-	
-	public static void updateTime() {
-		previousTime = time;
-		time = glfwGetTime();
-	}
-	
-	public static double getDeltaTime() {
-		return time - previousTime;
 	}
 
 	public long getHandler() {
-		return window;
+		return windowHandle;
 	}
 	
-	public float getRatio() {
-		return (float) WIDTH / HEIGHT;
+	public Matrix4f getProjectionMatrix() {
+        float ratio;
+		try (MemoryStack stack = MemoryStack.stackPush()) {
+			long window = GLFW.glfwGetCurrentContext();
+			IntBuffer width = stack.mallocInt(1);
+			IntBuffer height = stack.mallocInt(1);
+			GLFW.glfwGetFramebufferSize(window, width, height);
+			ratio = (float) width.get() / (float) height.get();
+		}
+        return Matrix4f.perspective(FOV, ratio, NEAR, FAR);
+	}
+	
+	public Matrix4f getViewMatrix() {
+		return input.getViewMatrix();
+	}
+	
+	public boolean cameraIsOnDrone() {
+		return droneView;
+	}
+	
+	public String getTitle() {
+		return this.title;
 	}
 
 	/**

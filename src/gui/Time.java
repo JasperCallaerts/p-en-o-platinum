@@ -1,8 +1,9 @@
+package gui;
 
 
 import static org.lwjgl.glfw.GLFW.glfwGetTime;
 
-public class Timer {
+public class Time {
 	
 	// the starting time
 	private static double firstTime;
@@ -23,7 +24,7 @@ public class Timer {
 	private static double delta;
 	
 
-	public Timer() {
+	public static void initTime() {
 		lastTime = getTime();
 		firstTime = getTime();
 	}
