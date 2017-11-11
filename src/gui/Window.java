@@ -241,22 +241,17 @@ public class Window {
         	orientation = drone.getOrientation().convertToVector3f();
         	dronePosition = drone.getPosition().convertToVector3f();
         }
-        orientation = new Vector3f(orientation.z, -orientation.x, -orientation.y);
         
-        Matrix3f rollMatrix = new Matrix3f(new Vector3f(1, 0, 0), new Vector3f(0, (float) Math.cos(orientation.z), (float) Math.sin(orientation.z)), new Vector3f(0, (float) -Math.sin(orientation.z), (float) Math.cos(orientation.z)));
-        Matrix3f pitchMatrix = new Matrix3f(new Vector3f((float) Math.cos(orientation.y), 0, (float) -Math.sin(orientation.y)), new Vector3f(0, 1, 0), new Vector3f((float) Math.sin(orientation.y), 0, (float) Math.cos(orientation.y)));
-        Matrix3f yawMatrix = new Matrix3f(new Vector3f((float) Math.cos(orientation.x), (float) Math.sin(orientation.x), 0), new Vector3f((float) -Math.sin(orientation.x), (float) Math.cos(orientation.x), 0), new Vector3f(0, 0, 1));
+        Matrix3f pitchMatrix = new Matrix3f(new Vector3f(1, 0, 0), new Vector3f(0, (float) Math.cos(orientation.y), (float) -Math.sin(orientation.y)), new Vector3f(0, (float) Math.sin(orientation.y), (float) Math.cos(orientation.y)));
+        Matrix3f yawMatrix = new Matrix3f(new Vector3f((float) Math.cos(orientation.x), 0, (float) Math.sin(orientation.x)), new Vector3f(0, 1, 0), new Vector3f((float) -Math.sin(orientation.x), 0, (float) Math.cos(orientation.x)));
+        Matrix3f rollMatrix = new Matrix3f(new Vector3f((float) Math.cos(orientation.z), (float) Math.sin(orientation.z), 0), new Vector3f((float) -Math.sin(orientation.z), (float) Math.cos(orientation.z), 0), new Vector3f(0, 0, 1));
         		
-        Matrix3f transformationMatrix = rollMatrix.multiply(pitchMatrix).multiply(yawMatrix);
+        Matrix3f transformationMatrix = pitchMatrix.multiply(yawMatrix).multiply(rollMatrix);
         transformationMatrix = transformationMatrix.transpose();
         
         Vector3f right = transformationMatrix.multiply(new Vector3f(1,0,0));
         Vector3f up = transformationMatrix.multiply(new Vector3f(0,1,0));
         Vector3f look = transformationMatrix.multiply(new Vector3f(0,0,-1));
-        		
-//        Vector3f right = new Vector3f((float) Math.cos(orientation.x), 0, (float) -Math.sin(orientation.x));
-//		Vector3f up = new Vector3f((float) (Math.sin(orientation.y)*Math.sin(orientation.x)), (float) Math.cos(orientation.y), (float) (Math.sin(orientation.y)*Math.cos(orientation.x)));
-//		Vector3f look = up.cross(right).normalize();
 
 		return Matrix4f.viewMatrix(right, up, look, dronePosition);
 	}
