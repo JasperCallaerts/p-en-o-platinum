@@ -25,8 +25,8 @@ public class Main {
 
 		// initialize the windows
 		Window droneCam = new Window(1000, 1000, 0.5f, 0.4f, "bytestream window", false);
-		Window personView = new Window(960, 1000, 1f, 0.4f, "Drone simulator 2017", true);
 		Window droneView = new Window(960, 1000, 0.0f, 0.4f, "Drone simulator 2017", true);
+		Window personView = new Window(960, 1000, 1f, 0.4f, "Drone simulator 2017", true);
 //		Window textWindow = new Window(500, 500, 0.5f, 0.5f, "text window", true, droneCam); // Not implemented yet
 
 		// add the windows to graphics

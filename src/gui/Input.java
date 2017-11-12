@@ -26,8 +26,8 @@ public class Input {
 	private float yaw = 0;
 	private float pitch = 0;
 	
-    private static final float SPEED = 5f;
-    private static final float TURN_SPEED = 0.03f;
+    private static final float SPEED = 0.01f;
+    private static final float TURN_SPEED = 0.00003f;
     
     private Vector3f right;
     private Vector3f up;
