@@ -5,7 +5,6 @@ import gui.Graphics;
 import gui.Time;
 import gui.Window;
 import internal.*;
-import static org.lwjgl.glfw.GLFW.glfwMakeContextCurrent;
 
 import java.io.IOException;
 
@@ -20,23 +19,24 @@ public class Main {
 
 		// initialize graphics capabilities
 		Graphics graphics = new Graphics();
+		
+		// Cube needs graphics to be able to initialize cubes
+		Cube.setGraphics(graphics);
 
 		// initialize the windows
-		Window droneCam = new Window(1000, 1000, 0.5f, 0.4f, "bytestream window", true);
-//		Window personView = new Window(960, 1000, 1f, 0.4f, "Drone simulator 2017", true);
-//		Window droneView = new Window(960, 1000, 0.0f, 0.4f, "Drone simulator 2017", true);
+		Window droneCam = new Window(1000, 1000, 0.5f, 0.4f, "bytestream window", false);
+		Window personView = new Window(960, 1000, 1f, 0.4f, "Drone simulator 2017", true);
+		Window droneView = new Window(960, 1000, 0.0f, 0.4f, "Drone simulator 2017", true);
 //		Window textWindow = new Window(500, 500, 0.5f, 0.5f, "text window", true, droneCam); // Not implemented yet
 
 		// add the windows to graphics
 		graphics.addWindow("camera", droneCam);
-//		graphics.addWindow("third person view", personView);
-//		graphics.addWindow("drone view", droneView);
+		graphics.addWindow("third person view", personView);
+		graphics.addWindow("drone view", droneView);
 //		graphics.addWindow("textWindow", textWindow); // Not implemented yet
-
 		
-        // drone builder covers all the stuff involving building the drone, adjust parameters there
-		glfwMakeContextCurrent(droneCam.getHandler()); // moet voorlopig snoekie fixt het nog wel ;)
 		
+        // drone builder covers all the stuff involving building the drone, adjust parameters there		
         WorldBuilder worldBuilder = new WorldBuilder();
         Drone drone = worldBuilder.DRONE;
         AutoPilot autopilot = new AutoPilot();
@@ -67,14 +67,12 @@ public class Main {
         
         Block block0 = world.getRandomBlock();
         world.addWorldObject(block1);
-        
-        glfwMakeContextCurrent(org.lwjgl.system.MemoryUtil.NULL);// zie de makeContextCurrent hierboven ^
         // END for testing purposes
         
         // Put a world in the windows
         droneCam.initWorld(world, true);
-//        personView.initWorld(world, false);
-//        droneView.initWorld(world, true);
+        personView.initWorld(world, false);
+        droneView.initWorld(world, true);
       
         // set state
         boolean goalNotReached = true;
