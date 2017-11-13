@@ -44,7 +44,7 @@ public class Window {
 
 	private boolean droneView;  
 	
-    private static final float FOV = (float) Math.toRadians(60.0f);
+    private float FOV = (float) Math.toRadians(120.0f);
 	private static final float NEAR = 0.01f;
 	private static final float FAR = 1000.f;
 	
@@ -66,6 +66,8 @@ public class Window {
 	 * @param visible 
      */
 	public Window(int width, int height, float xOffset, float yOffset, String title, Vector3f color, boolean visible) {
+		if (visible)
+			FOV = FOV / 2f;
 		WIDTH = width;
 		HEIGHT = height;
 		this.title = title;

@@ -25,7 +25,7 @@ public class Main {
 		Cube.setGraphics(graphics);
 
 		// Construct the windows
-		Window droneCam = new Window(1000, 1000, 0.5f, 0.4f, "bytestream window", new Vector3f(1.0f, 1.0f, 1.0f), false);
+		Window droneCam = new Window(200, 200, 0.5f, 0.4f, "bytestream window", new Vector3f(1.0f, 1.0f, 1.0f), false);
 		Window droneView = new Window(960, 1000, 0.0f, 0.4f, "Drone simulator 2017", new Vector3f(1.0f, 1.0f, 1.0f), true);
 		Window personView = new Window(960, 1000, 1f, 0.4f, "Drone simulator 2017", new Vector3f(0.5f, 0.8f, 1.0f), true);
 //		Window textWindow = new Window(500, 500, 0.5f, 0.5f, "text window", new Vector3f(0.0f, 0.0f, 0.0f), true, droneCam); // Not implemented yet
