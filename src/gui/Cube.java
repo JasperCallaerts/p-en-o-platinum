@@ -1,6 +1,7 @@
 package gui;
 
 import internal.Vector;
+import math.Matrix3f;
 import math.Matrix4f;
 import math.Vector3f;
 
@@ -125,6 +126,22 @@ public class Cube{
 	
 	public Matrix4f getModelMatrix() {
 		return modelMatrix;
+	}
+	
+	public Matrix4f getAdvancedModelMatrix(Vector3f orientation) {
+		
+		Matrix3f pitchMatrix = new Matrix3f(new Vector3f(1, 0, 0), new Vector3f(0, (float) Math.cos(orientation.y), (float) -Math.sin(orientation.y)), new Vector3f(0, (float) Math.sin(orientation.y), (float) Math.cos(orientation.y)));
+        Matrix3f yawMatrix = new Matrix3f(new Vector3f((float) Math.cos(orientation.x), 0, (float) Math.sin(orientation.x)), new Vector3f(0, 1, 0), new Vector3f((float) -Math.sin(orientation.x), 0, (float) Math.cos(orientation.x)));
+        Matrix3f rollMatrix = new Matrix3f(new Vector3f((float) Math.cos(orientation.z), (float) Math.sin(orientation.z), 0), new Vector3f((float) -Math.sin(orientation.z), (float) Math.cos(orientation.z), 0), new Vector3f(0, 0, 1));
+        		
+        Matrix3f transformationMatrix = yawMatrix.multiply(pitchMatrix).multiply(rollMatrix);
+        transformationMatrix = transformationMatrix.transpose();
+        
+        Vector3f right = transformationMatrix.multiply(new Vector3f(1,0,0));
+        Vector3f up = transformationMatrix.multiply(new Vector3f(0, 1,0));
+        Vector3f look = transformationMatrix.multiply(new Vector3f(0,0, -1));
+        		
+		return modelMatrix.multiply(Matrix4f.viewMatrix(right, up, look, new Vector3f()));
 	}
 	
 	public Vector3f getPos() {

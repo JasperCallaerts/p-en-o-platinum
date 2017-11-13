@@ -107,12 +107,6 @@ public class Graphics {
 		return windows.get(key);
 	}
 
-	public void initWorld(World world, boolean droneCamera) {
-		for (String key: windows.keySet()) {
-			windows.get(key).initWorldWindow(world, droneCamera);
-		}
-	}
-
 	public boolean isTerminated() {
 		return this.terminated;
 	}

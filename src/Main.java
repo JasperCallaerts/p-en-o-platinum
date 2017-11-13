@@ -2,6 +2,7 @@ import Autopilot.AutopilotInputs;
 import Autopilot.AutopilotOutputs;
 import gui.Cube;
 import gui.Graphics;
+import gui.Settings;
 import gui.Time;
 import gui.Window;
 import internal.*;
@@ -25,7 +26,7 @@ public class Main {
 		Cube.setGraphics(graphics);
 
 		// Construct the windows
-		Window droneCam = new Window(200, 200, 0.5f, 0.4f, "bytestream window", new Vector3f(1.0f, 1.0f, 1.0f), false);
+		Window droneCam = new Window(200, 200, 0.5f, 0.4f, "bytestream window", new Vector3f(1.0f, 1.0f, 1.0f), true);
 		Window droneView = new Window(960, 1000, 0.0f, 0.4f, "Drone simulator 2017", new Vector3f(1.0f, 1.0f, 1.0f), true);
 		Window personView = new Window(960, 1000, 1f, 0.4f, "Drone simulator 2017", new Vector3f(0.5f, 0.8f, 1.0f), true);
 //		Window textWindow = new Window(500, 500, 0.5f, 0.5f, "text window", new Vector3f(0.0f, 0.0f, 0.0f), true, droneCam); // Not implemented yet
@@ -71,9 +72,9 @@ public class Main {
         // END for testing purposes
         
         // Initialize the windows
-        droneCam.initWorldWindow(world, true);
-        personView.initWorldWindow(world, false);
-        droneView.initWorldWindow(world, true);
+        droneCam.initWorldWindow(world, Settings.DRONE_CAM);
+        personView.initWorldWindow(world, Settings.INDEPENDENT_CAM);
+        droneView.initWorldWindow(world, Settings.DRONE_THIRD_PERSON_CAM);
 //        textWindow.initTextWindow(droneCam);
       
         // set state
