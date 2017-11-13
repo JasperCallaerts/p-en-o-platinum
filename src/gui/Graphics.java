@@ -22,7 +22,6 @@ import org.lwjgl.glfw.GLFWErrorCallback;
 import java.util.HashMap;
 
 import internal.World;
-import math.Vector3f;
 
 public class Graphics {
 	
@@ -48,8 +47,8 @@ public class Graphics {
 		glfwWindowHint(GLFW_SAMPLES, 4);
 	}
 	
-	public void addWindow(String key, int width, int height, float xOffset, float yOffset, String title, Vector3f color, boolean visible) {
-		windows.put(key, new Window(width, height, xOffset, yOffset, title, color, visible));
+	public void addWindow(String key, int width, int height, float xOffset, float yOffset, String title, boolean visible) {
+		windows.put(key, new Window(width, height, xOffset, yOffset, title, visible));
 	}
 	
 	public void addWindow(String key, Window window) {
@@ -109,7 +108,7 @@ public class Graphics {
 
 	public void initWorld(World world, boolean droneCamera) {
 		for (String key: windows.keySet()) {
-			windows.get(key).initWorldWindow(world, droneCamera);
+			windows.get(key).initWorld(world, droneCamera);
 		}
 	}
 
