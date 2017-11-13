@@ -9,6 +9,8 @@ import internal.*;
 import math.Vector3f;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Main {
 
@@ -49,33 +51,37 @@ public class Main {
         Drone drone = worldBuilder.DRONE;
         AutoPilot autopilot = new AutoPilot();
         World world = worldBuilder.createWorld();
+        
+        List<Block> blocks = new ArrayList<Block>();
 
-        // initialize second, third, fourth and fifth block, for testing purposes
-        Vector BLOCKPOS = new Vector(2.0f, 6.0f, -40.0f);
-    	Vector BLOCKPOS2 = new Vector(4.0f, 10.0f, -60.0f);
-    	Vector BLOCKPOS3 = new Vector(5.0f, 8.0f, -80.0f);
-    	Vector BLOCKPOS4 = new Vector(0.0f, 0.0f, -100.0f);
+        // INITIALIZE BLOCKS, for testing purposes
+        /*
+        float radius = 20f;
+        int nbOfBlocks = 10;
         Vector COLOR = new Vector(1.0f, 0.0f,0.0f);
-    	
-    	Block block1 = new Block(BLOCKPOS);
-        Cube cube1 = new Cube(BLOCKPOS.convertToVector3f(), COLOR.convertToVector3f());
-        block1.setAssocatedCube(cube1);
         
-        Block block2 = new Block(BLOCKPOS2);
-        Cube cube2 = new Cube(BLOCKPOS2.convertToVector3f(), COLOR.convertToVector3f());
-        block2.setAssocatedCube(cube2);
         
-        Block block3 = new Block(BLOCKPOS3);
-        Cube cube3 = new Cube(BLOCKPOS3.convertToVector3f(), COLOR.convertToVector3f());
-        block3.setAssocatedCube(cube3);
+        for (int i = 1; i < nbOfBlocks + 1; i++) {
+        	Vector position = new Vector(0.0f, (float)(radius - radius*Math.cos((2*Math.PI/(float)nbOfBlocks)*i)), -(float)(radius*Math.sin((2*Math.PI/(float)nbOfBlocks)*i)));
+        	Block block = new Block(position);
+        	Cube cube = new Cube(position.convertToVector3f(), COLOR.convertToVector3f());
+        	block.setAssocatedCube(cube);
+        	blocks.add(block);
+        }*/
         
-        Block block4 = new Block(BLOCKPOS4);
-        Cube cube4 = new Cube(BLOCKPOS4.convertToVector3f(), COLOR.convertToVector3f());
-        block4.setAssocatedCube(cube4);
+        Vector COLOR = new Vector(1.0f, 0.0f,0.0f);
+        BlockCoordinatesParser parser = new BlockCoordinatesParser(COORDINATES_FILEPATH);
+        for (Vector position : parser.getCoordinates()) {
+        	Block block = new Block(position);
+        	Cube cube = new Cube(position.convertToVector3f(), COLOR.convertToVector3f());
+        	block.setAssocatedCube(cube);
+        	blocks.add(block);
+        }
         
-        Block block0 = world.getRandomBlock();
-        world.addWorldObject(block1);
         // END for testing purposes
+        
+        world.addWorldObject(blocks.get(0));
+        world.addWorldObject(blocks.get(1));
         
         // Initialize the windows
         droneCam.initWindow(world, Settings.DRONE_CAM);
@@ -85,6 +91,7 @@ public class Main {
         sideView.initWindow(world, Settings.DRONE_SIDE_CAM);
 //        independentView.initWindow(world, Settings.INDEPENDENT_CAM);
 //        textWindow.initWindow(droneCam);
+
       
         // set state
         boolean goalNotReached = true;
@@ -138,29 +145,20 @@ public class Main {
                 }
 
             }else {
-            	// Entire else clause is for testing purposes only
             	
+            	// For testing purposes: add block after block, ensuring only two blocks exist at one time
+            	if (blocks.size() >= 1) {
+            		goalNotReached = true;
+            	}
             	
-            	if (world.hasWorldObject(block0)) {
-                	world.removeBlocks();
-                	world.addWorldObject(block1);
-                	world.addWorldObject(block2);
-                	goalNotReached = true;
-                }else if (world.hasWorldObject(block1)) {
-                	world.removeBlocks();
-                	world.addWorldObject(block2);
-                	world.addWorldObject(block3);
-                	goalNotReached = true;
-                }else if (world.hasWorldObject(block2)) {
-                	world.removeBlocks();
-                	world.addWorldObject(block3);
-                	world.addWorldObject(block4);
-                	goalNotReached = true;
-                }else if (world.hasWorldObject(block3)) {
-                	world.removeBlocks();
-                	world.addWorldObject(block4);
-                	goalNotReached = true;
-                }
+            	if(blocks.size() > 2){
+            		world.addWorldObject(blocks.get(2));
+            	}
+
+            	world.removeWorldObject(blocks.get(0));
+            	blocks.remove(0);
+            	
+                
             	
                 
             }
@@ -170,7 +168,7 @@ public class Main {
             long timeLeft = (long) (FRAME_MILLIS - Time.timeSinceLastUpdate());
             if(timeLeft>0)
                 Thread.sleep(timeLeft);
-            System.out.println(timeLeft);
+            //System.out.println(timeLeft);
             //4autopilot
 //            elapsedTime += TIME_STEP*STEPS_PER_ITERATION;
 
@@ -183,6 +181,7 @@ public class Main {
 	private final static float FRAMERATE = 20.0f;
 	private final static int STEPS_PER_ITERATION = Math.round((1/ FRAMERATE)/TIME_STEP);
 	private final static long FRAME_MILLIS = 50;
+	private final static String COORDINATES_FILEPATH = "src/internal/blockCoordinates.txt";
 
 	// Todo documentatie toevoegen (als je een katje bent)
 	private static class MainAutopilotInputs implements AutopilotInputs {
