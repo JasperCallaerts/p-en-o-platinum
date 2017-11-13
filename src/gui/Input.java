@@ -34,7 +34,7 @@ public class Input {
     private Vector3f look;
     
     Input() {
-    	position = new Vector3f(40f, 0f, -15f);
+    	position = new Vector3f(150f, 0f, -60f);
     	mouse = new Mouse(GLFW.glfwGetCurrentContext());
     	yaw = (float) Math.PI/2;
     }

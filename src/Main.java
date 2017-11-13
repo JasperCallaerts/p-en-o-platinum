@@ -5,6 +5,7 @@ import gui.Graphics;
 import gui.Time;
 import gui.Window;
 import internal.*;
+import math.Vector3f;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -25,11 +26,11 @@ public class Main {
 		// Cube needs graphics to be able to initialize cubes
 		Cube.setGraphics(graphics);
 
-		// initialize the windows
-		Window droneCam = new Window(1000, 1000, 0.5f, 0.4f, "bytestream window", false);
-		Window droneView = new Window(960, 1000, 0.0f, 0.4f, "Drone simulator 2017", true);
-		Window personView = new Window(960, 1000, 1f, 0.4f, "Drone simulator 2017", true);
-//		Window textWindow = new Window(500, 500, 0.5f, 0.5f, "text window", true, droneCam); // Not implemented yet
+		// Construct the windows
+		Window droneCam = new Window(200, 200, 0.5f, 0.4f, "bytestream window", new Vector3f(1.0f, 1.0f, 1.0f), false);
+		Window droneView = new Window(960, 1000, 0.0f, 0.4f, "Drone simulator 2017", new Vector3f(1.0f, 1.0f, 1.0f), true);
+		Window personView = new Window(960, 1000, 1f, 0.4f, "Drone simulator 2017", new Vector3f(0.5f, 0.8f, 1.0f), true);
+//		Window textWindow = new Window(500, 500, 0.5f, 0.5f, "text window", new Vector3f(0.0f, 0.0f, 0.0f), true, droneCam); // Not implemented yet
 
 		// add the windows to graphics
 		graphics.addWindow("camera", droneCam);
@@ -75,10 +76,11 @@ public class Main {
         world.addWorldObject(blocks.get(0));
         world.addWorldObject(blocks.get(1));
         
-        // Put a world in the windows
-        droneCam.initWorld(world, true);
-        personView.initWorld(world, false);
-        droneView.initWorld(world, true);
+        // Initialize the windows
+        droneCam.initWorldWindow(world, true);
+        personView.initWorldWindow(world, false);
+        droneView.initWorldWindow(world, true);
+        //textWindow.initTextWindow(droneCam);
       
         // set state
         boolean goalNotReached = true;
@@ -98,6 +100,7 @@ public class Main {
             
             // render the windows and terminate graphics if all windows are closed
             graphics.renderWindows();
+//            System.out.println(FRAME_MILLIS - Time.timeSinceLastUpdate());
             
             // exit the loop early if graphics is terminated
             if (graphics.isTerminated())

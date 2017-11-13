@@ -11,7 +11,7 @@ public class AngleOfAttackException extends IllegalStateException {
      * @param causeMessage the message to specify the cause
      * @param causeWing the wing that caused the exception
      */
-    public AngleOfAttackException(String causeMessage, Wing causeWing){
+    public AngleOfAttackException(String causeMessage, WingPhysX causeWing){
         this.causeMessage = causeMessage;
         this.causeWing = causeWing;
     }
@@ -28,7 +28,7 @@ public class AngleOfAttackException extends IllegalStateException {
      * Constructor for the angle of attack exception
      * @param causeWing the wing that caused the exception
      */
-    public AngleOfAttackException(Wing causeWing){
+    public AngleOfAttackException(WingPhysX causeWing){
         this(null, causeWing);
     }
 
@@ -44,7 +44,7 @@ public class AngleOfAttackException extends IllegalStateException {
      * Getter for the wing that caused the exception
      * @return a wing object containing the wing that caused the exception
      */
-    public Wing getCauseWing(){
+    public WingPhysX getCauseWing(){
         return this.causeWing;
     }
 
@@ -52,7 +52,7 @@ public class AngleOfAttackException extends IllegalStateException {
     /**
      * Variable that stores the wing that caused the exception
      */
-    private Wing causeWing;
+    private WingPhysX causeWing;
 
     /**
      * variable that contains the message of the exception
