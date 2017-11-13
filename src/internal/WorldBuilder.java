@@ -11,7 +11,8 @@ public class WorldBuilder {
 
     public Drone DRONE = new DroneBuilder(true).createDrone();
 
-    public final static Vector BLOCKPOS = new Vector(0.0f, 3.0f, -20.0f);
+    // Deprecated: all blocks are generated in main loop
+    //public final static Vector BLOCKPOS = new Vector(0.0f, 0.489f, -6.9098f);
     public final static Vector COLOR = new Vector(1.0f, 0.0f,0.0f);
 
     public WorldBuilder(){
@@ -19,12 +20,12 @@ public class WorldBuilder {
     }
 
     public World createWorld(){
-        Block block1 = new Block(BLOCKPOS);
-        Cube cube1 = new Cube(BLOCKPOS.convertToVector3f(), COLOR.convertToVector3f());
-        block1.setAssocatedCube(cube1);
+        //Block block1 = new Block(BLOCKPOS);
+        //Cube cube1 = new Cube(BLOCKPOS.convertToVector3f(), COLOR.convertToVector3f());
+        //block1.setAssocatedCube(cube1);
 
         World world = new World();
-        world.addWorldObject(block1);
+        //world.addWorldObject(block1);
         world.addWorldObject(DRONE);
 
         return world;
