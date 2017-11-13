@@ -53,23 +53,23 @@ public class TestbedMain {
         Vector BLOCKPOS4 = new Vector(0.0f, 0.0f, -100.0f);
         Vector COLOR = new Vector(1.0f, 0.0f,0.0f);
 
-        Block block1 = new Block(BLOCKPOS);
+        block1 = new Block(BLOCKPOS);
         Cube cube1 = new Cube(BLOCKPOS.convertToVector3f(), COLOR.convertToVector3f());
         block1.setAssocatedCube(cube1);
 
-        Block block2 = new Block(BLOCKPOS2);
+        block2 = new Block(BLOCKPOS2);
         Cube cube2 = new Cube(BLOCKPOS2.convertToVector3f(), COLOR.convertToVector3f());
         block2.setAssocatedCube(cube2);
 
-        Block block3 = new Block(BLOCKPOS3);
+        block3 = new Block(BLOCKPOS3);
         Cube cube3 = new Cube(BLOCKPOS3.convertToVector3f(), COLOR.convertToVector3f());
         block3.setAssocatedCube(cube3);
 
-        Block block4 = new Block(BLOCKPOS4);
+        block4 = new Block(BLOCKPOS4);
         Cube cube4 = new Cube(BLOCKPOS4.convertToVector3f(), COLOR.convertToVector3f());
         block4.setAssocatedCube(cube4);
 
-        Block block0 = world.getRandomBlock();
+        block0 = world.getRandomBlock();
         world.addWorldObject(block1);
         // END for testing purposes
 
@@ -85,21 +85,17 @@ public class TestbedMain {
     }
 
 
-    public AutopilotInputs testbedStep(AutopilotOutputs autopilotOutputs) throws InterruptedException {
-        MainAutopilotInputs autopilotInputs = null;
+    public AutopilotInputs testbedStep(AutopilotOutputs autopilotOutputs) throws InterruptedException, IOException {
+        AutopilotInputs autopilotInputs = null;
         // update time
         Time.update();
 
-
-        // exit the loop early if graphics is terminated
-        // if (graphics.isTerminated())
-            //break;
-
-        //System.out.println(drone.getRoll()*180/Math.PI);
-
-
+        // warning: assure every iteration terminates with a non null autopilotInputs, the
+        // writer and handler can't handle it
         if (goalNotReached && !droneCam.isTerminated()) {
+            System.out.println("entered the next state if");
             //pass the outputs to the drone
+            byte[] oldImage = droneCam.getCameraView();
             try {
                 // elapsedTime replace by getTimePassed()
                 if(!firstRun) {
@@ -117,46 +113,39 @@ public class TestbedMain {
 
             } catch (SimulationEndedException e) {
                 goalNotReached = false;
+
+                System.out.println("removing blocks");
+                // Entire else clause is for testing purposes only
+                if (world.hasWorldObject(block0)) {
+                    world.removeBlocks();
+                    world.addWorldObject(block1);
+                    world.addWorldObject(block2);
+                    goalNotReached = true;
+                }else if (world.hasWorldObject(block1)) {
+                    world.removeBlocks();
+                    world.addWorldObject(block2);
+                    world.addWorldObject(block3);
+                    goalNotReached = true;
+                }else if (world.hasWorldObject(block2)) {
+                    world.removeBlocks();
+                    world.addWorldObject(block3);
+                    world.addWorldObject(block4);
+                    goalNotReached = true;
+                }else if (world.hasWorldObject(block3)) {
+                    world.removeBlocks();
+                    world.addWorldObject(block4);
+                    goalNotReached = true;
+                }
+                autopilotInputs = new MainAutopilotInputs(drone, oldImage, (float) Time.getTimePassed());
             } catch (IOException e) {
                 System.out.println("IO exception");
             }
-
-        }else {
-            // Entire else clause is for testing purposes only
-
-
-            if (world.hasWorldObject(block0)) {
-                world.removeBlocks();
-                world.addWorldObject(block1);
-                world.addWorldObject(block2);
-                goalNotReached = true;
-            }else if (world.hasWorldObject(block1)) {
-                world.removeBlocks();
-                world.addWorldObject(block2);
-                world.addWorldObject(block3);
-                goalNotReached = true;
-            }else if (world.hasWorldObject(block2)) {
-                world.removeBlocks();
-                world.addWorldObject(block3);
-                world.addWorldObject(block4);
-                goalNotReached = true;
-            }else if (world.hasWorldObject(block3)) {
-                world.removeBlocks();
-                world.addWorldObject(block4);
-                goalNotReached = true;
-            }
-
-
         }
-//            long endTime = System.currentTimeMillis();
-//            long timeDiff = endTime - startTime;
-//            long timeLeft = FRAME_MILLIS - timeDiff;
+
         long timeLeft = (long) (FRAME_MILLIS - Time.timeSinceLastUpdate());
         if(timeLeft>0)
             Thread.sleep(timeLeft);
         System.out.println(timeLeft);
-        //4autopilot
-//            elapsedTime += TIME_STEP*STEPS_PER_ITERATION;
 
         return autopilotInputs;
     }
@@ -168,6 +157,7 @@ public class TestbedMain {
     public boolean isFirstRun() {
         return firstRun;
     }
+
 
     // configuration for 20 fps
     private final static float TIME_STEP = 0.001f;

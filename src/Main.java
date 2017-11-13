@@ -16,7 +16,7 @@ public class Main {
 	 * @param args
 	 * @author Martijn Sauwens
 	 */
-	public void main(String[] args) throws IOException, InterruptedException {
+	public static void main(String[] args) throws IOException, InterruptedException {
 
 		// initialize graphics capabilities
 		Graphics graphics = new Graphics();

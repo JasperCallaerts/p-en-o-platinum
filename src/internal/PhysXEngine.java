@@ -428,7 +428,7 @@ public class PhysXEngine {
      * @author Martijn Sauwens
      */
     public Vector getTotalExternalForcesWorld(Vector thrustVector, Vector orientation, Vector rotation, Vector velocity) {
-        System.out.println("Velocity " + velocity);
+
         // calculate the force exerted on the wings
         WingPhysX[] wingArray = this.getWingArray();
         int nbOfWings = wingArray.length;
@@ -439,7 +439,7 @@ public class PhysXEngine {
         }
 
         Vector totalLift = Vector.sumVectorArray(liftVectors);
-        System.out.println("total lift " + totalLift);
+
         // transform the thrust vector of the drone to the world axis
         Vector thrust = droneOnWorld(thrustVector, orientation);
 
@@ -841,7 +841,7 @@ public class PhysXEngine {
 
         // first get the point where the total external forces are larger than zero
         while(! positiveLift) {
-            System.out.println("external forces " + PhysXEngine.this.getTotalExternalForcesWorld(zeroThrust, orientation, new Vector(), new Vector(0,0, -velocity)));
+            //System.out.println("external forces " + PhysXEngine.this.getTotalExternalForcesWorld(zeroThrust, orientation, new Vector(), new Vector(0,0, -velocity)));
             //System.out.println("Velocity: " + velocity);
             if(PhysXEngine.this.getTotalExternalForcesWorld(zeroThrust, new Vector(), new Vector(), new Vector(0,0, -velocity)).getyValue() > 0.0f) {
                 positiveLift = true;
