@@ -42,13 +42,14 @@ public class Window {
 	private Input input;
 	private ShaderProgram program;
 	
-    private float FOV = (float) Math.toRadians(120.0f);
+    private static float FOV = (float) Math.toRadians(120.0f);
 	private static final float NEAR = 0.01f;
 	private static final float FAR = 1000.f;
 	
 	private String title;
 
 	private Matrix4f viewMatrix;
+
 	private Matrix4f projectionMatrix;
 
 	private World world;
@@ -147,13 +148,12 @@ public class Window {
 			FOV = FOV / 2f;
 		
 		glfwMakeContextCurrent(getHandler());
-		
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LESS);
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
 		
-		program = new ShaderProgram(false, "resources/3dWorld.vert", "resources/3dWorld.frag");	
+		program = new ShaderProgram(false, "resources/default.vert", "resources/default.frag");	
 
         program.init();
         
@@ -179,15 +179,14 @@ public class Window {
         
 		if (setting == Settings.INDEPENDENT_CAM)
 			glfwSetInputMode(getHandler(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-		
 		glfwMakeContextCurrent(NULL);
 	}
 
 	public void render() {
-		if (this.uses3d())
-			renderFrame();
-		else
+		if (setting == Settings.TEXT_WINDOW)
 			renderText();
+		else
+			renderFrame();
 
 		// Return false if the user has attempted to close
 		// the window or has pressed the ESCAPE key.
@@ -198,15 +197,7 @@ public class Window {
 	}
 	
 	private void renderText() {
-		
-		GL.setCapabilities(capabilities);
-		glClear(GL_COLOR_BUFFER_BIT);
-		program.bind();
-		
 		// TODO maak een window met text ipv 3d graphics
-		
-		program.unbind();
-		glfwSwapBuffers(getHandler());
 	}
 	
 	private void renderFrame() {
@@ -242,11 +233,12 @@ public class Window {
 		glfwFreeCallbacks(getHandler());
 		glfwDestroyWindow(getHandler());
 		
-		if (uses3d()) {
-			for (WorldObject object: world.getObjectSet()) {
-	    		object.getAssociatedCube().delete();
-	    	}
-		}
+		/**
+	     * Releases in use OpenGL resources.
+	     */
+		for (WorldObject object: world.getObjectSet()) {
+    		object.getAssociatedCube().delete();
+    	}
 		
 		terminated = true;
 	}
@@ -319,7 +311,7 @@ public class Window {
         Matrix3f yawMatrix = new Matrix3f(new Vector3f((float) Math.cos(orientation.x), 0, (float) Math.sin(orientation.x)), new Vector3f(0, 1, 0), new Vector3f((float) -Math.sin(orientation.x), 0, (float) Math.cos(orientation.x)));
         Matrix3f rollMatrix = new Matrix3f(new Vector3f((float) Math.cos(orientation.z), (float) Math.sin(orientation.z), 0), new Vector3f((float) -Math.sin(orientation.z), (float) Math.cos(orientation.z), 0), new Vector3f(0, 0, 1));
         		
-        Matrix3f transformationMatrix = yawMatrix.multiply(pitchMatrix).multiply(rollMatrix);
+        Matrix3f transformationMatrix = pitchMatrix.multiply(yawMatrix).multiply(rollMatrix);
         transformationMatrix = transformationMatrix.transpose();
         
         Vector3f right = transformationMatrix.multiply(new Vector3f(1,0,0));
@@ -330,9 +322,17 @@ public class Window {
 	}
 	
 	public Matrix4f getProjectionMatrix() {
-        return this.projectionMatrix;
+        float ratio;
+		try (MemoryStack stack = MemoryStack.stackPush()) {
+			long window = GLFW.glfwGetCurrentContext();
+			IntBuffer width = stack.mallocInt(1);
+			IntBuffer height = stack.mallocInt(1);
+			GLFW.glfwGetFramebufferSize(window, width, height);
+			ratio = (float) width.get() / (float) height.get();
+		}
+        return Matrix4f.perspective(FOV, ratio, NEAR, FAR);
 	}
-	
+
 	public boolean uses3d() {
 		if (setting == Settings.TEXT_WINDOW)
 			return false;

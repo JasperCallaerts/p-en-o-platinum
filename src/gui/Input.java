@@ -32,7 +32,7 @@ public class Input {
     private Vector3f right = new Vector3f(1, 0, 0);
     private Vector3f up = new Vector3f(0, 1, 0);
     private Vector3f look = new Vector3f(0, 0, -1);
-    
+
     Input(Settings setting) {
     	switch (setting) {
     	case DRONE_TOP_DOWN_CAM: 

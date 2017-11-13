@@ -92,7 +92,6 @@ public class Main {
 //        independentView.initWindow(world, Settings.INDEPENDENT_CAM);
 //        textWindow.initWindow(droneCam);
 
-      
         // set state
         boolean goalNotReached = true;
         boolean configuredAutopilot = false;
@@ -111,7 +110,6 @@ public class Main {
             
             // render the windows and terminate graphics if all windows are closed
             graphics.renderWindows();
-//            System.out.println(FRAME_MILLIS - Time.timeSinceLastUpdate());
             
             // exit the loop early if graphics is terminated
             if (graphics.isTerminated())
