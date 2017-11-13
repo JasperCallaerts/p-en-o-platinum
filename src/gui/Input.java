@@ -29,20 +29,37 @@ public class Input {
     private static final float SPEED = 0.01f;
     private static final float TURN_SPEED = 0.00003f;
     
-    private Vector3f right;
-    private Vector3f up;
-    private Vector3f look;
+    private Vector3f right = new Vector3f(1, 0, 0);
+    private Vector3f up = new Vector3f(0, 1, 0);
+    private Vector3f look = new Vector3f(0, 0, -1);
     
-    Input() {
-    	position = new Vector3f(150f, 0f, -60f);
+    Input(Settings setting) {
+    	switch (setting) {
+    	case DRONE_TOP_DOWN_CAM: 
+    		position = new Vector3f(0f, 80f, -60f);
+    		yaw = (float) Math.PI/2;
+    		pitch = (float) -Math.PI/2;
+    		break;
+    	case DRONE_SIDE_CAM: 
+    		position = new Vector3f(80f, 0f, -60f);
+    		yaw = (float) Math.PI/2;			
+    		break;
+    	default: position = new Vector3f();
+    		break;
+    	}
+    	
     	mouse = new Mouse(GLFW.glfwGetCurrentContext());
-    	yaw = (float) Math.PI/2;
+    	
+    	right = new Vector3f((float) Math.cos(yaw), 0, (float) -Math.sin(yaw));
+		up = new Vector3f((float) (Math.sin(pitch)*Math.sin(yaw)), (float) Math.cos(pitch), (float) (Math.sin(pitch)*Math.cos(yaw)));
+		look = up.cross(right);
+    	
     }
 
     /**
      * Processes input.
      */
-	private void processInput() {
+	public void processInput() {
 		
 		double delta = Time.getDelta();
 		
@@ -78,7 +95,6 @@ public class Input {
 	}
 	
 	public Matrix4f getViewMatrix() {
-		processInput();
 		return Matrix4f.viewMatrix(right, up, look, position);
 	}
 	

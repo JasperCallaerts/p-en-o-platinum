@@ -82,13 +82,14 @@ public class HSVconverter {
 			hsv[1] = delta/max;
 		else{
 			hsv[1] = 0;
-			hsv[0] = -1;
 			return hsv;
 		}
 		if(r == max)
-			hsv[0] = (g - b)/delta;			// between yellow & magenta
+			hsv[0] = ((g - b)/delta)%6;			// between yellow & magenta
 		else if(g == max)
-			hsv[0] = 2 + (b - r) / delta;	// between cyan & yellow
+			hsv[0] = 2 + (b - r) / delta;    // between cyan & yellow
+		else if(delta == 0)
+			hsv[0] = 0;
 		else
 			hsv[0] = 4 + (b - r) / delta;	// between magenta & cyan
 		

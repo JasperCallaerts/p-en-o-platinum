@@ -1,14 +1,11 @@
 package gui;
 
 import internal.Vector;
-import math.Matrix3f;
 import math.Matrix4f;
 import math.Vector3f;
 
 import static org.lwjgl.glfw.GLFW.glfwMakeContextCurrent;
 import static org.lwjgl.system.MemoryUtil.NULL;
-
-import internal.HSVconverter;
 
 public class Cube{
 	
@@ -94,7 +91,7 @@ public class Cube{
 	}
 	
 	public Cube(Vector3f position, Vector3f colour) {
-		setColours(HSVconverter.RGBtoHSV(colour.x, colour.y, colour.z));
+		setColours(colour);
 		
 		for (String key: g.windows.keySet()) {
 			glfwMakeContextCurrent(g.windows.get(key).getHandler());
@@ -106,7 +103,7 @@ public class Cube{
 		this.position = position;
 		modelMatrix = Matrix4f.translate(position.x, position.y, position.z);
 	}
-	
+
 	public void render() {
 		mesh.render();
 	}
@@ -128,33 +125,17 @@ public class Cube{
 		return modelMatrix;
 	}
 	
-	public Matrix4f getAdvancedModelMatrix(Vector3f orientation) {
-		
-		Matrix3f pitchMatrix = new Matrix3f(new Vector3f(1, 0, 0), new Vector3f(0, (float) Math.cos(orientation.y), (float) -Math.sin(orientation.y)), new Vector3f(0, (float) Math.sin(orientation.y), (float) Math.cos(orientation.y)));
-        Matrix3f yawMatrix = new Matrix3f(new Vector3f((float) Math.cos(orientation.x), 0, (float) Math.sin(orientation.x)), new Vector3f(0, 1, 0), new Vector3f((float) -Math.sin(orientation.x), 0, (float) Math.cos(orientation.x)));
-        Matrix3f rollMatrix = new Matrix3f(new Vector3f((float) Math.cos(orientation.z), (float) Math.sin(orientation.z), 0), new Vector3f((float) -Math.sin(orientation.z), (float) Math.cos(orientation.z), 0), new Vector3f(0, 0, 1));
-        		
-        Matrix3f transformationMatrix = yawMatrix.multiply(pitchMatrix).multiply(rollMatrix);
-        transformationMatrix = transformationMatrix.transpose();
-        
-        Vector3f right = transformationMatrix.multiply(new Vector3f(1,0,0));
-        Vector3f up = transformationMatrix.multiply(new Vector3f(0, 1,0));
-        Vector3f look = transformationMatrix.multiply(new Vector3f(0,0, -1));
-        		
-		return modelMatrix.multiply(Matrix4f.viewMatrix(right, up, look, new Vector3f()));
-	}
-	
 	public Vector3f getPos() {
 		return this.position;
 	}
 	
-	private void setColours(float[] HSV) {
-		Vector3f posY = Vector3f.ArrayToVector3f(HSVconverter.HSVtoRGB(HSV[0], HSV[1], 1.00f * HSV[2]));
-		Vector3f negY = Vector3f.ArrayToVector3f(HSVconverter.HSVtoRGB(HSV[0], HSV[1], 0.15f * HSV[2]));
-		Vector3f posX = Vector3f.ArrayToVector3f(HSVconverter.HSVtoRGB(HSV[0], HSV[1], 0.85f * HSV[2]));
-		Vector3f negX = Vector3f.ArrayToVector3f(HSVconverter.HSVtoRGB(HSV[0], HSV[1], 0.30f * HSV[2]));
-		Vector3f posZ = Vector3f.ArrayToVector3f(HSVconverter.HSVtoRGB(HSV[0], HSV[1], 0.70f * HSV[2]));
-		Vector3f negZ = Vector3f.ArrayToVector3f(HSVconverter.HSVtoRGB(HSV[0], HSV[1], 0.45f * HSV[2]));
+	private void setColours(Vector3f colour) {
+		Vector3f posY = colour.scale(1.00f);
+		Vector3f negY = colour.scale(0.15f);
+		Vector3f posX = colour.scale(0.85f);
+		Vector3f negX = colour.scale(0.30f);
+		Vector3f posZ = colour.scale(0.70f);
+		Vector3f negZ = colour.scale(0.45f);
 		
 		colours = new float[]{
 				posZ.x, posZ.y, posZ.z,

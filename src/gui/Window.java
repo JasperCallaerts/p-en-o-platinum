@@ -121,13 +121,12 @@ public class Window {
 
 		// Set the clear color
 		glClearColor(color.x, color.y, color.z, 1.0f);
-		
-		input = new Input();
         
 		glfwMakeContextCurrent(NULL);
 	}
 	
-	public void initTextWindow(Window window) {
+	public void initWindow(Window window) {
+		this.setting = Settings.TEXT_WINDOW;
 		this.dependableWindow = window;
 		
 		glfwMakeContextCurrent(getHandler());
@@ -136,10 +135,12 @@ public class Window {
 
         program.init();
         
+        input = new Input(setting);
+        
         glfwMakeContextCurrent(NULL);
 	}
 	
-	public void initWorldWindow(World world, Settings setting) {
+	public void initWindow(World world, Settings setting) {
 		this.setting = setting;
 		this.world = world;
 		if (setting != Settings.DRONE_CAM)
@@ -155,6 +156,8 @@ public class Window {
 		program = new ShaderProgram(false, "resources/3dWorld.vert", "resources/3dWorld.frag");	
 
         program.init();
+        
+        input = new Input(setting);
         
         try {
 			program.createUniform("projectionMatrix");
@@ -211,6 +214,8 @@ public class Window {
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the buffers
 
+		if (setting == Settings.INDEPENDENT_CAM)
+			input.processInput();
 		updateMatrices();
 	
 		program.bind();
@@ -221,7 +226,7 @@ public class Window {
         	if (object.getClass() == Block.class)
         		program.setUniform("modelMatrix", object.getAssociatedCube().getModelMatrix());
         	else 
-        		program.setUniform("modelMatrix", object.getAssociatedCube().getAdvancedModelMatrix(((Drone) object).getOrientation().convertToVector3f().negate()));
+        		program.setUniform("modelMatrix", getAdvancedModelMatrix(((Drone) object).getOrientation().convertToVector3f().negate(), object.getAssociatedCube().getModelMatrix()));
     		object.getAssociatedCube().render();
     	}
 		
@@ -255,17 +260,35 @@ public class Window {
 	}
 	
 	public void updateMatrices() {
-		if (setting == Settings.DRONE_CAM)
-			viewMatrix = getDroneView();
-		else if (setting == Settings.INDEPENDENT_CAM)
-			viewMatrix = input.getViewMatrix();
-		else if (setting == Settings.DRONE_THIRD_PERSON_CAM)
-			viewMatrix = getThirdPersonView();
+		switch (setting) {
+		case DRONE_CAM: viewMatrix = getDroneView();
+						break;
+		case DRONE_CHASE_CAM: viewMatrix = getChaseView();
+						break;
+		default: viewMatrix = input.getViewMatrix();
+			break;
+		}
 		
 		projectionMatrix = getProjectionMatrix();
 	}
 	
-	public Matrix4f getThirdPersonView() {
+	public Matrix4f getAdvancedModelMatrix(Vector3f orientation, Matrix4f modelMatrix) {
+		
+		Matrix3f pitchMatrix = new Matrix3f(new Vector3f(1, 0, 0), new Vector3f(0, (float) Math.cos(orientation.y), (float) -Math.sin(orientation.y)), new Vector3f(0, (float) Math.sin(orientation.y), (float) Math.cos(orientation.y)));
+        Matrix3f yawMatrix = new Matrix3f(new Vector3f((float) Math.cos(orientation.x), 0, (float) Math.sin(orientation.x)), new Vector3f(0, 1, 0), new Vector3f((float) -Math.sin(orientation.x), 0, (float) Math.cos(orientation.x)));
+        Matrix3f rollMatrix = new Matrix3f(new Vector3f((float) Math.cos(orientation.z), (float) Math.sin(orientation.z), 0), new Vector3f((float) -Math.sin(orientation.z), (float) Math.cos(orientation.z), 0), new Vector3f(0, 0, 1));
+        		
+        Matrix3f transformationMatrix = yawMatrix.multiply(pitchMatrix).multiply(rollMatrix);
+        transformationMatrix = transformationMatrix.transpose();
+        
+        Vector3f right = transformationMatrix.multiply(new Vector3f(1,0,0));
+        Vector3f up = transformationMatrix.multiply(new Vector3f(0, 1,0));
+        Vector3f look = transformationMatrix.multiply(new Vector3f(0,0, -1));
+        
+		return modelMatrix.multiply(Matrix4f.viewMatrix(right, up, look, new Vector3f()));
+	}
+	
+	public Matrix4f getChaseView() {
 		Vector3f orientation = new Vector3f();
 		Vector3f dronePosition = new Vector3f();
         for (Drone drone: world.getDroneSet()) {
@@ -311,9 +334,9 @@ public class Window {
 	}
 	
 	public boolean uses3d() {
-		if (dependableWindow == null)
-			return true;
-		return false;
+		if (setting == Settings.TEXT_WINDOW)
+			return false;
+		return true;
 	}
 	
 	public String getTitle() {

@@ -26,15 +26,21 @@ public class Main {
 		Cube.setGraphics(graphics);
 
 		// Construct the windows
-		Window droneCam = new Window(200, 200, 0.5f, 0.4f, "bytestream window", new Vector3f(1.0f, 1.0f, 1.0f), true);
-		Window droneView = new Window(960, 1000, 0.0f, 0.4f, "Drone simulator 2017", new Vector3f(1.0f, 1.0f, 1.0f), true);
-		Window personView = new Window(960, 1000, 1f, 0.4f, "Drone simulator 2017", new Vector3f(0.5f, 0.8f, 1.0f), true);
-//		Window textWindow = new Window(500, 500, 0.5f, 0.5f, "text window", new Vector3f(0.0f, 0.0f, 0.0f), true, droneCam); // Not implemented yet
+		Window droneCam = new Window(200, 200, 0.5f, 0.4f, "bytestream window", new Vector3f(1.0f, 1.0f, 1.0f), false);
+		Window topDownView = new Window(960, 510, 1f, 0.05f, "Top down view", new Vector3f(1.0f, 1.0f, 1.0f), true);
+		Window sideView = new Window(960, 510, 1f, 1f, "Side view", new Vector3f(1.0f, 1.0f, 1.0f), true);
+		Window chaseView = new Window(960, 510, 0f, 1f, "Chase view", new Vector3f(1.0f, 1.0f, 1.0f), true);
+		Window droneView = new Window(960, 510, 0.0f, 0.05f, "Drone view", new Vector3f(1.0f, 1.0f, 1.0f), true);
+//		Window independentView = new Window(960, 1000, 1f, 0.4f, "Independent camera", new Vector3f(0.5f, 0.8f, 1.0f), true);
+//		Window textWindow = new Window(500, 500, 0.5f, 0.5f, "text window", new Vector3f(0.0f, 0.0f, 0.0f), true); // Not implemented yet
 
 		// add the windows to graphics
-		graphics.addWindow("camera", droneCam);
-		graphics.addWindow("third person view", personView);
-		graphics.addWindow("drone view", droneView);
+		graphics.addWindow("bytestream window", droneCam);
+		graphics.addWindow("Drone view", droneView);
+		graphics.addWindow("Top down view", topDownView);
+		graphics.addWindow("Side view", sideView);
+		graphics.addWindow("Chase view", chaseView);
+//		graphics.addWindow("independent view", independentView);
 //		graphics.addWindow("textWindow", textWindow); // Not implemented yet
 		
 		
@@ -72,10 +78,13 @@ public class Main {
         // END for testing purposes
         
         // Initialize the windows
-        droneCam.initWorldWindow(world, Settings.DRONE_CAM);
-        personView.initWorldWindow(world, Settings.INDEPENDENT_CAM);
-        droneView.initWorldWindow(world, Settings.DRONE_THIRD_PERSON_CAM);
-//        textWindow.initTextWindow(droneCam);
+        droneCam.initWindow(world, Settings.DRONE_CAM);
+        droneView.initWindow(world, Settings.DRONE_CAM);
+        topDownView.initWindow(world, Settings.DRONE_TOP_DOWN_CAM);
+        chaseView.initWindow(world, Settings.DRONE_CHASE_CAM);
+        sideView.initWindow(world, Settings.DRONE_SIDE_CAM);
+//        independentView.initWindow(world, Settings.INDEPENDENT_CAM);
+//        textWindow.initWindow(droneCam);
       
         // set state
         boolean goalNotReached = true;

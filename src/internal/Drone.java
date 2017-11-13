@@ -42,7 +42,7 @@ public class Drone implements WorldObject {
 		this.setRotationVector(rotationVector);
 
 		// the cube associated with the drone
-		this.setAssociatedCube(new Cube(position.convertToVector3f(), new Vector3f()));
+		this.setAssociatedCube(new Cube(position.convertToVector3f(), new Vector3f(0f, 0f, 1f)));
 		// TODO config stream
 
 	}
