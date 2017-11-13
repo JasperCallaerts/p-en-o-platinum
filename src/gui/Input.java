@@ -20,21 +20,23 @@ import math.Vector3f;
 
 public class Input {
 	
-    private Vector3f position = new Vector3f();
+    private Vector3f position;
 	private Mouse mouse;
 
 	private float yaw = 0;
 	private float pitch = 0;
 	
-    private static final float SPEED = 4f;
-    private static final float TURN_SPEED = 0.01f;
+    private static final float SPEED = 0.01f;
+    private static final float TURN_SPEED = 0.00003f;
     
     private Vector3f right;
     private Vector3f up;
     private Vector3f look;
     
     Input() {
+    	position = new Vector3f(150f, 0f, -60f);
     	mouse = new Mouse(GLFW.glfwGetCurrentContext());
+    	yaw = (float) Math.PI/2;
     }
 
     /**
@@ -80,7 +82,7 @@ public class Input {
 		return Matrix4f.viewMatrix(right, up, look, position);
 	}
 	
-	private boolean isKeyPressed(int keyCode) {
+	static boolean isKeyPressed(int keyCode) {
 		return glfwGetKey(GLFW.glfwGetCurrentContext(), keyCode) == GLFW_PRESS;
 	}
 }

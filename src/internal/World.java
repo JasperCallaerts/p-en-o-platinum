@@ -67,6 +67,22 @@ public class World {
 	}
 	
 	/**
+	 * @author Anthony Rathe
+	 */
+	public void removeBlocks() {
+		for (Block block : this.getBlockSet()) {
+			removeWorldObject(block);
+		}
+	}
+	
+	public Block getRandomBlock() {
+		for (Block block : this.getBlockSet()) {
+			return block;
+		}
+		return null;
+	}
+	
+	/**
 	 * Method that checks whether the world contains a given object or not
 	 * @param object the object to be found in the world
 	 * @author anthonyrathe

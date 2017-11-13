@@ -24,6 +24,7 @@ import java.nio.IntBuffer;
 import org.lwjgl.system.MemoryUtil;
 
 public class Mesh {
+	
 	private int vao;
 	private int posvbo;
 	private int colvbo;

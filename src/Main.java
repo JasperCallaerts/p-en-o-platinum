@@ -1,11 +1,11 @@
-import Autopilot.Autopilot;
 import Autopilot.AutopilotInputs;
 import Autopilot.AutopilotOutputs;
-import gui.Renderer;
+import gui.Cube;
 import gui.Graphics;
 import gui.Time;
+import gui.Window;
 import internal.*;
-
+import math.Vector3f;
 
 import java.io.IOException;
 
@@ -18,48 +18,98 @@ public class Main {
 	 */
 	public static void main(String[] args) throws IOException, InterruptedException {
 
+		// initialize graphics capabilities
 		Graphics graphics = new Graphics();
-		Time.initTime();
+		
+		// Cube needs graphics to be able to initialize cubes
+		Cube.setGraphics(graphics);
 
-		// initialize the windows
-		//        graphics.addWindow("window2", 920, 1000, 1f, 0.4f, "secondary window", false);
-		graphics.addWindow("droneWindow", 1000, 1000, 0.0f, 0.4f, "Drone simulator 2017", true);
+		// Construct the windows
+		Window droneCam = new Window(200, 200, 0.5f, 0.4f, "bytestream window", new Vector3f(1.0f, 1.0f, 1.0f), false);
+		Window droneView = new Window(960, 1000, 0.0f, 0.4f, "Drone simulator 2017", new Vector3f(1.0f, 1.0f, 1.0f), true);
+		Window personView = new Window(960, 1000, 1f, 0.4f, "Drone simulator 2017", new Vector3f(0.5f, 0.8f, 1.0f), true);
+//		Window textWindow = new Window(500, 500, 0.5f, 0.5f, "text window", new Vector3f(0.0f, 0.0f, 0.0f), true, droneCam); // Not implemented yet
 
-        // drone builder covers all the stuff involving building the drone, adjust parameters there
+		// add the windows to graphics
+		graphics.addWindow("camera", droneCam);
+		graphics.addWindow("third person view", personView);
+		graphics.addWindow("drone view", droneView);
+//		graphics.addWindow("textWindow", textWindow); // Not implemented yet
+		
+		
+        // drone builder covers all the stuff involving building the drone, adjust parameters there		
         WorldBuilder worldBuilder = new WorldBuilder();
         Drone drone = worldBuilder.DRONE;
         AutoPilot autopilot = new AutoPilot();
         World world = worldBuilder.createWorld();
 
-
-
-        // initialize the renderers
-
-        Renderer renderer = new Renderer(world);
-
-//        Renderer andererenderer = new Renderer(world);
-
+        // initialize second, third, fourth and fifth block, for testing purposes
+        Vector BLOCKPOS = new Vector(2.0f, 6.0f, -40.0f);
+    	Vector BLOCKPOS2 = new Vector(4.0f, 10.0f, -60.0f);
+    	Vector BLOCKPOS3 = new Vector(5.0f, 8.0f, -80.0f);
+    	Vector BLOCKPOS4 = new Vector(0.0f, 0.0f, -100.0f);
+        Vector COLOR = new Vector(1.0f, 0.0f,0.0f);
+    	
+    	Block block1 = new Block(BLOCKPOS);
+        Cube cube1 = new Cube(BLOCKPOS.convertToVector3f(), COLOR.convertToVector3f());
+        block1.setAssocatedCube(cube1);
+        
+        Block block2 = new Block(BLOCKPOS2);
+        Cube cube2 = new Cube(BLOCKPOS2.convertToVector3f(), COLOR.convertToVector3f());
+        block2.setAssocatedCube(cube2);
+        
+        Block block3 = new Block(BLOCKPOS3);
+        Cube cube3 = new Cube(BLOCKPOS3.convertToVector3f(), COLOR.convertToVector3f());
+        block3.setAssocatedCube(cube3);
+        
+        Block block4 = new Block(BLOCKPOS4);
+        Cube cube4 = new Cube(BLOCKPOS4.convertToVector3f(), COLOR.convertToVector3f());
+        block4.setAssocatedCube(cube4);
+        
+        Block block0 = world.getRandomBlock();
+        world.addWorldObject(block1);
+        // END for testing purposes
+        
+        // Initialize the windows
+        droneCam.initWorldWindow(world, true);
+        personView.initWorldWindow(world, false);
+        droneView.initWorldWindow(world, true);
+//        textWindow.initTextWindow(droneCam);
+      
+        // set state
         boolean goalNotReached = true;
         boolean configuredAutopilot = false;
 
-        // END for testing purposes
-        float elapsedTime = 0.0f;
+//        float elapsedTime = 0.0f;
 
-        while (true) {
+        // initialize time handler
+     	Time.initTime();
+     		
+        while (!graphics.isTerminated()) {
 
-            long startTime = System.currentTimeMillis();
-            //first render the images
-            graphics.renderWindows(renderer);
+//            long startTime = System.currentTimeMillis();
+        	
+        	// update time
+        	Time.update();
+            
+            // render the windows and terminate graphics if all windows are closed
+            graphics.renderWindows();
+//            System.out.println(FRAME_MILLIS - Time.timeSinceLastUpdate());
+            
+            // exit the loop early if graphics is terminated
+            if (graphics.isTerminated())
+        		break;
+            
             //System.out.println(drone.getRoll()*180/Math.PI);
             AutopilotOutputs autopilotOutputs;
 
-            if (goalNotReached) {
+            if (goalNotReached && !droneCam.isTerminated()) {
 
                 //pass the outputs to the drone
                 try {
 
-                    byte[] cameraImage = graphics.getWindow("droneWindow").getCameraView();
-                    MainAutopilotInputs autopilotInputs =  new MainAutopilotInputs(drone, cameraImage, elapsedTime);
+                    byte[] cameraImage = droneCam.getCameraView();
+                    MainAutopilotInputs autopilotInputs =  new MainAutopilotInputs(drone, cameraImage, (float) Time.getTimePassed()); // elapsedTime vervangen door getTimePassed()
                     if(!configuredAutopilot){
                          autopilotOutputs= autopilot.simulationStarted(new DroneBuilder(true).createConfig(), autopilotInputs);
                         configuredAutopilot = true;
@@ -77,15 +127,42 @@ public class Main {
                     System.out.println("IO exception");
                 }
 
+            }else {
+            	// Entire else clause is for testing purposes only
+            	
+            	
+            	if (world.hasWorldObject(block0)) {
+                	world.removeBlocks();
+                	world.addWorldObject(block1);
+                	world.addWorldObject(block2);
+                	goalNotReached = true;
+                }else if (world.hasWorldObject(block1)) {
+                	world.removeBlocks();
+                	world.addWorldObject(block2);
+                	world.addWorldObject(block3);
+                	goalNotReached = true;
+                }else if (world.hasWorldObject(block2)) {
+                	world.removeBlocks();
+                	world.addWorldObject(block3);
+                	world.addWorldObject(block4);
+                	goalNotReached = true;
+                }else if (world.hasWorldObject(block3)) {
+                	world.removeBlocks();
+                	world.addWorldObject(block4);
+                	goalNotReached = true;
+                }
+            	
+                
             }
-            long endTime = System.currentTimeMillis();
-            long timeDiff = endTime - startTime;
-            long timeLeft = FRAME_MILLIS - timeDiff;
+//            long endTime = System.currentTimeMillis();
+//            long timeDiff = endTime - startTime;
+//            long timeLeft = FRAME_MILLIS - timeDiff;
+            long timeLeft = (long) (FRAME_MILLIS - Time.timeSinceLastUpdate());
             if(timeLeft>0)
                 Thread.sleep(timeLeft);
             System.out.println(timeLeft);
             //4autopilot
-            elapsedTime += TIME_STEP*STEPS_PER_ITERATION;
+//            elapsedTime += TIME_STEP*STEPS_PER_ITERATION;
 
 
         }
