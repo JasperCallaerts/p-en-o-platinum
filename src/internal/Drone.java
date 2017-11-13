@@ -45,6 +45,8 @@ public class Drone implements WorldObject {
 		this.setAssociatedCube(new Cube(position.convertToVector3f(), new Vector3f()));
 		// TODO config stream
 
+		this.setAutopilotConfig(configuration);
+
 	}
 
 	/*
@@ -255,15 +257,6 @@ public class Drone implements WorldObject {
 
 
 	/**
-	 * getter for the maximum Thrust of the drone
-	 *
-	 * @return
-	 */
-	public float getMaxThrust() {
-		return maxThrust;
-	}
-
-	/**
 	 * Checks if the given max thrust can be assigned as maximum thrust of the drone
 	 *
 	 * @param maxThrust the desired maximum thrust of the drone
@@ -292,20 +285,7 @@ public class Drone implements WorldObject {
 		return new Vector(0, 0, -this.getThrust());
 	}
 
-	/**
-	 * Setter for the thrust of the drone
-	 *
-	 * @param thrust the desired new thrust
-	 * @throws IllegalArgumentException if the new thrust is not valid
-	 * @author Martijn Sauwens
-	 */
-	public void setThrust(float thrust) throws IllegalArgumentException {
-		if (this.canHaveAsThrust(thrust)) {
-			this.thrust = thrust;
-		} else {
-			throw new IllegalArgumentException(Drone.THRUST_OUT_OF_RANGE);
-		}
-	}
+
 //
 //	/**
 //	 * Getter for the gravitational force exerted on the drone given in the world axis
@@ -321,16 +301,6 @@ public class Drone implements WorldObject {
 //	}
 
 
-	/**
-	 * Checks if the new thrust is allowed
-	 *
-	 * @param thrust the thrust to be checked
-	 * @return true if and only if the thrust is in the range [0, this.getMaxThrust]
-	 */
-	public boolean canHaveAsThrust(float thrust) {
-
-		return thrust >= 0 && thrust <= this.getMaxThrust();
-	}
 
 	/**
 	 * Getter for the rotation vector
@@ -520,30 +490,18 @@ public class Drone implements WorldObject {
 		this.autopilotOutputs = autopilotOutputs;
 	}
 
+	public AutopilotConfig getAutopilotConfig() {
+		return autopilotConfig;
+	}
+
+	public void setAutopilotConfig(AutopilotConfig autopilotConfig) {
+		this.autopilotConfig = autopilotConfig;
+	}
+
 	/**
 	 * Variable containing the autopilot outputs
 	 */
 	AutopilotOutputs autopilotOutputs;
-
-	/**
-	 * Variable containing the right wing of the drone (immutable)
-	 */
-	private HorizontalWingPhysX rightWing;
-
-	/**
-	 * Variable containing the left wing of the drone (immutable)
-	 */
-	private HorizontalWingPhysX leftWing;
-
-	/**
-	 * Variable containing the horizontal stabilizer of the drone (immutable)
-	 */
-	private HorizontalWingPhysX horizontalStab;
-
-	/**
-	 * Variable containing the vertical stabilizer of the drone (immutable)
-	 */
-	private VerticalWingPhysX verticalStab;
 
 	/**
 	 * A variable containing the position of the drone
@@ -556,11 +514,6 @@ public class Drone implements WorldObject {
 	private Vector velocity;
 
 	/**
-	 * A variable containing the acceleration of the drone
-	 */
-	private Vector acceleration;
-
-	/**
 	 * A variable containing the orientation of the drone, (heading, pitch, roll)
 	 */
 	private Vector Orientation;
@@ -571,45 +524,21 @@ public class Drone implements WorldObject {
 	private Vector rotationVector;
 
 	/**
-	 * A variable containing the angular acceleration of the drone
-	 */
-	private Vector angularAccelerationVector;
-
-	/**
-	 * A variable containing the mass of the engine of the drone (immutable)
-	 */
-	private float engineMass;
-
-	/**
-	 * A variable containing the position of the engine of the drone (immutable)
-	 */
-	private Vector enginePos;
-
-	/**
-	 * A variable containing the maximum thrust of the drone (immutable)
-	 */
-	private float maxThrust;
-
-	/**
 	 * A variable containing the current thrust of the drone
 	 */
 	private float thrust;
-
-	/**
-	 * A variable that stores the Inertia tensor of the drone
-	 */
-	private SquareMatrix inertiaTensor;
-
-	/**
-	 * A variable containing the next image set for the autopilot
-	 */
-	private byte[] APImage;
 
 
 	/**
 	 * A variable containing the physics engine of the drone
 	 */
 	private PhysXEngine physXEngine;
+
+	/**
+	 * A variable containing the configuration of the drone
+	 */
+	private AutopilotConfig autopilotConfig;
+
 
 	/*
 	 * Constants
@@ -642,85 +571,7 @@ public class Drone implements WorldObject {
 	 */
 	private final static float maxPosDifference = 1E-6f;
 
-	//---- START OF STREAM STUFF ---//
-//	/**
-//	 * Creates an AutopilotConfig file which contains all values from the Autopilot config interface
-//	 * @throws IOException
-//	 * @author Jonathan Craessaerts
-//	 */
-//	public void setupAutopilotConfig()throws IOException{
-//	    	DataOutputStream dataOutputStream =
-//	                new DataOutputStream(new FileOutputStream(dataStreamLocationConfig));
-//
-//
-//	        AutopilotConfig value = new AutopilotConfig() {
-//	            public float getGravity() { return Drone.GRAVITY; }
-//	            public float getWingX() { return  Math.abs(getRightWing().getRelativePosition().getxValue()); }
-//	            public float getTailSize() { return Math.abs(getHorizontalStab().getRelativePosition().getzValue()); }
-//	            public float getEngineMass() { return getEngineMass(); }
-//	            public float getWingMass() { return getLeftWing().getMass(); }
-//	            public float getTailMass() { return getLeftWing().getMass(); }
-//	            public float getMaxThrust() { return getMaxThrust(); }
-//	            public float getMaxAOA() { return getLeftWing().calcAngleOfAttack(); }
-//	            public float getWingLiftSlope() { return getLeftWing().getLiftSlope(); }
-//	            public float getHorStabLiftSlope() { return getHorizontalStab().getLiftSlope(); }
-//	            public float getVerStabLiftSlope() { return getVerticalStab().getLiftSlope(); }
-//	            public float getHorizontalAngleOfView() { return getHorizontalAngleOfView(); }
-//	            public float getVerticalAngleOfView() { return getVerticalAngleOfView(); }
-//	            public int getNbColumns() { return nbColumns; }
-//	            public int getNbRows() { return nbRows; }
-//	        };
-//	        AutopilotConfigWriter.write(dataOutputStream, value);
-//	    	dataOutputStream.close();
-//	    }
-//		/**
-//		 * Creates an AutopilotInputs file which contains all values from the AutopilotInput interface
-//		 * @throws IOException
-//		 * @author Jonathan Craessaerts
-//		 */
-//	    public void setupAutopilotInputs()throws IOException{
-//	    	DataOutputStream dataOutputStream =
-//	                new DataOutputStream(new FileOutputStream(dataStreamLocationInputs));
-//
-//	    	Vector pos = getPosition();
-//	    	Vector posOnWorld = droneOnWorld(pos);
-//	    	float x = posOnWorld.getxValue();
-//	    	float y = posOnWorld.getyValue();
-//	    	float z = posOnWorld.getzValue();
-//
-//	    	float heading = getOrientation().getxValue();
-//	    	float pitch = getOrientation().getyValue();
-//	    	float roll = getOrientation().getzValue();
-//
-//
-//	    	AutopilotInputs value = new AutopilotInputs() {
-//	            public byte[] getImage() {
-//					return getAPImage(); }
-//	            public float getX() { return x; }
-//	            public float getY() { return y; }
-//	            public float getZ() { return z; }
-//	            public float getHeading() { return heading; }
-//	            public float getPitch() { return pitch; }
-//	            public float getRoll() { return roll; }
-//	            public float getElapsedTime() { // TODO
-//	    				return (Float) null; }
-//	        };
-//
-//	        AutopilotInputsWriter.write(dataOutputStream, value);
-//
-//	    	dataOutputStream.close();
-//	    }
-//	    /**
-//	     * Variable for the filename that's created when making the AutopilotConfig datastream
-//	     */
-//	    private String dataStreamLocationConfig = "APConfig.txt";
-//
-//	    /**
-//	     * Variable for the filename that's created when making the AutopilotInputs datastream
-//	     */
-//	    private String dataStreamLocationInputs = "APInputs.txt";
 
-	// ---- END OF STREAM STUFF ---- //
 	    
 	/*
 	 * Error Messages:
@@ -1586,7 +1437,85 @@ public class Drone implements WorldObject {
 //		}
 //	}
 //
+//---- START OF STREAM STUFF ---//
+//	/**
+//	 * Creates an AutopilotConfig file which contains all values from the Autopilot config interface
+//	 * @throws IOException
+//	 * @author Jonathan Craessaerts
+//	 */
+//	public void setupAutopilotConfig()throws IOException{
+//	    	DataOutputStream dataOutputStream =
+//	                new DataOutputStream(new FileOutputStream(dataStreamLocationConfig));
 //
+//
+//	        AutopilotConfig value = new AutopilotConfig() {
+//	            public float getGravity() { return Drone.GRAVITY; }
+//	            public float getWingX() { return  Math.abs(getRightWing().getRelativePosition().getxValue()); }
+//	            public float getTailSize() { return Math.abs(getHorizontalStab().getRelativePosition().getzValue()); }
+//	            public float getEngineMass() { return getEngineMass(); }
+//	            public float getWingMass() { return getLeftWing().getMass(); }
+//	            public float getTailMass() { return getLeftWing().getMass(); }
+//	            public float getMaxThrust() { return getMaxThrust(); }
+//	            public float getMaxAOA() { return getLeftWing().calcAngleOfAttack(); }
+//	            public float getWingLiftSlope() { return getLeftWing().getLiftSlope(); }
+//	            public float getHorStabLiftSlope() { return getHorizontalStab().getLiftSlope(); }
+//	            public float getVerStabLiftSlope() { return getVerticalStab().getLiftSlope(); }
+//	            public float getHorizontalAngleOfView() { return getHorizontalAngleOfView(); }
+//	            public float getVerticalAngleOfView() { return getVerticalAngleOfView(); }
+//	            public int getNbColumns() { return nbColumns; }
+//	            public int getNbRows() { return nbRows; }
+//	        };
+//	        AutopilotConfigWriter.write(dataOutputStream, value);
+//	    	dataOutputStream.close();
+//	    }
+//		/**
+//		 * Creates an AutopilotInputs file which contains all values from the AutopilotInput interface
+//		 * @throws IOException
+//		 * @author Jonathan Craessaerts
+//		 */
+//	    public void setupAutopilotInputs()throws IOException{
+//	    	DataOutputStream dataOutputStream =
+//	                new DataOutputStream(new FileOutputStream(dataStreamLocationInputs));
+//
+//	    	Vector pos = getPosition();
+//	    	Vector posOnWorld = droneOnWorld(pos);
+//	    	float x = posOnWorld.getxValue();
+//	    	float y = posOnWorld.getyValue();
+//	    	float z = posOnWorld.getzValue();
+//
+//	    	float heading = getOrientation().getxValue();
+//	    	float pitch = getOrientation().getyValue();
+//	    	float roll = getOrientation().getzValue();
+//
+//
+//	    	AutopilotInputs value = new AutopilotInputs() {
+//	            public byte[] getImage() {
+//					return getAPImage(); }
+//	            public float getX() { return x; }
+//	            public float getY() { return y; }
+//	            public float getZ() { return z; }
+//	            public float getHeading() { return heading; }
+//	            public float getPitch() { return pitch; }
+//	            public float getRoll() { return roll; }
+//	            public float getElapsedTime() { // TODO
+//	    				return (Float) null; }
+//	        };
+//
+//	        AutopilotInputsWriter.write(dataOutputStream, value);
+//
+//	    	dataOutputStream.close();
+//	    }
+//	    /**
+//	     * Variable for the filename that's created when making the AutopilotConfig datastream
+//	     */
+//	    private String dataStreamLocationConfig = "APConfig.txt";
+//
+//	    /**
+//	     * Variable for the filename that's created when making the AutopilotInputs datastream
+//	     */
+//	    private String dataStreamLocationInputs = "APInputs.txt";
+
+	// ---- END OF STREAM STUFF ---- //
 
 
 

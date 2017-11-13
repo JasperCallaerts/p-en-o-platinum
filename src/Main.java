@@ -16,7 +16,7 @@ public class Main {
 	 * @param args
 	 * @author Martijn Sauwens
 	 */
-	public static void main(String[] args) throws IOException, InterruptedException {
+	public void main(String[] args) throws IOException, InterruptedException {
 
 		// initialize graphics capabilities
 		Graphics graphics = new Graphics();
@@ -85,7 +85,7 @@ public class Main {
         // initialize time handler
      	Time.initTime();
      		
-        while (!graphics.isTerminated()) {
+        while(!graphics.isTerminated()) {
 
 //            long startTime = System.currentTimeMillis();
         	
