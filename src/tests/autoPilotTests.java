@@ -1,7 +1,7 @@
 package tests;
-import gui.Cube;
 import gui.Window;
 
+import internal.*;
 import org.junit.Test;
 
 import Autopilot.AutopilotConfig;
@@ -10,30 +10,11 @@ import Autopilot.AutopilotInputs;
 import static org.junit.Assert.assertNotEquals;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
-import internal.AutoPilot;
-import internal.AutoPilotCamera;
-import internal.AutoPilotConfig;
-import internal.AutoPilotInputs;
-import internal.Block;
-import internal.Drone;
-import internal.HorizontalWing;
-import internal.Pixel;
-import internal.SimulationEndedException;
-import internal.SquareMatrix;
-import internal.Vector;
-import internal.VerticalWing;
-import internal.Wing;
-import internal.World;
-import internal.WorldBuilder;
-import junit.framework.Assert;
-import math.Vector3f;
+import internal.WingPhysX;
 
 import static org.junit.Assert.assertEquals;
-
-import org.junit.Before;
 
 /**
  * 
@@ -51,7 +32,7 @@ public class autoPilotTests {
 	public AutopilotConfig APConfig;
 	public AutopilotInputs APInputs;
 	public static Drone drone;
-	public static Wing wing1,wing2,wing3,wing4;
+	public static WingPhysX wing1,wing2,wing3,wing4;
 	
 	public Vector position = new Vector(100,0,2);
 	public Vector velocity = new Vector(1,1,0);
