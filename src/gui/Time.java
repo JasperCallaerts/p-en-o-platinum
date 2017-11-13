@@ -35,16 +35,24 @@ public class Time {
         lastTime = time;
         
         timeCount += delta;
-        if (timeCount > 1f) {
+        if (timeCount > 1000f) {
             ups = upsCount;
             upsCount = 0;
 
-            timeCount -= 1f;
+            timeCount -= 1000f;
         }
     }
 
 	public static double getTime() {
-		return glfwGetTime();
+		return 1000. * glfwGetTime();
+	}
+	
+	public static double getLastTime() {
+		return lastTime;
+	}
+	
+	public static double timeSinceLastUpdate() {
+		return getTime() - getLastTime();
 	}
 	
 	public static double getDelta() {

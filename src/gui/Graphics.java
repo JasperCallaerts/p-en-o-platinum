@@ -10,18 +10,23 @@ import static org.lwjgl.glfw.GLFW.GLFW_SAMPLES;
 import static org.lwjgl.glfw.GLFW.GLFW_VISIBLE;
 import static org.lwjgl.glfw.GLFW.glfwDefaultWindowHints;
 import static org.lwjgl.glfw.GLFW.glfwInit;
+import static org.lwjgl.glfw.GLFW.glfwMakeContextCurrent;
 import static org.lwjgl.glfw.GLFW.glfwPollEvents;
 import static org.lwjgl.glfw.GLFW.glfwSetErrorCallback;
 import static org.lwjgl.glfw.GLFW.glfwTerminate;
 import static org.lwjgl.glfw.GLFW.glfwWindowHint;
+import static org.lwjgl.system.MemoryUtil.NULL;
+
+import org.lwjgl.glfw.GLFWErrorCallback;
 
 import java.util.HashMap;
 
-import org.lwjgl.glfw.GLFWErrorCallback;
+import internal.World;
 
 public class Graphics {
 	
 	HashMap<String, Window> windows =  new HashMap<String, Window>();
+	private boolean terminated = false;
 	
 	public Graphics() {	
 		// Setup an error callback. The default implementation
@@ -42,63 +47,72 @@ public class Graphics {
 		glfwWindowHint(GLFW_SAMPLES, 4);
 	}
 	
-	public void addWindow(String key, int width, int height, float xOffset, float yOffset, String title, boolean droneCamera) {
-		windows.put(key, new Window(width, height, xOffset, yOffset, title, droneCamera));
+	public void addWindow(String key, int width, int height, float xOffset, float yOffset, String title, boolean visible) {
+		windows.put(key, new Window(width, height, xOffset, yOffset, title, visible));
 	}
 	
 	public void addWindow(String key, Window window) {
 		windows.put(key, window);
 	}
 	
-	public void renderWindows(Renderer renderer) {
+	public void renderWindows() {
 		// Poll for window events. The key callback above will only be
 		// invoked during this call.
 		glfwPollEvents();
 		
-		Time.update();
-		
 		for (String key: windows.keySet()) {
+			Window window = windows.get(key);
 			
-			boolean succes = windows.get(key).renderFrame(renderer);
-			if (!succes) {
-				windows.get(key).terminate();
+			// Make the OpenGL context current
+			glfwMakeContextCurrent(window.getHandler());
+			window.render();
+			if (window.isTerminated()) {
 				windows.remove(key);
 				break;
 			}
+			glfwMakeContextCurrent(NULL);
 		}
-		if (windows.keySet().size() == 0) {
-			renderer.release();
-		}
+		if (windows.isEmpty())
+			terminate();	
 	}
 	
-	public void renderWindow(String key, Renderer renderer) {
+	public void renderWindow(String key) {
 		// Poll for window events. The key callback above will only be
 		// invoked during this call.
 		glfwPollEvents();
 
-		Time.update();
-
 		Window window = windows.get(key);
 		if (window != null) {
-			boolean succes = window.renderFrame(renderer);
-			if (!succes) {
-				Renderer.checkError();
-				window.terminate();
+			// Make the OpenGL context current
+			glfwMakeContextCurrent(window.getHandler());
+			window.render();
+			if (window.isTerminated())
 				windows.remove(key);
-				
-			}
-		} else {
-			renderer.release();
-		}
+			glfwMakeContextCurrent(NULL);
+		} 
+		if (windows.isEmpty())
+			terminate();
+
 	}
 
 	// Terminate GLFW and free the error callback
 	public void terminate() {
 		glfwTerminate();
 		glfwSetErrorCallback(null).free();
+		this.terminated = true;
 	}
 	
 	public Window getWindow(String key) {
 		return windows.get(key);
+	}
+
+	public void initWorld(World world, boolean droneCamera) {
+		for (String key: windows.keySet()) {
+			windows.get(key).initWorld(world, droneCamera);
+		}
+	}
+
+	public boolean isTerminated() {
+		return this.terminated;
 	}
 }

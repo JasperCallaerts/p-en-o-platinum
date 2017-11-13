@@ -1,12 +1,10 @@
-import Autopilot.Autopilot;
 import Autopilot.AutopilotInputs;
 import Autopilot.AutopilotOutputs;
-import gui.Renderer;
 import gui.Cube;
 import gui.Graphics;
 import gui.Time;
+import gui.Window;
 import internal.*;
-
 
 import java.io.IOException;
 
@@ -19,14 +17,26 @@ public class Main {
 	 */
 	public static void main(String[] args) throws IOException, InterruptedException {
 
+		// initialize graphics capabilities
 		Graphics graphics = new Graphics();
-		Time.initTime();
+		
+		// Cube needs graphics to be able to initialize cubes
+		Cube.setGraphics(graphics);
 
 		// initialize the windows
-		//        graphics.addWindow("window2", 920, 1000, 1f, 0.4f, "secondary window", false);
-		graphics.addWindow("droneWindow", 1000, 1000, 0.0f, 0.4f, "Drone simulator 2017", true);
+		Window droneCam = new Window(1000, 1000, 0.5f, 0.4f, "bytestream window", false);
+		Window droneView = new Window(960, 1000, 0.0f, 0.4f, "Drone simulator 2017", true);
+		Window personView = new Window(960, 1000, 1f, 0.4f, "Drone simulator 2017", true);
+//		Window textWindow = new Window(500, 500, 0.5f, 0.5f, "text window", true, droneCam); // Not implemented yet
 
-        // drone builder covers all the stuff involving building the drone, adjust parameters there
+		// add the windows to graphics
+		graphics.addWindow("camera", droneCam);
+		graphics.addWindow("third person view", personView);
+		graphics.addWindow("drone view", droneView);
+//		graphics.addWindow("textWindow", textWindow); // Not implemented yet
+		
+		
+        // drone builder covers all the stuff involving building the drone, adjust parameters there		
         WorldBuilder worldBuilder = new WorldBuilder();
         Drone drone = worldBuilder.DRONE;
         AutoPilot autopilot = new AutoPilot();
@@ -58,34 +68,45 @@ public class Main {
         Block block0 = world.getRandomBlock();
         world.addWorldObject(block1);
         // END for testing purposes
-
-        // initialize the renderers
-
-        Renderer renderer = new Renderer(world);
-
-//        Renderer andererenderer = new Renderer(world);
-
+        
+        // Put a world in the windows
+        droneCam.initWorld(world, true);
+        personView.initWorld(world, false);
+        droneView.initWorld(world, true);
+      
+        // set state
         boolean goalNotReached = true;
         boolean configuredAutopilot = false;
 
-        // END for testing purposes
-        float elapsedTime = 0.0f;
+//        float elapsedTime = 0.0f;
 
-        while (true) {
+        // initialize time handler
+     	Time.initTime();
+     		
+        while (!graphics.isTerminated()) {
 
-            long startTime = System.currentTimeMillis();
-            //first render the images
-            graphics.renderWindows(renderer);
+//            long startTime = System.currentTimeMillis();
+        	
+        	// update time
+        	Time.update();
+            
+            // render the windows and terminate graphics if all windows are closed
+            graphics.renderWindows();
+            
+            // exit the loop early if graphics is terminated
+            if (graphics.isTerminated())
+        		break;
+            
             //System.out.println(drone.getRoll()*180/Math.PI);
             AutopilotOutputs autopilotOutputs;
 
-            if (goalNotReached) {
+            if (goalNotReached && !droneCam.isTerminated()) {
 
                 //pass the outputs to the drone
                 try {
 
-                    byte[] cameraImage = graphics.getWindow("droneWindow").getCameraView();
-                    MainAutopilotInputs autopilotInputs =  new MainAutopilotInputs(drone, cameraImage, elapsedTime);
+                    byte[] cameraImage = droneCam.getCameraView();
+                    MainAutopilotInputs autopilotInputs =  new MainAutopilotInputs(drone, cameraImage, (float) Time.getTimePassed()); // elapsedTime vervangen door getTimePassed()
                     if(!configuredAutopilot){
                          autopilotOutputs= autopilot.simulationStarted(new DroneBuilder(true).createConfig(), autopilotInputs);
                         configuredAutopilot = true;
@@ -130,14 +151,15 @@ public class Main {
             	
                 
             }
-            long endTime = System.currentTimeMillis();
-            long timeDiff = endTime - startTime;
-            long timeLeft = FRAME_MILLIS - timeDiff;
+//            long endTime = System.currentTimeMillis();
+//            long timeDiff = endTime - startTime;
+//            long timeLeft = FRAME_MILLIS - timeDiff;
+            long timeLeft = (long) (FRAME_MILLIS - Time.timeSinceLastUpdate());
             if(timeLeft>0)
                 Thread.sleep(timeLeft);
             System.out.println(timeLeft);
             //4autopilot
-            elapsedTime += TIME_STEP*STEPS_PER_ITERATION;
+//            elapsedTime += TIME_STEP*STEPS_PER_ITERATION;
 
 
         }

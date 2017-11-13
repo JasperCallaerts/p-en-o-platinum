@@ -1,9 +1,14 @@
 package gui;
 
+import internal.Block;
 import internal.CameraImage;
+import internal.Drone;
 import internal.Pixel;
 import internal.World;
+import internal.WorldObject;
+import math.Matrix3f;
 import math.Matrix4f;
+import math.Vector3f;
 
 import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.*;
@@ -20,6 +25,7 @@ import java.util.List;
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL30.GL_INVALID_FRAMEBUFFER_OPERATION;
 import static org.lwjgl.system.MemoryStack.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
@@ -34,6 +40,7 @@ public class Window {
 	private int HEIGHT;
 
 	private Input input;
+	private ShaderProgram program;
 
 	private boolean droneView;  
 	
@@ -43,8 +50,23 @@ public class Window {
 	
 	private String title;
 
-	public Window(int width, int height, float xOffset, float yOffset, String title, boolean cameraOnDrone) {
-		this.droneView = cameraOnDrone;
+	private Matrix4f viewMatrix;
+
+	private Matrix4f projectionMatrix;
+
+	private World world;
+
+	private boolean terminated = false;
+
+	private Window dependableWindow = null;
+
+	/**
+	 * Creates a window.
+     * Initializes the OpenGL state. Creating programs and sets 
+     * appropriate state. 
+	 * @param visible 
+     */
+	public Window(int width, int height, float xOffset, float yOffset, String title, boolean visible) {
 		WIDTH = width;
 		HEIGHT = height;
 		this.title = title;
@@ -88,7 +110,8 @@ public class Window {
 		glfwSwapInterval(1);
 
 		// Make the window visible
-		glfwShowWindow(getHandler());
+		if (visible)
+			glfwShowWindow(getHandler());
 		
 		// This line is critical for LWJGL's interoperation with GLFW's
 		// OpenGL context, or any context that is managed externally.
@@ -106,40 +129,131 @@ public class Window {
 		glCullFace(GL_BACK);
 		
 		input = new Input();
+		
+		program = new ShaderProgram(false, "resources/default.vert", "resources/default.frag");	
+
+        program.init();
+        
+        try {
+			program.createUniform("projectionMatrix");
+			program.createUniform("viewMatrix");
+	        program.createUniform("modelMatrix");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+        
+		glfwMakeContextCurrent(NULL);
+	}
+	
+	public Window(int width, int height, float xOffset, float yOffset, String title, boolean visible, Window droneCam) {
+		this(width, height, xOffset, yOffset, title, visible);
+		this.dependableWindow = droneCam;
+	}
+	
+	public void initWorld(World world, boolean cameraOnDrone) {
+		this.droneView = cameraOnDrone;
+		this.world = world;
+		
+		glfwMakeContextCurrent(getHandler());
+		if (!cameraOnDrone)
+			glfwSetInputMode(getHandler(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		glfwMakeContextCurrent(NULL);
 	}
 
-	public boolean renderFrame(Renderer renderer) {
-		// Make the OpenGL context current
-		glfwMakeContextCurrent(getHandler());
-		GL.setCapabilities(capabilities);
+	public void render() {
+		if (this.isText())
+			renderText();
+		else
+			renderFrame();
 
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
-
-		renderer.render(this);
-		
-		glfwSwapBuffers(getHandler()); // swap the color buffers
-		Renderer.checkError();
-		
-		// Run the rendering unless the user has attempted to close
+		// Return false if the user has attempted to close
 		// the window or has pressed the ESCAPE key.
 		if (glfwWindowShouldClose(getHandler())) {
 			terminate();
-			return false;
 		}
-		return true;
+//		checkError();
+	}
+	
+	private void renderText() {
+		// TODO maak een window met text ipv 3d graphics
+	}
+	
+	private void renderFrame() {
+		GL.setCapabilities(capabilities);
+
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the buffers
+
+		updateMatrices();
+	
+		program.bind();
+        program.setUniform("projectionMatrix", projectionMatrix);
+        program.setUniform("viewMatrix", viewMatrix);
+
+        for (WorldObject object: world.getObjectSet()) {
+    		program.setUniform("modelMatrix", object.getAssociatedCube().getModelMatrix());
+    		object.getAssociatedCube().render();
+    	}
+		
+		program.unbind();
+		
+		glfwSwapBuffers(getHandler()); // swap the  buffers
 	}
 	
 	// Free the window callbacks and destroy the window
 	public void terminate() {
-		Renderer.checkError();
+		program.delete();
+		
 		glfwFreeCallbacks(getHandler());
-		Renderer.checkError();
 		glfwDestroyWindow(getHandler());
-		Renderer.checkError();
+		
+		/**
+	     * Releases in use OpenGL resources.
+	     */
+		for (WorldObject object: world.getObjectSet()) {
+    		object.getAssociatedCube().delete();
+    	}
+		
+		terminated = true;
+	}
+	
+	public boolean isTerminated() {
+		return terminated ;
 	}
 
 	public long getHandler() {
 		return windowHandle;
+	}
+	
+	public void updateMatrices() {
+		if (cameraIsOnDrone())
+			viewMatrix = getDroneView();
+		else
+			viewMatrix = getViewMatrix();
+		
+		
+		projectionMatrix = getProjectionMatrix();
+	}
+	
+	public Matrix4f getDroneView() {   
+		Vector3f orientation = new Vector3f();
+		Vector3f dronePosition = new Vector3f();
+        for (Drone drone: world.getDroneSet()) {
+        	orientation = drone.getOrientation().convertToVector3f();
+        	dronePosition = drone.getPosition().convertToVector3f();
+        }
+        
+        Matrix3f pitchMatrix = new Matrix3f(new Vector3f(1, 0, 0), new Vector3f(0, (float) Math.cos(orientation.y), (float) -Math.sin(orientation.y)), new Vector3f(0, (float) Math.sin(orientation.y), (float) Math.cos(orientation.y)));
+        Matrix3f yawMatrix = new Matrix3f(new Vector3f((float) Math.cos(orientation.x), 0, (float) Math.sin(orientation.x)), new Vector3f(0, 1, 0), new Vector3f((float) -Math.sin(orientation.x), 0, (float) Math.cos(orientation.x)));
+        Matrix3f rollMatrix = new Matrix3f(new Vector3f((float) Math.cos(orientation.z), (float) Math.sin(orientation.z), 0), new Vector3f((float) -Math.sin(orientation.z), (float) Math.cos(orientation.z), 0), new Vector3f(0, 0, 1));
+        		
+        Matrix3f transformationMatrix = pitchMatrix.multiply(yawMatrix).multiply(rollMatrix);
+        transformationMatrix = transformationMatrix.transpose();
+        
+        Vector3f right = transformationMatrix.multiply(new Vector3f(1,0,0));
+        Vector3f up = transformationMatrix.multiply(new Vector3f(0,1,0));
+        Vector3f look = transformationMatrix.multiply(new Vector3f(0,0,-1));
+
+		return Matrix4f.viewMatrix(right, up, look, dronePosition);
 	}
 	
 	public Matrix4f getProjectionMatrix() {
@@ -162,9 +276,31 @@ public class Window {
 		return droneView;
 	}
 	
+	public boolean isText() {
+		if (dependableWindow == null)
+			return false;
+		return true;
+	}
+	
 	public String getTitle() {
 		return this.title;
 	}
+	
+	/**
+     * Utility method which checks for an OpenGL error, throwing an exception if
+     * one is found.
+     */
+    public static void checkError() {
+        int err = glGetError();
+        switch(err) {
+            case GL_NO_ERROR: return;
+            case GL_INVALID_OPERATION: throw new RuntimeException("Invalid Operation");
+            case GL_INVALID_ENUM: throw new RuntimeException("Invalid Enum");
+            case GL_INVALID_VALUE: throw new RuntimeException("Invalid Value");
+            case GL_INVALID_FRAMEBUFFER_OPERATION: throw new RuntimeException("Invalid Framebuffer Operation");
+            case GL_OUT_OF_MEMORY: throw new RuntimeException("Out of Memory");
+        }
+    }
 
 	/**
 	 * Reads the pixels on the screen and returns them as an array of bytes
@@ -172,6 +308,7 @@ public class Window {
 	 * @author Martijn
 	 */
 	public byte[] getCameraView() throws IOException {
+		glfwMakeContextCurrent(getHandler());
 
 		GL11.glReadBuffer(GL11.GL_FRONT);
 		int bpp = 4; // Assuming a 32-bit display with a byte each for red, green, blue, and alpha.

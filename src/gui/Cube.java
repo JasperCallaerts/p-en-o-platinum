@@ -3,6 +3,10 @@ package gui;
 import internal.Vector;
 import math.Matrix4f;
 import math.Vector3f;
+
+import static org.lwjgl.glfw.GLFW.glfwMakeContextCurrent;
+import static org.lwjgl.system.MemoryUtil.NULL;
+
 import internal.HSVconverter;
 
 public class Cube{
@@ -78,14 +82,25 @@ public class Cube{
 			20, 21, 22, 20, 22, 23,
 	};
 	
+	static Graphics g;
+	
 	private Mesh mesh;
 	private Matrix4f modelMatrix = new Matrix4f();
 	private Vector3f position = new Vector3f();
 	
+	static public void setGraphics(Graphics graphics) {
+		g = graphics;
+	}
+	
 	public Cube(Vector3f position, Vector3f colour) {
 		setColours(HSVconverter.RGBtoHSV(colour.x, colour.y, colour.z));
-		mesh = new Mesh();
-		mesh.init(positions, colours, indices);
+		
+		for (String key: g.windows.keySet()) {
+			glfwMakeContextCurrent(g.windows.get(key).getHandler());
+			mesh = new Mesh();
+			mesh.init(positions, colours, indices);
+			glfwMakeContextCurrent(NULL);
+		}
 		
 		this.position = position;
 		modelMatrix = Matrix4f.translate(position.x, position.y, position.z);
