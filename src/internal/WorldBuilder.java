@@ -11,8 +11,13 @@ public class WorldBuilder {
 
     public Drone DRONE = new DroneBuilder(true).createDrone();
 
+<<<<<<< HEAD
     // Deprecated: all blocks are generated in main loop
     //public final static Vector BLOCKPOS = new Vector(0.0f, 0.489f, -6.9098f);
+=======
+    public final static Vector BLOCKPOS = new Vector(0.0f, 3.0f, -20.0f);
+
+>>>>>>> 264df8ad701bb0138a6999e9bae90e95fd6c2851
     public final static Vector COLOR = new Vector(1.0f, 0.0f,0.0f);
 
     public WorldBuilder(){
