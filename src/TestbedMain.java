@@ -245,10 +245,18 @@ public class TestbedMain implements Runnable{
     private final static int STEPS_PER_ITERATION = Math.round((1 / FRAMERATE) / TIME_STEP);
     private final static long FRAME_MILLIS = 50;
 
-    // Todo documentatie toevoegen (als je een katje bent)
+    /**
+     * Class that contains the autopilotInputs implemented separately for cleaner code
+     */
     private static class MainAutopilotInputs implements AutopilotInputs {
 
-        public MainAutopilotInputs(Drone drone, byte[] cameraImage, float elapsedTime) {
+        /**
+         * Constructor for the class
+         * @param drone the drone of the testbed
+         * @param cameraImage the byte array containing the image for the autopilot
+         * @param elapsedTime the time that has elapsed
+         */
+        private MainAutopilotInputs(Drone drone, byte[] cameraImage, float elapsedTime) {
             this.drone = drone;
             this.cameraImage = cameraImage;
             this.elapsedTime = elapsedTime;
@@ -366,21 +374,15 @@ public class TestbedMain implements Runnable{
         this.personView = personView;
     }
 
-    private boolean isGoalNotReached() {
+  /*  private boolean isGoalNotReached() {
         return goalNotReached;
     }
 
     private void setGoalNotReached(boolean goalNotReached) {
         this.goalNotReached = goalNotReached;
-    }
+    }*/
 
-    public BlockingQueue getQueue() {
-        return queue;
-    }
 
-    public void setQueue(BlockingQueue queue) {
-        this.queue = queue;
-    }
 
     private World world;
     private Graphics graphics;

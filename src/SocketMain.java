@@ -18,6 +18,7 @@ public class SocketMain {
         testbedThread.setUncaughtExceptionHandler(HANDLER);
 
         testbedThread.start();
+        Thread.sleep(1000);
         autopilotThread.start();
 
         //mainTestbed.testbedMainLoop();
@@ -39,12 +40,13 @@ public class SocketMain {
     };
 
     public final static String CONNECTION_NAME = "localhost";
-    public final static int CONNECTION_PORT = 8080;
+    public final static int CONNECTION_PORT = 21212;
 
     private static TestbedMain MAIN_TESTBED = new TestbedMain(CONNECTION_NAME, CONNECTION_PORT);
     private static AutopilotMain MAIN_AUTOPILOT = new AutopilotMain(CONNECTION_NAME, CONNECTION_PORT);
 
 }
+
 /*
 //        //createConnection
 //        ServerSocket testbedServerSocket = new ServerSocket(CONNECTION_PORT);
