@@ -7,11 +7,13 @@ import internal.*;
 import math.Vector3f;
 
 
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.concurrent.BlockingQueue;
 
 
 /**
@@ -24,7 +26,18 @@ public class TestbedMain implements Runnable{
      * Initialize the main method for the testbed
      * see old mainloop for more info
      */
-    public TestbedMain() {
+    public TestbedMain(String connectionName, int connectionPort) {
+        this.setConnectionName(connectionName);
+        this.setConnectionPort(connectionPort);
+        //this.setQueue(queue);
+    }
+
+    /**
+     * Initialize the testbed
+     * Testbed is not initialized in the constructor because graphics need to be created
+     * within one thread of control
+     */
+    private void initTestbed(){
         // initialize graphics capabilities
         this.setGraphics(new Graphics());
 
@@ -37,9 +50,9 @@ public class TestbedMain implements Runnable{
         this.setPersonView(new Window(960, 1000, 1f, 0.4f, "Drone simulator 2017", new Vector3f(0.5f, 0.8f, 1.0f), true));
 
         // add the windows to graphics
-        this.getGraphics().addWindow("camera", droneCam);
-        this.getGraphics().addWindow("third person view", personView);
-        this.getGraphics().addWindow("drone view", droneView);
+        this.getGraphics().addWindow("camera", this.getDroneCam());
+        this.getGraphics().addWindow("third person view", this.getPersonView());
+        this.getGraphics().addWindow("drone view", this.getDroneView());
 //		graphics.addWindow("textWindow", textWindow); // Not implemented yet
 
 
@@ -83,31 +96,39 @@ public class TestbedMain implements Runnable{
 
 
         Time.initTime();
-
     }
 
 
     //Todo configure the autopilot in the autopilot main
     //open seperate threads for both mainloops, where the first one waits for the other one.
-    private void testbedMainLoop() throws IOException, InterruptedException {
-        ServerSocket testbedServer = new ServerSocket(CONNECTION_PORT);
+    public void testbedMainLoop() throws IOException, InterruptedException {
+
+        this.initTestbed();
+
+        ServerSocket testbedServer = new ServerSocket(this.getConnectionPort());
         Socket testbedClientSocket = testbedServer.accept();
         DataInputStream inputStream = new DataInputStream(testbedClientSocket.getInputStream());
         DataOutputStream outputStream = new DataOutputStream(testbedClientSocket.getOutputStream());
-
         //write the configuration to the autopilot
         configAutopilot(outputStream);
 
-        while(true){
+        while(true) {
             //wait until the input is not null and advance if possible
-            try{
+            try {
                 AutopilotOutputs output = AutopilotOutputsReader.read(inputStream);
                 AutopilotInputsWriter.write(outputStream, this.testbedStep(output));
-            }catch(NullPointerException e){
+            } catch (NullPointerException e) {
                 //let the null pointer fly
+                System.out.println("Catching Exception: waiting for autopilot output");
+            } catch(java.io.EOFException | SimulationEndedException ex ){
+                //this exception means that the client socket has closed, close own sockets
+                System.out.println("closing server sockets");
+                testbedClientSocket.close();
+                testbedServer.close();
+                break;
+
             }
         }
-
     }
 
     /**
@@ -124,13 +145,15 @@ public class TestbedMain implements Runnable{
 
     /**
      * Write the configuration data to the autopilot
-     * @param outputStream
+     * @param outputStream the stream containing the config and the input for the autopilot
      * @throws IOException
      * @throws InterruptedException
      */
     private void configAutopilot(DataOutputStream outputStream) throws IOException, InterruptedException {
         AutopilotConfigWriter.write(outputStream, this.getConfig());
+        //instert a null pointer, will be ignored on the first step of the testbedstep method
         AutopilotInputs autopilotInputs = this.testbedStep(null);
+        AutopilotInputsWriter.write(outputStream, autopilotInputs);
     }
 
 
@@ -188,6 +211,7 @@ public class TestbedMain implements Runnable{
                     world.removeBlocks();
                     world.addWorldObject(block4);
                     goalNotReached = true;
+                    throw new SimulationEndedException();
                 }
             } catch (IOException e) {
                 System.out.println("IO exception");
@@ -302,44 +326,20 @@ public class TestbedMain implements Runnable{
         this.drone = drone;
     }
 
-    private Block getBlock0() {
-        return block0;
+    private String getConnectionName() {
+        return connectionName;
     }
 
-    private void setBlock0(Block block0) {
-        this.block0 = block0;
+    private void setConnectionName(String connectionName) {
+        this.connectionName = connectionName;
     }
 
-    private Block getBlock1() {
-        return block1;
+    private int getConnectionPort() {
+        return connectionPort;
     }
 
-    private void setBlock1(Block block1) {
-        this.block1 = block1;
-    }
-
-    private Block getBlock2() {
-        return block2;
-    }
-
-    private void setBlock2(Block block2) {
-        this.block2 = block2;
-    }
-
-    private Block getBlock3() {
-        return block3;
-    }
-
-    private void setBlock3(Block block3) {
-        this.block3 = block3;
-    }
-
-    private Block getBlock4() {
-        return block4;
-    }
-
-    private void setBlock4(Block block4) {
-        this.block4 = block4;
+    private void setConnectionPort(int connectionPort) {
+        this.connectionPort = connectionPort;
     }
 
     private Window getDroneCam() {
@@ -374,6 +374,14 @@ public class TestbedMain implements Runnable{
         this.goalNotReached = goalNotReached;
     }
 
+    public BlockingQueue getQueue() {
+        return queue;
+    }
+
+    public void setQueue(BlockingQueue queue) {
+        this.queue = queue;
+    }
+
     private World world;
     private Graphics graphics;
     private Drone drone;
@@ -387,6 +395,10 @@ public class TestbedMain implements Runnable{
     private Window droneCam;
     private Window droneView;
     private Window personView;
+
+    private String connectionName;
+    private int connectionPort;
+    private BlockingQueue queue;
 //	Window textWindow = new Window(500, 500, 0.5f, 0.5f, "text window", new Vector3f(0.0f, 0.0f, 0.0f), true, droneCam); // Not implemented yet
 
 
@@ -395,11 +407,5 @@ public class TestbedMain implements Runnable{
      */
     private boolean goalNotReached = true;
     private boolean firstRun = true;
-
-    /*
-    Constants
-     */
-    public final static String CONNECTION_NAME = "localhost";
-    public final static int CONNECTION_PORT = 8080;
 
 }

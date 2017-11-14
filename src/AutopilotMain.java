@@ -13,26 +13,13 @@ import java.net.Socket;
  */
 public class AutopilotMain implements Runnable {
 
-    public AutopilotMain() {
+    public AutopilotMain(String connectionName, int connectionPort) {
         this.setAutoPilot(new AutoPilot());
+        this.setConnectionName(connectionName);
+        this.setConnectionPort(connectionPort);
     }
 
-    public AutopilotOutputs autopilotStep(AutopilotInputs inputs) throws IOException {
 
-        AutopilotOutputs outputs;
-
-        outputs = this.getAutoPilot().timePassed(inputs);
-
-        return outputs;
-    }
-
-    public AutopilotOutputs autopilotConfigStep(AutopilotInputs inputs, AutopilotConfig config) throws IOException {
-        AutopilotOutputs outputs;
-
-        outputs = this.getAutoPilot().simulationStarted(config, inputs);
-
-        return outputs;
-    }
 
     @Override
     public void run() {
@@ -43,8 +30,8 @@ public class AutopilotMain implements Runnable {
         }
     }
 
-    public void autopilotMainLoop() throws IOException {
-        Socket autopilotClientSocket = new Socket(CONNECTION_NAME, CONNECTION_PORT);
+    private void autopilotMainLoop() throws IOException {
+        Socket autopilotClientSocket = new Socket(this.getConnectionName(), this.getConnectionPort());
 
         DataInputStream inputStream = new DataInputStream(autopilotClientSocket.getInputStream());
         DataOutputStream outputStream = new DataOutputStream(autopilotClientSocket.getOutputStream());
@@ -57,23 +44,30 @@ public class AutopilotMain implements Runnable {
                 AutopilotOutputs outputs = this.getAutoPilot().simulationStarted(config, inputs);
                 AutopilotOutputsWriter.write(outputStream, outputs);
                 firstRun = false;
+
             }catch(NullPointerException e){
-                // let the exception fly
+                //let the exception fly
+                System.out.println("Catching Exception: waiting for config input");
             }
         }
 
         // now enter the real main loop, also find way to terminate correctly
         while(true){
+
             try{
                 AutopilotInputs inputs = AutopilotInputsReader.read(inputStream);
                 AutopilotOutputs outputs = this.getAutoPilot().timePassed(inputs);
                 AutopilotOutputsWriter.write(outputStream, outputs);
             }catch(NullPointerException e){
                 //let the exception fly
+                System.out.println("Catching Exception: waiting for testbed input");
+            }catch(java.io.EOFException e){
+                //the stream has stopped, close the socket
+                autopilotClientSocket.close();
+                //nothing to do anymore... just close
+                break;
             }
-
         }
-
     }
 
 
@@ -102,11 +96,50 @@ public class AutopilotMain implements Runnable {
         this.autopilotInputs = autopilotInputs;
     }
 
+    public String getConnectionName() {
+        return connectionName;
+    }
+
+    public void setConnectionName(String connectionName) {
+        this.connectionName = connectionName;
+    }
+
+    public int getConnectionPort() {
+        return connectionPort;
+    }
+
+    public void setConnectionPort(int connectionPort) {
+        this.connectionPort = connectionPort;
+    }
+
     private AutoPilot autoPilot;
     private AutopilotConfig autopilotConfig;
     private AutopilotInputs autopilotInputs;
 
-    public final static String CONNECTION_NAME = "localhost";
-    public final static int CONNECTION_PORT = 8080;
-
+    private String connectionName;
+    private int connectionPort;
+    public boolean simulationEnded = false;
 }
+
+  /*  *//**
+     * Configure the autopilot
+     * @param inputs
+     * @return
+     * @throws IOException
+     *//*
+    public AutopilotOutputs autopilotStep(AutopilotInputs inputs) throws IOException {
+
+        AutopilotOutputs outputs;
+
+        outputs = this.getAutoPilot().timePassed(inputs);
+
+        return outputs;
+    }
+
+    public AutopilotOutputs autopilotConfigStep(AutopilotInputs inputs, AutopilotConfig config) throws IOException {
+        AutopilotOutputs outputs;
+
+        outputs = this.getAutoPilot().simulationStarted(config, inputs);
+
+        return outputs;
+    }*/

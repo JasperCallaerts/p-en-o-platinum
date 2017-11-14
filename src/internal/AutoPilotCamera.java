@@ -1,7 +1,6 @@
 package internal;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by Martijn on 14/10/2017.
@@ -40,13 +39,201 @@ public class AutoPilotCamera {
         this.world = new World();
     }
 
+
+    //Todo adjust pixel classes such that the HSV values are correct!!!!!!!!!!!!!!!
+    /**
+     * locates all the cubes of a different color and returns them in order of size for each color
+     * @return a list containing vectors where the x and y coordinates indicate the position on the screen
+     *         and the z value contains the size of the cubes, the list is ordered from large
+     */
+    public List<Vector> locateCubes(){
+        //coordinate is the H & S value of the pixel, the Coordinates in the list are the
+        //coordinates of the pixels with the specific H & S values of the key
+        HashMap<Coordinates ,List<Coordinates>> cubeMap = new HashMap<>();
+        findColoredPixels(cubeMap);
+
+        //first two elements of the vector contain the x and the y position, the third the size of the cube
+        HashMap<Coordinates, Vector> cubeCenterMap = new HashMap<>();
+
+        calculateMeanCubes(cubeMap, cubeCenterMap);
+
+
+        List <Vector> cubeOrderedList = new ArrayList<>();
+        cubeOrderedList.addAll(cubeCenterMap.values());
+        cubeOrderedList.sort(new Comparator<Vector>() {
+            /**
+             * the list needs to be ordered from large to small so if V1 is larger than V2 it needs to
+             * return a negative integer (normal sort is from small to large so we need to invert it)
+             * @param v1 the first vector
+             * @param v2 the second vector
+             * @return -1 if V1 > V2, 0 if V1 == V2, 1 if V1 < V2
+             */
+            @Override
+            public int compare(Vector v1, Vector v2) {
+                //the z value will be always an integer value in this case
+                return (int)(Math.signum(-v1.getzValue() + v2.getzValue()));
+            }
+        });
+        return cubeOrderedList;
+
+    }
+
+    /**
+     * Calculates the mean coordinate of every different colored cube that is present in the cube map
+     * @param cubeMap the map containing the pixels of one specific color of cube
+     * @param cubeCenterMap the coordinates are the HSV values, the Vector contains for the
+     *                      x and y values the mean position of one color cube, the z position is the
+     *                      size of the given cube (the size = nb of pixels)
+     */
+    private void calculateMeanCubes(Map<Coordinates, List<Coordinates>> cubeMap, Map<Coordinates, Vector> cubeCenterMap){
+
+        //the offsets needed for the transformation of the coordinates
+        float xOffset = this.getNbColumns()/2.0f;
+        float yOffset = this.getNbRows()/2.0f;
+
+        //get the different colors
+        for(Coordinates color: cubeMap.keySet()){
+            //use the extracted key to get the list containing the pixels
+            Coordinates colorSum = new Coordinates(0,0);
+            List<Coordinates> currentColorList = cubeMap.get(color);
+            for(Coordinates colorPos: currentColorList){
+                //sum all the pixels
+                colorSum = colorSum.sum(colorPos);
+            }
+            //the amount of colorPixels
+            int nbColorPixels = currentColorList.size();
+            //rescale the result to get the mean
+            colorSum = colorSum.scalarMult(1.0f/nbColorPixels);
+
+            //put the results in the map
+            //the coordinates also need to be transformed for the autopilot, (0,0) is the middle of the screen
+            cubeCenterMap.put(color, new Vector(colorSum.getXCoordinate() - xOffset,
+                    -colorSum.getYCoordinate()+yOffset, nbColorPixels));
+        }
+    }
+
+    /**
+     * Finds all colored pixels and stores them in the provided cubemap
+     * @param cubeMap the keys are the colors of the cube and the list contains the coordinates
+     *                of the pixels with the same color
+     */
+    private void findColoredPixels(Map<Coordinates, List<Coordinates>> cubeMap){
+
+        int nbRows = this.getNbRows();
+        int nbColumns = this.getNbColumns();
+
+        CameraImage cameraImage = this.getCameraImage();
+
+        Coordinates zeroCoord = new Coordinates(0.0f, 0.0f);
+
+        for(int i = 0; i != nbRows; i++){
+            for(int j = 0;  j!= nbColumns; j++){
+                Pixel currentPixel = cameraImage.getElementAtIndex(i, j);
+                float[] HSVPixel = currentPixel.convertToHSV();
+                float H = HSVPixel[0];
+                float S = HSVPixel[1];
+
+                Coordinates key = new Coordinates(H, S);
+
+                //check if it is not just a background pixel
+                if(key.equals(zeroCoord))
+                    continue; // if it is a zero coord just goto the next iteration
+
+                if(cubeMap.get(key) == null){
+                    //the j values are the x coordinates and the i values are the y coordinates
+                    Coordinates listValue = new Coordinates(j, i);
+                    //create the list to store same colored pixels
+                    List<Coordinates>  value = new ArrayList<>();
+                    //add the current value to the list
+                    value.add(listValue);
+                    //add the list as value to the map
+                    cubeMap.put(key, value);
+                }else{
+                    //get the list of the corresponding color
+                    List<Coordinates> values = cubeMap.get(key);
+                    //add the new pixel with the corresponding color
+                    values.add(new Coordinates(j, i));
+                }
+            }
+        }
+
+        //at the end of the for loop all te pixels are iterated and the cubemap is filled with all the visible cubes
+    }
+
+    /**
+     * A private class of immutable Coordinates
+     */
+    private class Coordinates{
+        //Todo implement sum
+
+        Coordinates(float x, float y){
+            xCoordinate = x;
+            yCoordinate = y;
+        }
+
+        /**
+         * calculates the sum of two coordinates
+         * @param other the other coordinates to sum
+         * @return a new coordinates object containing the sum of both coordinates
+         */
+        public Coordinates sum(Coordinates other){
+            float x = this.xCoordinate + other.xCoordinate;
+            float y = this.yCoordinate + other.yCoordinate;
+
+            return new Coordinates(x, y);
+        }
+
+        /**
+         * Method that rescales the coordinates with a given scalar
+         * @param scalar the scalar to multiply the coordinates with
+         * @return  a new coordinates object containing the rescaled coordinates
+         *          Coordinates( scalar * x, scalar * y)
+         */
+        private Coordinates scalarMult(float scalar){
+            float x = this.getXCoordinate();
+            float y = this.getYCoordinate();
+
+            return new Coordinates(x * scalar, y*scalar);
+        }
+
+        private float getXCoordinate() {
+            return xCoordinate;
+        }
+
+        private float getYCoordinate(){
+            return yCoordinate;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof Coordinates)) return false;
+
+            Coordinates that = (Coordinates) o;
+            float errorMargin = 0.01f;
+            return Pixel.isEqualFloat(this.getXCoordinate(), that.getXCoordinate(), errorMargin)&&
+                    Pixel.isEqualFloat(this.getYCoordinate(), that.getYCoordinate(), errorMargin);
+
+        }
+
+        @Override
+        public int hashCode() {
+            int result = (getXCoordinate() != +0.0f ? Float.floatToIntBits(getXCoordinate()) : 0);
+            result = 31 * result + (getYCoordinate() != +0.0f ? Float.floatToIntBits(getYCoordinate()) : 0);
+            return result;
+        }
+
+        private float xCoordinate;
+        private float yCoordinate;
+    }
+
     /**
      * Method to locate a red cube for the given image
      * based on the HSV input values
      * @return a vector containing the location of the cube and the total amount of red pixels
      * format: new Vector(x_value, y_value, totalPixels)
      */
-    public Vector locateRedCube(){
+    private Vector locateRedCube(){
 
         List<Integer> xRedCoordinates = new ArrayList<Integer>();
         List<Integer> yRedCoordinates = new ArrayList<Integer>();

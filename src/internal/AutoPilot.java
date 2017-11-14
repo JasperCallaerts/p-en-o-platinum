@@ -45,6 +45,7 @@ public class AutoPilot implements Autopilot {
 
     @Override
     public void simulationEnded() {
+		System.out.println("the simulation had ended");
         // TODO close world?
     }
     
