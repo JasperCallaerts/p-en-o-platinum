@@ -13,32 +13,37 @@ import java.net.Socket;
 public class SocketMain {
     public static void main(String[] args) throws IOException, InterruptedException {
 
-        //createConnection
-        ServerSocket testbedServerSocket = new ServerSocket(CONNECTION_PORT);
-        Socket autoPilotSocket = new Socket(CONNECTION_NAME, CONNECTION_PORT);
-        Socket testbedSocket = testbedServerSocket.accept();
-        DataOutputStream autopilotOutputStream = new DataOutputStream(autoPilotSocket.getOutputStream());
-        DataInputStream autopilotInputStream = new DataInputStream(autoPilotSocket.getInputStream());
+        //first create both threads
+        Thread testbedThread = new Thread(new TestbedMain());
+        Thread autopilotThread = new Thread(new AutopilotMain());
 
-        DataOutputStream testbedOutput = new DataOutputStream(testbedSocket.getOutputStream());
-        DataInputStream testbedInput = new DataInputStream(testbedSocket.getInputStream());
-
-        TestbedMain testbedMain = new TestbedMain();
-
-        AutopilotMain autopilotMain = new AutopilotMain();
-
-        configAutopilot_OutputPart(testbedOutput, testbedMain);
-        configureAutopilot_InputPart(autopilotMain, autopilotInputStream, autopilotOutputStream);
-
-
-        for(int i = 0; i != 10000; i++){
-            advanceTestbed(testbedMain, testbedInput, testbedOutput);
-            advanceAutoPilot(autopilotMain, autopilotInputStream, autopilotOutputStream);
-        }
-
-
+        testbedThread.start();
+        autopilotThread.start();
 
     }
+//        //createConnection
+//        ServerSocket testbedServerSocket = new ServerSocket(CONNECTION_PORT);
+//        Socket autoPilotSocket = new Socket(CONNECTION_NAME, CONNECTION_PORT);
+//        Socket testbedSocket = testbedServerSocket.accept();
+//        DataOutputStream autopilotOutputStream = new DataOutputStream(autoPilotSocket.getOutputStream());
+//        DataInputStream autopilotInputStream = new DataInputStream(autoPilotSocket.getInputStream());
+//
+//        DataOutputStream testbedOutput = new DataOutputStream(testbedSocket.getOutputStream());
+//        DataInputStream testbedInput = new DataInputStream(testbedSocket.getInputStream());
+//
+//        TestbedMain testbedMain = new TestbedMain();
+//
+//        AutopilotMain autopilotMain = new AutopilotMain();
+//
+//        configAutopilot_OutputPart(testbedOutput, testbedMain);
+//        configureAutopilot_InputPart(autopilotMain, autopilotInputStream, autopilotOutputStream);
+//
+//
+//       while(true){
+//            advanceTestbed(testbedMain, testbedInput, testbedOutput);
+//            advanceAutoPilot(autopilotMain, autopilotInputStream, autopilotOutputStream);
+//        }
+//    }
 
     /**
      * Outputs the configuration of the autopilot
@@ -135,8 +140,6 @@ public class SocketMain {
     private static AutopilotOutputs readFromAutoPilot(DataInputStream inputStream) throws IOException {
         return AutopilotOutputsReader.read(inputStream);
     }
-
-
 
 
     public final static String CONNECTION_NAME = "localhost";
