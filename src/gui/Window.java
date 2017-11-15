@@ -153,7 +153,7 @@ public class Window {
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
 		
-		program = new ShaderProgram(false, "resources/default.vert", "resources/default.frag");	
+		program = new ShaderProgram(false, "resources/3dWorld.vert", "resources/3dWorld.frag");	
 
         program.init();
         
