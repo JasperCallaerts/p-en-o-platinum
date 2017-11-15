@@ -41,6 +41,10 @@ public class Drone implements WorldObject {
 		this.setOrientation(orientation);
 		this.setRotationVector(rotationVector);
 
+		PhysXEngine.PhysXOptimisations optimisations = this.getPhysXEngine().createPhysXOptimisations();
+		this.setVelocity(optimisations.balanceDrone(this.getOrientation())[1]);
+
+
 		// the cube associated with the drone
 		this.setAssociatedCube(new Cube(position.convertToVector3f(), new Vector3f()));
 		// TODO config stream

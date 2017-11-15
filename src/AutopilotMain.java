@@ -13,8 +13,8 @@ import java.net.Socket;
  */
 public class AutopilotMain implements Runnable {
 
-    public AutopilotMain(String connectionName, int connectionPort) {
-        this.setAutoPilot(new AutoPilot());
+    public AutopilotMain(String connectionName, int connectionPort, Autopilot autopilot) {
+        this.setAutoPilot(autopilot);
         this.setConnectionName(connectionName);
         this.setConnectionPort(connectionPort);
     }
@@ -25,17 +25,19 @@ public class AutopilotMain implements Runnable {
     public void run() {
         try {
             autopilotMainLoop();
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
     }
 
-    private void autopilotMainLoop() throws IOException {
+    private void autopilotMainLoop() throws IOException, InterruptedException {
         Socket autopilotClientSocket = new Socket(this.getConnectionName(), this.getConnectionPort());
 
         DataInputStream inputStream = new DataInputStream(autopilotClientSocket.getInputStream());
         DataOutputStream outputStream = new DataOutputStream(autopilotClientSocket.getOutputStream());
         boolean firstRun = true;
+        int connectionTrys = 0;
+        int maxConnectionTrys = 20;
         //first configure the autopilot
         while(firstRun){
             try{
@@ -48,6 +50,12 @@ public class AutopilotMain implements Runnable {
             }catch(NullPointerException e){
                 //let the exception fly
                 System.out.println("Catching Exception: waiting for config input");
+            }catch(java.net.ConnectException e){
+                Thread.sleep(200);
+               //if we tried to much, throw exception
+                if(connectionTrys == maxConnectionTrys)
+                    throw new java.net.ConnectException(e.getMessage());
+                connectionTrys +=1;
             }
         }
 
@@ -62,7 +70,10 @@ public class AutopilotMain implements Runnable {
                 //let the exception fly
                 System.out.println("Catching Exception: waiting for testbed input");
             }catch(java.io.EOFException e){
+                System.out.println("Closing down Autopilot Client");
                 //the stream has stopped, close the socket
+                inputStream.close();
+                outputStream.close();
                 autopilotClientSocket.close();
                 //nothing to do anymore... just close
                 break;
@@ -70,55 +81,34 @@ public class AutopilotMain implements Runnable {
         }
     }
 
-
-
-    public AutoPilot getAutoPilot() {
+    private Autopilot getAutoPilot() {
         return autoPilot;
     }
 
-    public void setAutoPilot(AutoPilot autoPilot) {
+    private void setAutoPilot(Autopilot autoPilot) {
         this.autoPilot = autoPilot;
     }
 
-    public AutopilotConfig getAutopilotConfig() {
-        return autopilotConfig;
-    }
-
-    public void setAutopilotConfig(AutopilotConfig autopilotConfig) {
-        this.autopilotConfig = autopilotConfig;
-    }
-
-    public AutopilotInputs getAutopilotInputs() {
-        return autopilotInputs;
-    }
-
-    public void setAutopilotInputs(AutopilotInputs autopilotInputs) {
-        this.autopilotInputs = autopilotInputs;
-    }
-
-    public String getConnectionName() {
+    private String getConnectionName() {
         return connectionName;
     }
 
-    public void setConnectionName(String connectionName) {
+    private void setConnectionName(String connectionName) {
         this.connectionName = connectionName;
     }
 
-    public int getConnectionPort() {
+    private int getConnectionPort() {
         return connectionPort;
     }
 
-    public void setConnectionPort(int connectionPort) {
+    private void setConnectionPort(int connectionPort) {
         this.connectionPort = connectionPort;
     }
 
-    private AutoPilot autoPilot;
-    private AutopilotConfig autopilotConfig;
-    private AutopilotInputs autopilotInputs;
-
+    private Autopilot autoPilot;
     private String connectionName;
     private int connectionPort;
-    public boolean simulationEnded = false;
+
 }
 
   /*  *//**
