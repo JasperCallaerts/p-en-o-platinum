@@ -5,6 +5,7 @@ import Autopilot.AutopilotOutputs;
 
 /**
  * Created by Martijn on 6/11/2017.
+ * A class of physics engines used for the drone and the autopilot
  */
 public class PhysXEngine {
 
@@ -59,7 +60,6 @@ public class PhysXEngine {
         Vector acceleration = this.calcAcceleration(thrustVector, orientation, rotation, velocity);
         Vector nextVelocity = this.getNextVelocity(deltaTime, acceleration, velocity);
         Vector nextPosition = this.getNextPosition(deltaTime, acceleration, position, velocity);
-
         Vector angularAcceleration = this.calcAngularAcceleration(orientation, rotation, velocity);
         Vector angularAccelerationWorld = droneOnWorld(angularAcceleration, orientation);
         Vector nextRotation = this.getNextRotationVector(deltaTime, angularAccelerationWorld, rotation);
@@ -428,7 +428,7 @@ public class PhysXEngine {
      * @author Martijn Sauwens
      */
     public Vector getTotalExternalForcesWorld(Vector thrustVector, Vector orientation, Vector rotation, Vector velocity) {
-        System.out.println("Velocity " + velocity);
+
         // calculate the force exerted on the wings
         WingPhysX[] wingArray = this.getWingArray();
         int nbOfWings = wingArray.length;
@@ -439,7 +439,7 @@ public class PhysXEngine {
         }
 
         Vector totalLift = Vector.sumVectorArray(liftVectors);
-        System.out.println("total lift " + totalLift);
+
         // transform the thrust vector of the drone to the world axis
         Vector thrust = droneOnWorld(thrustVector, orientation);
 
@@ -820,81 +820,149 @@ public class PhysXEngine {
     private final static String AUTOPILOT_CONFIG = "the autopilot has already been initialized";
     private final static String INVALID_CONFIG = "The physics engine is already configured";
 
+
+    public PhysXOptimisations createPhysXOptimisations(){
+        return new PhysXOptimisations();
+    }
+
     /**
      * A class used for optimisation problems concerning the physics of the drone.
      * Eg: calculating the optimal velocity and thrust to gain stability
      */
-    public class PhysicsOptimisations{
-        public PhysicsOptimisations(){
+    public class PhysXOptimisations {
+
+        public PhysXOptimisations(){
             // nothing to construct
         }
 
 
-    public Vector[] balanceDrone(Vector orientation){
-        // use interval reduction to find the zero point for the lift, and initialize the thrust to
-        // be equal to the "drag" experienced by the aircraft.
-        float stepsize = 1.0f;
-        float velocity = 0.0f;
-        float firstPositive;
-        boolean positiveLift = false;
-        Vector zeroThrust = new Vector();
+        public Vector[] balanceDrone(Vector orientation){
+            PhysXEngine.this.getMainLeft().setWingInclination(AutoPilotController.MAIN_STABLE_INCLINATION);
+            PhysXEngine.this.getMainRight().setWingInclination(AutoPilotController.MAIN_STABLE_INCLINATION);
+            PhysXEngine.this.getHorizontalStabilizer().setWingInclination(AutoPilotController.STABILIZER_STABLE_INCLINATION);
+            PhysXEngine.this.getVerticalStabilizer().setWingInclination(AutoPilotController.STABILIZER_STABLE_INCLINATION);
+            // use interval reduction to find the zero point for the lift, and initialize the thrust to
+            // be equal to the "drag" experienced by the aircraft.
+            float stepsize = 1.0f;
+            float velocity = 0.0f;
+            float firstPositive;
+            boolean positiveLift = false;
+            Vector zeroThrust = new Vector();
 
-        // first get the point where the total external forces are larger than zero
-        while(! positiveLift) {
-            System.out.println("external forces " + PhysXEngine.this.getTotalExternalForcesWorld(zeroThrust, orientation, new Vector(), new Vector(0,0, -velocity)));
-            //System.out.println("Velocity: " + velocity);
-            if(PhysXEngine.this.getTotalExternalForcesWorld(zeroThrust, new Vector(), new Vector(), new Vector(0,0, -velocity)).getyValue() > 0.0f) {
-                positiveLift = true;
-                firstPositive = velocity;
-            }else{
-                if(velocity > 1000)
-                    throw new IllegalArgumentException();
-                velocity += stepsize;
-            }
-        }
-
-        velocity = this.findZero(orientation, velocity-stepsize, velocity);
-        float desiredThrust = -PhysXEngine.this.getTotalExternalForcesWorld(zeroThrust, orientation, new Vector(), new Vector(0,0, -velocity)).getzValue();
-        return new Vector[]{new Vector(0,0,desiredThrust), new Vector(0,0, -velocity)};
-    }
-
-    private float findZero(Vector orientation, float lowerBound, float upperBound){
-
-        float epsilon = 1E-6f;
-        float nbOfSteps = 10000;
-        float prevYValue = Float.MAX_VALUE;
-        float velocityCenter = upperBound;
-        Vector zeroThrust = new Vector();
-        Vector velocityVector = new Vector();
-
-        for(int index = 0; index != nbOfSteps; index++){
-            //get the value for this iteration
-            velocityCenter = (lowerBound + upperBound)/2.0f;
-            velocityVector = new Vector(0.0f, 0.0f, -velocityCenter);
-            float yNextValue = PhysXEngine.this.getTotalExternalForcesWorld(zeroThrust, orientation, new Vector(), velocityVector).getyValue();
-            //System.out.println(drone.getTotalExternalForcesWorld());
-
-            //check if the precision is good enough
-            if(yNextValue == 0.0f){
-                System.out.println("exit with good approx");
-                return velocityCenter;
-            // if not replace the borders
-            }else{
-                if(yNextValue < 0){
-                    lowerBound = velocityCenter;
-                    prevYValue = yNextValue;
+            // first get the point where the total external forces are larger than zero
+            while(! positiveLift) {
+                //System.out.println("external forces " + PhysXEngine.this.getTotalExternalForcesWorld(zeroThrust, orientation, new Vector(), new Vector(0,0, -velocity)));
+                //System.out.println("Velocity: " + velocity);
+                if(PhysXEngine.this.getTotalExternalForcesWorld(zeroThrust, new Vector(), new Vector(), new Vector(0,0, -velocity)).getyValue() > 0.0f) {
+                    positiveLift = true;
+                    firstPositive = velocity;
                 }else{
-                    upperBound = velocityCenter;
-                    prevYValue = yNextValue;
+                    if(velocity > 1000)
+                        throw new IllegalArgumentException();
+                    velocity += stepsize;
                 }
             }
+
+            velocity = this.findZero(orientation, velocity-stepsize, velocity);
+            float desiredThrust = -PhysXEngine.this.getTotalExternalForcesWorld(zeroThrust, orientation, new Vector(), new Vector(0,0, -velocity)).getzValue();
+            return new Vector[]{new Vector(0,0,desiredThrust), new Vector(0,0, -velocity)};
         }
-        System.out.println("Exit with bad approx");
-        System.out.println("Total External Forces: " + PhysXEngine.this.getTotalExternalForcesWorld(zeroThrust, orientation, new Vector(), velocityVector));
-        System.out.println("Velocity: " + velocityCenter);
-        return velocityCenter;
-    }
+
+        private float findZero(Vector orientation, float lowerBound, float upperBound){
+
+            float epsilon = 1E-6f;
+            float nbOfSteps = 10000;
+            float prevYValue = Float.MAX_VALUE;
+            float velocityCenter = upperBound;
+            Vector zeroThrust = new Vector();
+            Vector velocityVector = new Vector();
+
+            for(int index = 0; index != nbOfSteps; index++){
+                //get the value for this iteration
+                velocityCenter = (lowerBound + upperBound)/2.0f;
+                velocityVector = new Vector(0.0f, 0.0f, -velocityCenter);
+                float yNextValue = PhysXEngine.this.getTotalExternalForcesWorld(zeroThrust, orientation, new Vector(), velocityVector).getyValue();
+                //System.out.println(drone.getTotalExternalForcesWorld());
+
+                //check if the precision is good enough
+                if(yNextValue == 0.0f){
+                    System.out.println("exit with good approx");
+                    return velocityCenter;
+                // if not replace the borders
+                }else{
+                    if(yNextValue < 0){
+                        lowerBound = velocityCenter;
+                        prevYValue = yNextValue;
+                    }else{
+                        upperBound = velocityCenter;
+                        prevYValue = yNextValue;
+                    }
+                }
+            }
+            System.out.println("Exit with bad approx");
+            System.out.println("Total External Forces: " + PhysXEngine.this.getTotalExternalForcesWorld(zeroThrust, orientation, new Vector(), velocityVector));
+            System.out.println("Velocity: " + velocityCenter);
+            return velocityCenter;
+        }
+
+        public Vector balanceThrust(float stepSize, Vector orientation, Vector rotation, Vector velocity){
+
+            //public Vector getTotalExternalForcesWorld(Vector thrustVector, Vector orientation, Vector rotation, Vector velocity)
+            int nbSteps = (int)Math.round(Math.floor(getPhysXEngineConfig().getMaxThrust()/stepSize));
+            float bestSize = Float.POSITIVE_INFINITY;
+            float bestThrust = 0;
+            float currentThrust = 0;
+
+            for(int i = 0;  i != nbSteps; i++){
+                Vector externalForce = getTotalExternalForcesWorld(new Vector(0,0, -currentThrust), orientation, rotation, velocity);
+                float currentSize = externalForce.getSize();
+                if(currentSize < bestSize ){
+                    bestThrust = currentThrust;
+                }
+                currentThrust += i*stepSize;
+            }
+
+            return new Vector(0,0, - bestThrust);
+        }
+
 
     }
 
 }
+
+/*
+    // tried to use multi threading for the calculation heaviest application, but too much overhead
+    //calculate the next arguments concurrently
+    ExecutorService executor = Executors.newFixedThreadPool(2);
+
+    Callable<Vector> accelerationCall = new Callable<Vector>() {
+        @Override
+        public Vector call() throws Exception {
+            return calcAcceleration(thrustVector, orientation, rotation, velocity);
+        }
+    };
+
+    Callable<Vector> angularAccelerationCall = new Callable<Vector>() {
+        @Override
+        public Vector call() throws Exception {
+            return calcAngularAcceleration(orientation, rotation, velocity);
+        }
+    };
+
+    //execute both concurrently
+    Future<Vector> angularFuture = executor.submit(angularAccelerationCall);
+    Future<Vector> accelerationFuture = executor.submit(accelerationCall);
+
+    //initialize the vectors
+    Vector acceleration = new Vector();
+    Vector angularAcceleration = new Vector();
+
+        try {
+                acceleration = accelerationFuture.get();
+                angularAcceleration = angularFuture.get();
+                } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+                }
+
+                executor.shutdown();
+*/

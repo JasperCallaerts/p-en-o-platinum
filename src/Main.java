@@ -103,7 +103,7 @@ public class Main {
         // initialize time handler
      	Time.initTime();
      		
-        while (!graphics.isTerminated()) {
+        while(!graphics.isTerminated()) {
 
 //            long startTime = System.currentTimeMillis();
         	
