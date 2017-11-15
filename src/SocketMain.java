@@ -1,3 +1,4 @@
+import internal.AutoPilot;
 import internal.SimulationEndedException;
 
 import java.io.*;
@@ -43,7 +44,7 @@ public class SocketMain {
     public final static int CONNECTION_PORT = 21212;
 
     private static TestbedMain MAIN_TESTBED = new TestbedMain(CONNECTION_NAME, CONNECTION_PORT);
-    private static AutopilotMain MAIN_AUTOPILOT = new AutopilotMain(CONNECTION_NAME, CONNECTION_PORT);
+    private static AutopilotMain MAIN_AUTOPILOT = new AutopilotMain(CONNECTION_NAME, CONNECTION_PORT, new AutoPilot());
 
 }
 

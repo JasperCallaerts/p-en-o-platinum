@@ -122,7 +122,9 @@ public class TestbedMain implements Runnable{
                 System.out.println("Catching Exception: waiting for autopilot output");
             } catch(java.io.EOFException | SimulationEndedException ex ){
                 //this exception means that the client socket has closed, close own sockets
-                System.out.println("closing server sockets");
+                System.out.println("Closing down Testbed Server");
+                inputStream.close();
+                outputStream.close();
                 testbedClientSocket.close();
                 testbedServer.close();
                 break;
@@ -178,7 +180,7 @@ public class TestbedMain implements Runnable{
             //try if the world can be advanced to the next state
             try {
                 // elapsedTime replace by getTimePassed()
-                if (!firstRun) {
+                if (!isFirstRun()) {
                     drone.setAutopilotOutputs(autopilotOutputs);
                     this.getWorld().advanceWorldState(TIME_STEP, STEPS_PER_ITERATION);
                 } else {
@@ -225,10 +227,12 @@ public class TestbedMain implements Runnable{
         long timeLeft = (long) (FRAME_MILLIS - Time.timeSinceLastUpdate());
         if (timeLeft > 0)
             Thread.sleep(timeLeft);
-        System.out.println(timeLeft);
+        //System.out.println(timeLeft);
 
         return autopilotInputs;
     }
+
+
 
     public AutopilotConfig getConfig() {
         return drone.getAutopilotConfig();
