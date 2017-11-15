@@ -92,9 +92,9 @@ public class Cube{
 	}
 	
 	public Cube(Vector3f position, Vector3f colour) {
-		setColours(colour);
-//		float[] col = {colour.x, colour.y, colour.z};
-//		setColours(Vector3f.ArrayToVector3f(col));
+//		setColours(colour);
+		float[] col = {colour.x, colour.y, colour.z};
+		setColours(Vector3f.ArrayToVector3f(col));
 		
 		for (String key: g.windows.keySet()) {
 			glfwMakeContextCurrent(g.windows.get(key).getHandler());
@@ -133,20 +133,20 @@ public class Cube{
 	}
 	
 	private void setColours(Vector3f colour) {
-		Vector3f posY = colour.scale(1.00f);
-		Vector3f negY = colour.scale(0.15f);
-		Vector3f posX = colour.scale(0.85f);
-		Vector3f negX = colour.scale(0.30f);
-		Vector3f posZ = colour.scale(0.70f);
-		Vector3f negZ = colour.scale(0.45f);
+//		Vector3f posY = colour.scale(1.00f);
+//		Vector3f negY = colour.scale(0.15f);
+//		Vector3f posX = colour.scale(0.85f);
+//		Vector3f negX = colour.scale(0.30f);
+//		Vector3f posZ = colour.scale(0.70f);
+//		Vector3f negZ = colour.scale(0.45f);
 		
 		
-//		Vector3f posY = Vector3f.ArrayToVector3f(HSVconverter.HSVtoRGB2(colour.x, colour.y, 1.00f * colour.z));
-//		Vector3f negY = Vector3f.ArrayToVector3f(HSVconverter.HSVtoRGB2(colour.x, colour.y, 0.15f * colour.z));
-//		Vector3f posX = Vector3f.ArrayToVector3f(HSVconverter.HSVtoRGB2(colour.x, colour.y, 0.85f * colour.z));
-//		Vector3f negX = Vector3f.ArrayToVector3f(HSVconverter.HSVtoRGB2(colour.x, colour.y, 0.30f * colour.z));
-//		Vector3f posZ = Vector3f.ArrayToVector3f(HSVconverter.HSVtoRGB2(colour.x, colour.y, 0.70f * colour.z));
-//		Vector3f negZ = Vector3f.ArrayToVector3f(HSVconverter.HSVtoRGB2(colour.x, colour.y, 0.45f * colour.z));
+		Vector3f posY = Vector3f.ArrayToVector3f(HSVconverter.HSVtoRGB2(colour.x, colour.y, 1.00f * colour.z));
+		Vector3f negY = Vector3f.ArrayToVector3f(HSVconverter.HSVtoRGB2(colour.x, colour.y, 0.15f * colour.z));
+		Vector3f posX = Vector3f.ArrayToVector3f(HSVconverter.HSVtoRGB2(colour.x, colour.y, 0.85f * colour.z));
+		Vector3f negX = Vector3f.ArrayToVector3f(HSVconverter.HSVtoRGB2(colour.x, colour.y, 0.30f * colour.z));
+		Vector3f posZ = Vector3f.ArrayToVector3f(HSVconverter.HSVtoRGB2(colour.x, colour.y, 0.70f * colour.z));
+		Vector3f negZ = Vector3f.ArrayToVector3f(HSVconverter.HSVtoRGB2(colour.x, colour.y, 0.45f * colour.z));
 		
 		colours = new float[]{
 				posZ.x, posZ.y, posZ.z,

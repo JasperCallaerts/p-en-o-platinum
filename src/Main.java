@@ -67,7 +67,7 @@ public class Main {
         	Cube cube = new Cube(position.convertToVector3f(), COLOR.convertToVector3f());
         	block.setAssocatedCube(cube);
         	blocks.add(block);
-        }*/
+        }
         
         Vector COLOR = new Vector(1.0f, 0.0f,0.0f);
         BlockCoordinatesParser parser = new BlockCoordinatesParser(COORDINATES_FILEPATH);
@@ -82,6 +82,8 @@ public class Main {
         
         world.addWorldObject(blocks.get(0));
         world.addWorldObject(blocks.get(1));
+        */
+        
         
         // Initialize the windows
         droneCam.initWindow(world, Settings.DRONE_CAM);
