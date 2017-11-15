@@ -33,7 +33,7 @@ public class AutoPilotController {
         // Thrust
         float thrust = (float) ((STANDARD_THRUST) + THRUST_FACTOR*this.getTotalMass()*GRAVITY*sin(Math.PI - pitch));
         //System.out.println(thrust);
-        outputs.setThrust(Math.max(thrust, 0));
+        outputs.setThrust(Math.max(Math.min(thrust, MAXTHRUST), 0));
     }
 
     private void startDescend(ControlOutputs outputs, float xPosCube, float yPosCube){
@@ -60,10 +60,10 @@ public class AutoPilotController {
         //outputs.setVerStabInclination(STANDARD_INCLINATION);
     	if (yPosCube >= 0) {
     		startTurnAscend(outputs, xPosCube, yPosCube);
-    		//System.out.println("Turn Right ascending");
+
     	}else {
     		startTurnDescend(outputs, xPosCube, yPosCube);
-    		//System.out.println("Turn Right descending");
+
     	}
     	
     	outputs.setRightWingInclination(TURNING_INCLINATION + MAIN_STABLE_INCLINATION);
@@ -74,10 +74,10 @@ public class AutoPilotController {
         //outputs.setVerStabInclination(-STANDARD_INCLINATION);
     	if (yPosCube >= 0) {
     		startTurnAscend(outputs, xPosCube, yPosCube);
-    		//System.out.println("Turn Left ascending");
+
     	}else {
     		startTurnDescend(outputs, xPosCube, yPosCube);
-    		//System.out.println("Turn Left descending");
+
     	}
 
         outputs.setRightWingInclination(-TURNING_INCLINATION + MAIN_STABLE_INCLINATION);
@@ -151,16 +151,16 @@ public class AutoPilotController {
                 // Descend
                 //System.out.println("This is your captain speaking: the red cube is located underneath us");
                 this.startDescend(controlOutputs, xPosition, yPosition);
-                //System.out.println("Actually descending");
+
             }else if((yPosition >= -threshold - bias && yPosition <= threshold - bias) && (xPosition >= -threshold && xPosition <= threshold)){
                 // Stop descending/ascending
                 this.stopAscendDescend(controlOutputs, xPosition, yPosition);
-                //System.out.println("Actually NOT descending nor ascending");
+
             }else if(yPosition > threshold - bias && (xPosition >= -threshold && xPosition <= threshold)){
                 // Ascend
                 //System.out.println("This is your captain speaking: the red cube is located above us");
                 this.startAscend(controlOutputs, xPosition, yPosition);
-                //System.out.println("Actually ascending");
+
             }
         }else if(xPosition < -threshold){
             // Turn left
@@ -234,6 +234,7 @@ public class AutoPilotController {
     public static final float STABILIZER_STABLE_INCLINATION = 0.0f;
     private static final float GRAVITY = 9.81f;
     private static final float ROLL_THESHOLD = (float) (Math.PI * 3.0f/180.0f);
+    private static final float MAXTHRUST = 250.0f;
 
     private class ControlOutputs implements AutopilotOutputs{
 
