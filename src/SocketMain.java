@@ -45,7 +45,7 @@ public class SocketMain {
     public final static String CONNECTION_NAME = "localhost";
     public final static int CONNECTION_PORT = 21212;
 
-    private static TestbedMain MAIN_TESTBED = new TestbedMain(CONNECTION_NAME, CONNECTION_PORT, true);
+    private static TestbedMain MAIN_TESTBED = new TestbedMain(CONNECTION_NAME, CONNECTION_PORT, false);
     private static AutopilotMain MAIN_AUTOPILOT = new AutopilotMain(CONNECTION_NAME, CONNECTION_PORT, new AutoPilot());
 
 }

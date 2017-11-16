@@ -12,7 +12,7 @@ public class PhysXEngine {
     /**
      * Constructor for a physics engine
      * @param configuration the configuration of the engine
-     * @author Martijn Sauwens
+     * @author
      */
     public PhysXEngine(AutopilotConfig configuration){
 
@@ -64,8 +64,8 @@ public class PhysXEngine {
         Vector nextPosition = this.getNextPosition(deltaTime, acceleration, position, velocity);
         Vector angularAcceleration = this.calcAngularAcceleration(orientation, rotation, velocity);
         Vector angularAccelerationWorld = droneOnWorld(angularAcceleration, orientation);
-       // Vector nextRotation = this.getNextRotationVector(deltaTime, angularAccelerationWorld, rotation);
-        Vector nextRotation = this.getNextRotationCauchy(deltaTime, orientation, rotation, velocity);
+        Vector nextRotation = this.getNextRotationVector(deltaTime, angularAccelerationWorld, rotation);
+        //Vector nextRotation = this.getNextRotationCauchy(deltaTime, orientation, rotation, velocity);
         //Vector nextRotation = this.getNextRotationRK4(deltaTime, orientation, rotation, velocity);
         Vector nextOrientation = this.getNextOrientation(deltaTime, angularAccelerationWorld, orientation, rotation);
 

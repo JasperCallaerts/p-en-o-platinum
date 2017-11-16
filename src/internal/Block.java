@@ -60,6 +60,13 @@ public class Block implements WorldObject {
 		this.isVisited = true;
 	}
 
+	@Override
+	public String toString() {
+		return "Block{" +
+				"position=" + position +
+				", isVisited=" + isVisited +
+				'}';
+	}
 
 	private Vector position;
 

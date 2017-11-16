@@ -5,6 +5,8 @@ import internal.Vector;
 import math.Matrix4f;
 import math.Vector3f;
 
+import java.util.Arrays;
+
 import static org.lwjgl.glfw.GLFW.glfwMakeContextCurrent;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
@@ -179,5 +181,12 @@ public class Cube{
 				negZ.x, negZ.y, negZ.z,
 				negZ.x, negZ.y, negZ.z,
 		};
+	}
+
+	@Override
+	public String toString() {
+		return "Cube{" +
+				"colours=" + Arrays.toString(colours) +
+				'}';
 	}
 }

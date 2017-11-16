@@ -194,6 +194,16 @@ public class World {
 				if(!withinFourMeters)
 					return false;
 
+				block.setVisited();
+
+				System.out.print("Visited blocks: ");
+				for(Block block1: this.getBlockSet()){
+					if(block1.isVisited())
+						System.out.print(block1 +", ");
+				}
+
+				System.out.println(" ");
+
 				//check if all the cubes are visited
 				for(Block currentBlock: this.getBlockSet()){
 					// if not return false

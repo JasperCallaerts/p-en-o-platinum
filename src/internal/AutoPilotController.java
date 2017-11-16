@@ -121,6 +121,8 @@ public class AutoPilotController {
         float xPosition = center.getxValue();
         float yPosition = -center.getyValue();
 
+        //System.out.println("Center location: " + center);
+
         int cubeSize = Math.round(center.getzValue());
         //System.out.println(cubeSize);
 
