@@ -45,10 +45,30 @@ public class Block implements WorldObject {
 		return this.getAssociatedCube() == null && cube.getPosition().rangeEquals(this.getPosition(), maxPosDifference);
 	}
 
+	/**
+	 * getter for the is visited flag
+	 * @return
+	 */
+	public boolean isVisited(){
+		return this.isVisited;
+	}
+
+	/**
+	 * set the is visited flag to true
+	 */
+	public void setVisited(){
+		this.isVisited = true;
+	}
+
 
 	private Vector position;
 
 	private Cube blockCube;
+
+	/**
+	 * Flag that stores if the block was visited by the drone.
+	 */
+	private boolean isVisited = false;
 
 	/**
 	 * variable used for the max allowed error on the position between de block and the cube

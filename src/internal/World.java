@@ -13,11 +13,11 @@ import java.util.function.BiPredicate;
  */
 public class World {
 	
-	public World(){
+	public World(String objective){
 		Xsize = 0;	//max groottes initialiseren
 		Ysize = 0;
 		Zsize = 0;
-
+		this.setObjective(objective);
 	}
 	
 	private Set<WorldObject> objects = new HashSet<>();
@@ -176,15 +176,78 @@ public class World {
 
 	}
 
+
 	/**
-	 * Checks if the the provided drone and block are within 4meter radius
-	 * @param block the block to be checked
-	 * @param drone the drone to be checked
-	 * @return true if and only if the block and the drone are within 4m radius
+	 * Checks if the current objective is completed
+	 * @param block the selected block
+	 * @param drone the selected drone
+	 * @return true if and only if the specified goal is reached
 	 * @author Martijn Sauwens
 	 */
-	public boolean goalReached(Block block, Drone drone){
-		return block.getPosition().distanceBetween(drone.getPosition()) <=4.0f;
+	private boolean goalReached(Block block, Drone drone){
+		boolean withinFourMeters = block.getPosition().distanceBetween(drone.getPosition()) <=4.0f;
+		switch (this.getObjective()){
+			case REACH_CUBE_OBJECTIVE:
+				return withinFourMeters;
+			case VISIT_ALL_OBJECTIVE:
+				//first check if the current cube has been reached, if not we cannot have visited them all
+				if(!withinFourMeters)
+					return false;
+
+				//check if all the cubes are visited
+				for(Block currentBlock: this.getBlockSet()){
+					// if not return false
+					if(!currentBlock.isVisited())
+						return false;
+				}
+				//only if all the cubes are visited the for loop will terminate
+				return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Getter for the currenr objective
+	 * @return a string with the current objective
+	 * @author Martijn Sauwens
+	 */
+	private String getObjective() {
+		return objective;
+	}
+
+	/**
+	 * Setter for the current objective
+	 * @param objective the current objective
+	 * @author Martijn Sauwens
+	 */
+	private void setObjective(String objective) {
+		if(!canHaveAsObjective(objective))
+			throw new IllegalArgumentException(INVALID_OBJECTIVE);
+		this.objective = objective;
+	}
+
+	/**
+	 * Checker if the provided objective is valid
+	 * @param objective the objective to check
+	 * @author Martijn Sauwens
+	 */
+	public static boolean canHaveAsObjective(String objective){
+		switch(objective){
+			case REACH_CUBE_OBJECTIVE:
+				return true;
+			case VISIT_ALL_OBJECTIVE:
+				return true;
+			default:
+				return false;
+		}
+	}
+
+	/**
+	 * @return an array containing all the possible objectives
+	 * @author Martijn Sauwens
+	 */
+	public String[] getAllPossibleObjectives(){
+		return new String[]{VISIT_ALL_OBJECTIVE, REACH_CUBE_OBJECTIVE};
 	}
 
 	/**
@@ -201,6 +264,11 @@ public class World {
 	private final int Ysize;
 	private final int Zsize;
 
+	/**
+	 * Variable containing the current objective (atm only vist all cubes and reach cube)
+	 */
+	private String objective;
+
 	public int getXsize(){
 		return Xsize;
 	}
@@ -215,6 +283,14 @@ public class World {
 	private final static String ADD_WORLD_OBJECT_ERROR = "The object couldn't be added to the world";
 	private final static String WORLD_OBJECT_404 = "The object couldn't be found";
 	private final static String INVALID_TIME_INTERVAL = "The time interval is <= 0, please provide a strictly positive number";
+	private final static String INVALID_OBJECTIVE = "The specified objective is not possible";
+
+	/**
+	 * Objectives
+	 */
+	public final static String REACH_CUBE_OBJECTIVE = "reach cube";
+	public final static String VISIT_ALL_OBJECTIVE = "visit all the cubes";
+
 
 
 }

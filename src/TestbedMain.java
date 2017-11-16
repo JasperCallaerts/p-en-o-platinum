@@ -1,8 +1,5 @@
 import Autopilot.*;
-import gui.Cube;
-import gui.Graphics;
-import gui.Time;
-import gui.Window;
+import gui.*;
 import internal.*;
 import math.Vector3f;
 
@@ -26,9 +23,10 @@ public class TestbedMain implements Runnable{
      * Initialize the main method for the testbed
      * see old mainloop for more info
      */
-    public TestbedMain(String connectionName, int connectionPort) {
+    public TestbedMain(String connectionName, int connectionPort, boolean showAllWidows) {
         this.setConnectionName(connectionName);
         this.setConnectionPort(connectionPort);
+        this.showAllWindows = showAllWidows;
         //this.setQueue(queue);
     }
 
@@ -38,35 +36,46 @@ public class TestbedMain implements Runnable{
      * within one thread of control
      */
     private void initTestbed(){
+
         // initialize graphics capabilities
         this.setGraphics(new Graphics());
 
         // Cube needs graphics to be able to initialize cubes
         Cube.setGraphics(this.getGraphics());
 
-        // Construct the windows
         this.setDroneCam(new Window(200, 200, 0.5f, 0.4f, "bytestream window", new Vector3f(1.0f, 1.0f, 1.0f), false));
-        this.setDroneView(new Window(960, 1000, 0.0f, 0.4f, "Drone simulator 2017", new Vector3f(1.0f, 1.0f, 1.0f), true));
-        this.setPersonView(new Window(960, 1000, 1f, 0.4f, "Drone simulator 2017", new Vector3f(0.5f, 0.8f, 1.0f), true));
+        setDroneView(new Window(960, 510, 0.0f, 0.05f, "Drone view", new Vector3f(1.0f, 1.0f, 1.0f), true));
+        if(this.getShowAllWindows()) {
+            this.setTopDownView(new Window(960, 510, 1f, 0.05f, "Top down view", new Vector3f(1.0f, 1.0f, 1.0f), true));
+            setSideView(new Window(960, 510, 1f, 1f, "Side view", new Vector3f(1.0f, 1.0f, 1.0f), true));
+            setChaseView(new Window(960, 510, 0f, 1f, "Chase view", new Vector3f(1.0f, 1.0f, 1.0f), true));
+        }
+
+//		Window independentView = new Window(960, 1000, 1f, 0.4f, "Independent camera", new Vector3f(0.5f, 0.8f, 1.0f), true);
+//		Window textWindow = new Window(500, 500, 0.5f, 0.5f, "text window", new Vector3f(0.0f, 0.0f, 0.0f), true); // Not implemented yet
 
         // add the windows to graphics
-        this.getGraphics().addWindow("camera", this.getDroneCam());
-        this.getGraphics().addWindow("third person view", this.getPersonView());
-        this.getGraphics().addWindow("drone view", this.getDroneView());
-//		graphics.addWindow("textWindow", textWindow); // Not implemented yet
+        this.getGraphics().addWindow("bytestream window", droneCam);
+        this.getGraphics().addWindow("Drone view", droneView);
+        //only needed for demo
+        if(this.getShowAllWindows()) {
+            this.getGraphics().addWindow("Top down view", topDownView);
+            this.getGraphics().addWindow("Side view", sideView);
+            this.getGraphics().addWindow("Chase view", chaseView);
+        }
 
 
         // drone builder covers all the stuff involving building the drone, adjust parameters there
         WorldBuilder worldBuilder = new WorldBuilder();
         this.setDrone(worldBuilder.DRONE);
-        this.setWorld(worldBuilder.createWorld());
+        this.setWorld(worldBuilder.createWorld());//.createSimpleWorld();
 
         // initialize second, third, fourth and fifth block, for testing purposes
-        Vector BLOCKPOS = new Vector(2.0f, 6.0f, -40.0f);
+/*        Vector BLOCKPOS = new Vector(2.0f, 6.0f, -40.0f);
         Vector BLOCKPOS2 = new Vector(4.0f, 10.0f, -60.0f);
         Vector BLOCKPOS3 = new Vector(5.0f, 8.0f, -80.0f);
         Vector BLOCKPOS4 = new Vector(0.0f, 0.0f, -100.0f);
-        Vector COLOR = new Vector(1.0f, 0.0f, 0.0f);
+        Vector COLOR = WorldBuilder.COLOR;
 
         block1 = new Block(BLOCKPOS);
         Cube cube1 = new Cube(BLOCKPOS.convertToVector3f(), COLOR.convertToVector3f());
@@ -85,13 +94,17 @@ public class TestbedMain implements Runnable{
         block4.setAssocatedCube(cube4);
 
         block0 = world.getRandomBlock();
-        world.addWorldObject(block1);
+        world.addWorldObject(block1);*/
         // END for testing purposes
 
         // Initialize the windows
-        this.getDroneCam().initWorldWindow(this.getWorld(), true);
-        this.getPersonView().initWorldWindow(this.getWorld(), false);
-        this.getDroneView().initWorldWindow(this.getWorld(), true);
+        droneCam.initWindow(world, Settings.DRONE_CAM);
+        droneView.initWindow(world, Settings.DRONE_CAM);
+        if(this.getShowAllWindows()) {
+            topDownView.initWindow(world, Settings.DRONE_TOP_DOWN_CAM);
+            chaseView.initWindow(world, Settings.DRONE_CHASE_CAM);
+            sideView.initWindow(world, Settings.DRONE_SIDE_CAM);
+        }
 //      textWindow.initTextWindow(droneCam);
 
 
@@ -190,7 +203,7 @@ public class TestbedMain implements Runnable{
                 //possibly set this part apart from the try-catch
 
 
-            } catch (SimulationEndedException e) {
+            /*} catch (SimulationEndedException e) {
                 goalNotReached = false;
 
                 // Entire else clause is for testing purposes only
@@ -214,7 +227,7 @@ public class TestbedMain implements Runnable{
                     world.addWorldObject(block4);
                     goalNotReached = true;
                     throw new SimulationEndedException();
-                }
+                }*/
             } catch (IOException e) {
                 System.out.println("IO exception");
             }
@@ -228,7 +241,6 @@ public class TestbedMain implements Runnable{
         if (timeLeft > 0)
             Thread.sleep(timeLeft);
         //System.out.println(timeLeft);
-
         return autopilotInputs;
     }
 
@@ -378,7 +390,35 @@ public class TestbedMain implements Runnable{
         this.personView = personView;
     }
 
-  /*  private boolean isGoalNotReached() {
+    public Window getTopDownView() {
+        return topDownView;
+    }
+
+    public void setTopDownView(Window topDownView) {
+        this.topDownView = topDownView;
+    }
+
+    public Window getChaseView() {
+        return chaseView;
+    }
+
+    public void setChaseView(Window chaseView) {
+        this.chaseView = chaseView;
+    }
+
+    public Window getSideView() {
+        return sideView;
+    }
+
+    public void setSideView(Window sideView) {
+        this.sideView = sideView;
+    }
+
+    public boolean getShowAllWindows() {
+        return showAllWindows;
+    }
+
+    /*  private boolean isGoalNotReached() {
         return goalNotReached;
     }
 
@@ -401,10 +441,13 @@ public class TestbedMain implements Runnable{
     private Window droneCam;
     private Window droneView;
     private Window personView;
+    private Window topDownView;
+    private Window chaseView;
+    private Window sideView;
 
     private String connectionName;
     private int connectionPort;
-    private BlockingQueue queue;
+    private boolean showAllWindows;
 //	Window textWindow = new Window(500, 500, 0.5f, 0.5f, "text window", new Vector3f(0.0f, 0.0f, 0.0f), true, droneCam); // Not implemented yet
 
 

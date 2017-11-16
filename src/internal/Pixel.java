@@ -30,7 +30,7 @@ public class Pixel {
      * @param V the value value of the pixel
      */
     public Pixel(float H, float S, float V){
-       float[] rgb = HSVconverter.HSVtoRGB(H, S, V);
+       float[] rgb = HSVconverter.HSVtoRGB2(H, S, V);
        byte R = (byte) (Math.round(rgb[0]*MAX) - BIAS);
        byte G = (byte) (Math.round(rgb[1]*MAX) - BIAS);
        byte B = (byte) (Math.round(rgb[2]*MAX) - BIAS);

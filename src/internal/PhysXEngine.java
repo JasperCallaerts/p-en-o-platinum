@@ -12,6 +12,7 @@ public class PhysXEngine {
     /**
      * Constructor for a physics engine
      * @param configuration the configuration of the engine
+     * @author Martijn Sauwens
      */
     public PhysXEngine(AutopilotConfig configuration){
 
@@ -42,6 +43,7 @@ public class PhysXEngine {
      * @param rotation the rotation at moment t
      * @param INSIGNIFICANCE factor to ignore small drift in the model
      * @return a PhysicsEngineState object containing the state of the drone at moment t + deltaTime
+     * @author Martijn Sauwens
      */
     public PhysicsEngineState getNextStatePhysXEngine(float deltaTime, AutopilotOutputs inputs,  Vector position, Vector velocity, Vector orientation, Vector rotation, float INSIGNIFICANCE){
 
@@ -62,7 +64,9 @@ public class PhysXEngine {
         Vector nextPosition = this.getNextPosition(deltaTime, acceleration, position, velocity);
         Vector angularAcceleration = this.calcAngularAcceleration(orientation, rotation, velocity);
         Vector angularAccelerationWorld = droneOnWorld(angularAcceleration, orientation);
-        Vector nextRotation = this.getNextRotationVector(deltaTime, angularAccelerationWorld, rotation);
+       // Vector nextRotation = this.getNextRotationVector(deltaTime, angularAccelerationWorld, rotation);
+        Vector nextRotation = this.getNextRotationCauchy(deltaTime, orientation, rotation, velocity);
+        //Vector nextRotation = this.getNextRotationRK4(deltaTime, orientation, rotation, velocity);
         Vector nextOrientation = this.getNextOrientation(deltaTime, angularAccelerationWorld, orientation, rotation);
 
         PhysicsEngineState state = new PhysicsEngineState() {
@@ -88,6 +92,43 @@ public class PhysXEngine {
         };
 
         return state;
+    }
+
+    /**
+     * Calculate the next rotation  using the Cauchy method
+     * assumption made: Orientation doesn't change during the calculation (so also no change in velocity)
+     * @return the angular acceleration of the drone
+     * @author Martijn Sauwens
+     */
+    private Vector getNextRotationCauchy(float deltaTime, Vector orientation, Vector rotation, Vector velocity){
+
+        Vector k1 = droneOnWorld(this.calcAngularAcceleration(orientation, rotation, velocity), orientation);
+        Vector orientationIntermediary = orientation.vectorSum(k1.scalarMult(deltaTime/2)); // yk + h/2*k1 with h the step size
+        //fill in the new orientation to calculate the next angular acceleration
+        Vector k2 = droneOnWorld(this.calcAngularAcceleration(orientationIntermediary, rotation, velocity), orientationIntermediary);
+        return orientation.vectorSum(k2.scalarMult(deltaTime));
+    }
+
+    /**
+     * Calculate the next rotation using the Runge Kutta differentiation method
+     * @param deltaTime the timestep
+     * @param orientation the orientation
+     * @param rotation the rotation
+     * @param velocity the velocity
+     * @return a vector containing the angular acceleration of the drone
+     * @author Martijn Sauwens
+     */
+    private Vector getNextRotationRK4(float deltaTime, Vector orientation, Vector rotation, Vector velocity){
+        Vector k1 =  droneOnWorld(this.calcAngularAcceleration(orientation, rotation, velocity), orientation);
+        Vector orientationK1 = orientation.vectorSum(k1.scalarMult(deltaTime/2.0f));
+        Vector k2 =  droneOnWorld(this.calcAngularAcceleration(orientationK1, rotation, velocity), orientationK1);
+        Vector orientationK2 = orientation.vectorSum(k2.scalarMult(deltaTime/2.0f));
+        Vector k3 =   droneOnWorld(this.calcAngularAcceleration(orientationK2, rotation, velocity), orientationK2);
+        Vector orientationK3 = orientation.vectorSum(k3.scalarMult(deltaTime));
+        Vector k4 =  droneOnWorld(this.calcAngularAcceleration(orientationK3, rotation, velocity), orientationK3);
+
+        Vector result = k1.vectorSum(k2.scalarMult(2.0f)).vectorSum(k3.scalarMult(2.0f)).vectorSum(k4).scalarMult(deltaTime/6.0f);
+        return orientation.vectorSum(result);
     }
 
 

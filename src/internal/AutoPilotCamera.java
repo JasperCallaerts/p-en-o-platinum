@@ -36,8 +36,69 @@ public class AutoPilotCamera {
         this.horizAngleOfView = horizontalAngleOfView;
         this.verticalAngleOfView = verticalAngleOfView;
         this.setCameraImage(this.convertToCameraImage(image, nbRows, nbColumns));
-        this.world = new World();
     }
+
+
+    /**
+     * Loads the new image and searches for different colored cubes
+     * @param imageByteArray the byte array containing the information for the cubes
+     */
+    public void loadNewImage(byte[] imageByteArray){
+        if(!canHaveAsImageArray(imageByteArray))
+            throw new IllegalArgumentException(INCOMPATIBLE_SIZE);
+        CameraImage newImage = this.convertToCameraImage(imageByteArray, this.getNbRows(), this.getNbColumns());
+        //System.out.println("looking for cubes");
+        this.setCameraImage(newImage);
+        List<Vector> cubesInPicture = this.locateCubes();
+        //System.out.println(cubesInPicture);
+        this.setCubesInPicture(cubesInPicture);
+
+
+    }
+
+    /**
+     * Sets the image array variable to the
+     * @param newImageArray the byte array containing the next image
+     */
+    @Deprecated
+    public void loadNextImage(byte[] newImageArray)throws IllegalArgumentException{
+        if(!canHaveAsImageArray(newImageArray)){
+            throw new IllegalArgumentException(INCOMPATIBLE_SIZE);
+        }
+        CameraImage newImage = this.convertToCameraImage(newImageArray, this.getNbRows(), this.getNbColumns());
+        this.setCameraImage(newImage);
+        //System.out.println("cube location: " + locateRedCube());
+        Vector dataCube = this.locateRedCube();
+        //System.out.println(dataCube);
+        this.setDestination(dataCube);
+        this.setTotalQualifiedPixels(Math.round(dataCube.getzValue()));
+    }
+
+    public Vector getCenterOfNCubes(int nbOfCubes){
+        List<Vector> cubesInPicture = this.getCubesInPicture();
+        //first check if there are any cubes, if not return the center
+        if(cubesInPicture.size()==0)
+            return new Vector();
+
+        //then try to take the mean of the specified amount of cubes (weighted mean)
+        float totalPixels = 0;
+        Coordinates sumCoordinates = new Coordinates(0,0);
+        //initialize a counter, break the loop if the counter is equal to the amount of cubes
+        int counter = 0;
+        for(Vector currentCube: cubesInPicture){
+            if(counter == nbOfCubes)
+                break;
+            Coordinates currentWeightedCoord = new Coordinates(currentCube.getxValue(), currentCube.getyValue())
+                    .scalarMult(currentCube.getzValue());
+            sumCoordinates = sumCoordinates.sum(currentWeightedCoord);
+            totalPixels += currentCube.getzValue();
+        }
+
+        //after the sum is completed return the weighted average
+        Coordinates weightedCoord = sumCoordinates.scalarMult(1.0f/totalPixels);
+        return new Vector(weightedCoord.getXCoordinate(), weightedCoord.getYCoordinate(), totalPixels);
+    }
+
 
 
     //Todo adjust pixel classes such that the HSV values are correct!!!!!!!!!!!!!!!
@@ -50,15 +111,18 @@ public class AutoPilotCamera {
         //coordinate is the H & S value of the pixel, the Coordinates in the list are the
         //coordinates of the pixels with the specific H & S values of the key
         HashMap<Coordinates ,List<Coordinates>> cubeMap = new HashMap<>();
+        //System.out.println("identifying different cubes");
         findColoredPixels(cubeMap);
 
         //first two elements of the vector contain the x and the y position, the third the size of the cube
         HashMap<Coordinates, Vector> cubeCenterMap = new HashMap<>();
 
+        //System.out.println("Calculating the mean of the cubes");
         calculateMeanCubes(cubeMap, cubeCenterMap);
 
 
         List <Vector> cubeOrderedList = new ArrayList<>();
+        //System.out.println("sorting the cubes to size");
         cubeOrderedList.addAll(cubeCenterMap.values());
         cubeOrderedList.sort(new Comparator<Vector>() {
             /**
@@ -131,7 +195,10 @@ public class AutoPilotCamera {
                 Pixel currentPixel = cameraImage.getElementAtIndex(i, j);
                 float[] HSVPixel = currentPixel.convertToHSV();
                 float H = HSVPixel[0];
+                if(Float.isNaN(H))
+                    H = 0.0f;
                 float S = HSVPixel[1];
+                //System.out.println("H value:" +  H + " , S value:" + S);
 
                 Coordinates key = new Coordinates(H, S);
 
@@ -157,14 +224,14 @@ public class AutoPilotCamera {
             }
         }
 
-        //at the end of the for loop all te pixels are iterated and the cubemap is filled with all the visible cubes
+        //at the end of the for loop all te pixels are iterated and the cube map is filled with all the visible cubes
     }
 
     /**
      * A private class of immutable Coordinates
+     * @author Martijn Sauwens
      */
     private class Coordinates{
-        //Todo implement sum
 
         Coordinates(float x, float y){
             xCoordinate = x;
@@ -309,23 +376,6 @@ public class AutoPilotCamera {
     }
 
     /**
-     * Sets the image array variable to the
-     * @param newImageArray the byte array containing the next image
-     */
-    public void loadNextImage(byte[] newImageArray)throws IllegalArgumentException{
-        if(!canHaveAsImageArray(newImageArray)){
-            throw new IllegalArgumentException(INCOMPATIBLE_SIZE);
-        }
-        CameraImage newImage = this.convertToCameraImage(newImageArray, this.getNbRows(), this.getNbColumns());
-        this.setCameraImage(newImage);
-        //System.out.println("cube location: " + locateRedCube());
-        Vector dataCube = this.locateRedCube();
-        //System.out.println(dataCube);
-        this.setDestination(dataCube);
-        this.setTotalQualifiedPixels(Math.round(dataCube.getzValue()));
-    }
-
-    /**
      * Converts an array of bytes containing the RGB color scheme to an array consisting of pixels
      * @param image the byte array containing the data for the pixels
      * @return an array containing the pixels of the image
@@ -365,6 +415,11 @@ public class AutoPilotCamera {
         return new CameraImage(pixelArray, nbRows, nbColumns);
     }
 
+    /**
+     * Checks if the angle of view is valid
+     * @param angle the angle to check
+     * @return true if and only if the view is within range (0°, 180°]
+     */
     public boolean isValidAngleOfView(float angle){
         //System.out.println("viewing Angle: " + angle);
         return angle > 0.0f && angle <= Math.PI;
@@ -387,21 +442,20 @@ public class AutoPilotCamera {
        return this.getNbRows()*this.getNbColumns() == imageArray.length/NB_OF_BYTES_IN_PIXEL;
     }
 
+    /**
+     * Getter for the number of rows in the camera image
+     * @return the number of rows in a picture
+     */
     public int getNbRows() {
         return nbRows;
     }
 
+    /**
+     * Getter for the number of columns in the camera image
+     * @return the number of columns in a picture
+     */
     public int getNbColumns() {
         return nbColumns;
-    }
-
-
-    /**
-     * @author anthonyrathe
-     * @return
-     */
-    public World getWorld(){
-        return this.world;
     }
 
     /**
@@ -437,9 +491,26 @@ public class AutoPilotCamera {
         this.totalQualifiedPixels = totalQualifiedPixels;
     }
 
+    /**
+     * Getter for the list that contains the cubes of different color that could be located in the picture
+     * @return a list containing the on screen center coordinates of the cubes and the nb of pixels
+     */
+    public List<Vector> getCubesInPicture() {
+        return cubesInPicture;
+    }
+
+    /**
+     * Setter for the list tht contains the cubes of different color
+     * @param cubesInPicture the list containing vectors with the first two being the onscreen coordinates of the cubes
+     *                       and the final element being their size
+     */
+    public void setCubesInPicture(List<Vector> cubesInPicture) {
+        this.cubesInPicture = cubesInPicture;
+    }
+
     /*
-            Variables
-             */
+                Variables
+                 */
     private CameraImage cameraImage;
 
     /**
@@ -459,9 +530,9 @@ public class AutoPilotCamera {
      */
     private float verticalAngleOfView;
 
-    private World world;
     private Vector destination;
     private int totalQualifiedPixels;
+    private List<Vector> cubesInPicture = new ArrayList<>();
 
 
     /*

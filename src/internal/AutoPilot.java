@@ -117,7 +117,7 @@ public class AutoPilot implements Autopilot {
 	private void updatePath(AutopilotInputs inputs) throws IOException{
 		int[] start = this.getPosition(inputs).toIntArray();
 		int[] end = this.getDestinationPosition().toIntArray();
-		Pathfinding pathFinding = new Pathfinding(new World());
+		Pathfinding pathFinding = new Pathfinding(new World(World.VISIT_ALL_OBJECTIVE));
 		List<int[]> pathInt = pathFinding.searchPath(start, end);
 		List<Vector> newPath = new ArrayList<Vector>();
 		for (int[] position : pathInt){
@@ -174,13 +174,7 @@ public class AutoPilot implements Autopilot {
 		return getAPCamera().getDestination();
 	}
 	
-	/**
-	 * @author anthonyrathe
-	 * @return
-	 */
-	private World getWorld(){
-		return getAPCamera().getWorld();
-	}
+
 	//------- END Pathfinding -------
 	
 	//------- Actual Autopilot -------

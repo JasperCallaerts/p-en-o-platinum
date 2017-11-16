@@ -18,6 +18,8 @@ public class SocketMain {
 
         testbedThread.setUncaughtExceptionHandler(HANDLER);
 
+        testbedThread.setPriority(Thread.MAX_PRIORITY);
+
         testbedThread.start();
         Thread.sleep(1000);
         autopilotThread.start();
@@ -43,7 +45,7 @@ public class SocketMain {
     public final static String CONNECTION_NAME = "localhost";
     public final static int CONNECTION_PORT = 21212;
 
-    private static TestbedMain MAIN_TESTBED = new TestbedMain(CONNECTION_NAME, CONNECTION_PORT);
+    private static TestbedMain MAIN_TESTBED = new TestbedMain(CONNECTION_NAME, CONNECTION_PORT, true);
     private static AutopilotMain MAIN_AUTOPILOT = new AutopilotMain(CONNECTION_NAME, CONNECTION_PORT, new AutoPilot());
 
 }

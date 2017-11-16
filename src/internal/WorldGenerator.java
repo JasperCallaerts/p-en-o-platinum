@@ -198,8 +198,9 @@ public class WorldGenerator {
 		
 		//uncomment the line below for red cubes only
 		//ArrayList<Vector> allColors = redGenerator();
-		
-		World world = new World();
+
+		//the current objective is visit all
+		World world = new World(World.VISIT_ALL_OBJECTIVE);
 		Random r = new Random();	
 		
 		for (int i = 0; i < n; i++){

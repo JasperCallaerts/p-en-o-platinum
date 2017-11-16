@@ -46,8 +46,12 @@ public class Drone implements WorldObject {
 
 
 		// the cube associated with the drone
-		this.setAssociatedCube(new Cube(position.convertToVector3f(), new Vector3f(0f, 0f, 1f)));
-		// TODO config stream
+		try {
+			this.setAssociatedCube(new Cube(position.convertToVector3f(), new Vector3f(0f, 0f, 1f)));
+		}catch(NullPointerException e){
+			//let it go
+			System.out.println("Null on assocCube");
+		}
 
 		this.setAutopilotConfig(configuration);
 
@@ -81,7 +85,12 @@ public class Drone implements WorldObject {
 		Vector differencePos = (nextState.getPosition()).vectorDifference(this.getPosition());
 
 		// move the cube representing the drone
-		this.getAssociatedCube().update(differencePos.convertToVector3f());
+		try{
+			this.getAssociatedCube().update(differencePos.convertToVector3f());
+		}catch(NullPointerException e){
+			//let it go
+		}
+
 
 		this.setPosition(nextState.getPosition());
 		this.setVelocity(nextState.getVelocity());

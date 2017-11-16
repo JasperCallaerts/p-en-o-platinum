@@ -115,11 +115,13 @@ public class AutoPilotController {
         ControlOutputs controlOutputs = new ControlOutputs();
         AutoPilotCamera APCamera = this.getAssociatedAutopilot().getAPCamera();
         AutopilotInputs currentInputs = this.getCurrentInputs();
-        APCamera.loadNextImage(currentInputs.getImage());
-        float xPosition = APCamera.getDestination().getxValue();
-        float yPosition = -APCamera.getDestination().getyValue();
+        //APCamera.loadNextImage(currentInputs.getImage());
+        APCamera.loadNewImage(currentInputs.getImage());
+        Vector center = APCamera.getCenterOfNCubes(2);
+        float xPosition = center.getxValue();
+        float yPosition = -center.getyValue();
 
-        int cubeSize = APCamera.getTotalQualifiedPixels();
+        int cubeSize = Math.round(center.getzValue());
         //System.out.println(cubeSize);
 
         //int threshold = Math.max(Math.round(THRESHOLD_PIXELS*NORMAL_CUBE_SIZE/cubeSize),1);
@@ -169,6 +171,8 @@ public class AutoPilotController {
         }
 
         this.rollControl(controlOutputs);
+
+        //System.out.println(controlOutputs);
 
         return controlOutputs;
     }
@@ -314,5 +318,15 @@ public class AutoPilotController {
         private float horStabInclination = STABILIZER_STABLE_INCLINATION;
         private float verStabInclination = STABILIZER_STABLE_INCLINATION;
 
+        @Override
+        public String toString() {
+            return "ControlOutputs{" +
+                    "thrust=" + thrust +
+                    ", leftWingInclination=" + leftWingInclination +
+                    ", rightWingInclination=" + rightWingInclination +
+                    ", horStabInclination=" + horStabInclination +
+                    ", verStabInclination=" + verStabInclination +
+                    '}';
+        }
     }
 }
