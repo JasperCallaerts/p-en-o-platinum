@@ -79,8 +79,7 @@ public class Drone implements WorldObject {
 
 		//calculate the next state of the physics engine
 		PhysicsEngineState nextState = this.getPhysXEngine().getNextStatePhysXEngine(deltaTime, autopilotOutputs, this.getPosition(),
-				this.getVelocity(), this.getOrientation(), this.getRotationVector(), INSIGNIFICANCE);
-
+				this.getVelocity(), this.getOrientation(), this.getRotationVector(), INSIGNIFICANCE, PhysXEngine.RK4_METHOD);
 
 		Vector differencePos = (nextState.getPosition()).vectorDifference(this.getPosition());
 
@@ -486,13 +485,54 @@ public class Drone implements WorldObject {
 
 	//Todo add comment
 
-
+	/**
+	 * Getter for the physics engine
+	 * @return the physics engine used by the drone
+	 */
 	public PhysXEngine getPhysXEngine() {
 		return physXEngine;
 	}
 
-	public void setPhysXEngine(PhysXEngine physXEngine) {
+	/**
+	 * Setter for the physics engine
+	 * @param physXEngine the desired physics engine of the drone
+	 */
+	private void setPhysXEngine(PhysXEngine physXEngine) {
 		this.physXEngine = physXEngine;
+	}
+
+	/**
+	 * Getter for the string containing the differentiation method
+	 * @return the string containing the differentation method used
+	 */
+	public String getDiffMethod() {
+		return diffMethod;
+	}
+
+	/**
+	 * Setter for the differentiation method
+	 * @param diffMethod the differentiation method to be used
+	 */
+	public void setDiffMethod(String diffMethod){
+		if(!canHaveAsDiffMethod(diffMethod))
+			throw new IllegalArgumentException(ILLEGAL_DIFF_METHOD);
+		this.diffMethod = diffMethod;
+	}
+
+	/**
+	 * Checker if the given method can be used by the physics engine
+	 * @param diffMethod the differentiation method to be checked
+	 * @return true if and only if the physics engine can perform the differentiation method
+	 */
+	private boolean canHaveAsDiffMethod(String diffMethod){
+		String[] diffMethods = PhysXEngine.getDiffMethods();
+		for(String method: diffMethods){
+			if(diffMethod.equals(method)){
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	public AutopilotOutputs getAutopilotOutputs() {
@@ -537,10 +577,9 @@ public class Drone implements WorldObject {
 	private Vector rotationVector;
 
 	/**
-	 * A variable containing the current thrust of the drone
+	 * the thrust of the drone
 	 */
 	private float thrust;
-
 
 	/**
 	 * A variable containing the physics engine of the drone
@@ -548,9 +587,16 @@ public class Drone implements WorldObject {
 	private PhysXEngine physXEngine;
 
 	/**
+	 * Variable used to flag the used differentiation Method
+	 */
+	private String diffMethod = PhysXEngine.EULER_METHOD;
+
+	/**
 	 * A variable containing the configuration of the drone
 	 */
 	private AutopilotConfig autopilotConfig;
+
+
 
 
 	/*
@@ -561,11 +607,6 @@ public class Drone implements WorldObject {
 	 */
 	private static float LIGHTSPEED = 300000000;
 
-	/**
-	 * Constant: the gravity zone constant for Belgium (simulation place)
-	 */
-	private static float GRAVITY = 9.81060f;
-
 
 	/**
 	 * Variable that stores the cube representing the drone
@@ -573,32 +614,17 @@ public class Drone implements WorldObject {
 	private Cube droneCube;
 
 	/**
-	 * variables used for the configuration of the streams
-	 */
-	private static final int nbRows = 200;
-	private static final int nbColumns = 200;
-	private static final float Angleofview = (float) (4*Math.PI / 6);
-
-	/**
 	 * variable used for the max allowed error on the position between de drone and the cube
 	 */
 	private final static float maxPosDifference = 1E-6f;
-
 
 	    
 	/*
 	 * Error Messages:
 	 */
 
-	private final static String THRUST_OUT_OF_RANGE = "The thrust is out of range: [0, this.maxThrust]";
-	private final static String INCLINATION_OUT_OF_RANGE = "The inclination is out of range: [0, 2.PI[";
 	private final static String VELOCITY_ERROR = "The velocity exceeds the upper limit";
-	private final static String WING_EXCEPTION = "the wings are null references or the drone has already wings" +
-			"attached to it";
-	private final static String UNINITIALIZED_ENGINEMASS = "The mass of the engine is uninitialized";
-	private final static String UNINITIALIZED_POINTMASS = "one or more of the point masses of the drone " +
-			"have not been initialized yet";
-	private final static String ILLEGAL_CONFIG = "The given configuration contains illegal values and or arguments";
+	private final static String ILLEGAL_DIFF_METHOD = "The given differentiation method cannot be used for the physics engine";
 	private final static String INVALID_TIMESTEP = "The provided time needs to be strictly positive";
 	private final static String AUTOPILOT_CONFIG = "the autopilot has already been initialized";
 

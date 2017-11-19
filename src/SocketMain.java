@@ -1,7 +1,7 @@
-import internal.AutoPilot;
-import internal.SimulationEndedException;
+import internal.*;
 
 import java.io.*;
+import java.util.List;
 
 
 /**
@@ -34,7 +34,22 @@ public class SocketMain {
             switch(ex.toString()){
                 case SimulationEndedException.TAG:
                     System.out.println("Handling ended simulation");
+                    break;
+                case AngleOfAttackException.TAG:
+                    WingPhysX causeWing = ((AngleOfAttackException)ex).getCauseWing();
+                    System.out.println(causeWing + "\n\n");
+                    boolean diagnosis = FLIGHT_RECORDER.diagnoseWingIssues((float) (40*Math.PI/180.f));
+                    if(!diagnosis) {
+                        int index = 0;
+                        for (List<Float> record : FLIGHT_RECORDER.getWingRecords()) {
+                            if (index % 2 == 0)
+                                System.out.println("Inclination Wing " + index / 2 + ": " + record);
+                            else
+                                System.out.println("AOA Wing " + index / 2 + ": " + record);
 
+                            index++;
+                        }
+                    }
 
                 default:
                     ex.printStackTrace();
@@ -45,8 +60,9 @@ public class SocketMain {
     public final static String CONNECTION_NAME = "localhost";
     public final static int CONNECTION_PORT = 21212;
 
-    private static TestbedMain MAIN_TESTBED = new TestbedMain(CONNECTION_NAME, CONNECTION_PORT, false);
-    private static AutopilotMain MAIN_AUTOPILOT = new AutopilotMain(CONNECTION_NAME, CONNECTION_PORT, new AutoPilot());
+    private static FlightRecorder FLIGHT_RECORDER = new FlightRecorder(20, true);
+    private static TestbedMain MAIN_TESTBED = new TestbedMain(CONNECTION_NAME, CONNECTION_PORT, false, FLIGHT_RECORDER);
+    private static AutopilotMain MAIN_AUTOPILOT = new AutopilotMain(CONNECTION_NAME, CONNECTION_PORT, new AutoPilot(), FLIGHT_RECORDER);
 
 }
 

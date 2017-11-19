@@ -18,8 +18,8 @@ public class WorldBuilder {
     public final static WorldGenerator wg = new WorldGenerator(numberOfBlocks);
 
 
-    public WorldBuilder() {
-        //do nothing
+    public WorldBuilder(FlightRecorder flightRecorder) {
+        DRONE.getPhysXEngine().setFlightRecorder(flightRecorder);
     }
 
     public World createWorld() {
@@ -49,5 +49,7 @@ public class WorldBuilder {
 
         return world;
     }
+
+    private FlightRecorder flightRecorder;
 
 }
