@@ -1,6 +1,9 @@
 package internal;
 
 
+import java.io.IOException;
+import java.util.List;
+
 import gui.Cube;
 /*
 *//**
@@ -14,21 +17,37 @@ public class WorldBuilder {
     // Deprecated: all blocks are generated in main loop
     public final static Vector BLOCKPOS = new Vector(0.0f, 0.489f, -6.9098f);
     public final static Vector COLOR = new Vector(0.0f, 1.0f, 70.0f);
+    public final static boolean LOAD_COORDINATES = false;
     private static int numberOfBlocks = 5;
     public final static WorldGenerator wg = new WorldGenerator(numberOfBlocks);
+    public final BlockCoordinatesParser parser = new BlockCoordinatesParser("src/internal/blockCoordinates.txt");
 
 
     public WorldBuilder() {
         //do nothing
     }
 
-    public World createWorld() {
+    public World createWorld() throws IOException{
         //Block block1 = new Block(BLOCKPOS);
         //Cube cube1 = new Cube(BLOCKPOS.convertToVector3f(), COLOR.convertToVector3f());
         //block1.setAssocatedCube(cube1);
 
-        //World world = new World();
-        World world = wg.createWorld();
+        World world = new World(World.VISIT_ALL_OBJECTIVE);
+    	if (!LOAD_COORDINATES) {
+    		world = wg.createWorld();
+    	}
+    	else {
+    		List<Vector> positions = parser.getCoordinates();
+    		List<Vector> colors = wg.colorGenerator(positions.size());
+    		for (int i = 0 ; i < positions.size(); i++) {
+    			Vector position = positions.get(i);
+    			Vector color = colors.get(i);
+    			Block block = new Block(position);
+            	Cube cube = new Cube(position.convertToVector3f(), color.convertToVector3f());
+            	block.setAssocatedCube(cube);
+    		}
+    	}
+        
         //world.addWorldObject(block1);
         world.addWorldObject(DRONE);
 

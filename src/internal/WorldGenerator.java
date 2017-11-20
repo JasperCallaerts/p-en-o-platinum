@@ -6,7 +6,7 @@ import gui.Cube;
 /**
  * Generates a world with N cubes which all have a different HSV value
  * @author Jonathan
- *
+ * appended by Anthony
  */
 public class WorldGenerator {
 	
@@ -51,6 +51,39 @@ public class WorldGenerator {
 	public ArrayList<Vector> colorGenerator(){
 		ArrayList<Vector> allColors = new ArrayList<Vector>();
 		int n = getNbOfCubes();
+		float h;
+		float s ;
+		float v = 1f;
+		
+		
+		for (int i = 0; i < n; i++){
+			//For a small amount of cubes, s is constant and h gets a smaller range (340)
+			if (n <= 12){
+				h = (float) 340/(i);
+				s = 1f;
+			}
+			//For a large amount of cubes, s = 1 if i is even and s = 0.5 otherwise and h has its full range (360)
+			else{
+				h = (float) 359/(i);
+				if (i % 2 == 0){
+					s = 1f;
+				}
+				else{
+					s = 0.5f;
+				}
+			}
+			Vector color = new Vector(h,s,v);
+			allColors.add(color);
+		}
+		return allColors;		
+	}
+	
+	/**
+	 * Creates nbOfCubes different colors for the cubes
+	 * @return Arraylist of Vectors which contain HSV values
+	 */
+	public ArrayList<Vector> colorGenerator(int n){
+		ArrayList<Vector> allColors = new ArrayList<Vector>();
 		float h;
 		float s ;
 		float v = 1f;
