@@ -220,7 +220,7 @@ public class AutoPilotController {
     private static final float TURNING_INCLINATION = (float)Math.PI/8;
     private static final int BIAS = 0;
     private static final float THRESHOLD_DISTANCE = 5f;
-    private static final float STANDARD_THRUST = 32.859283f;
+    private static final float STANDARD_THRUST = 32.859283f*2;
     private static final float THRUST_FACTOR = 2.0f;
     private static final float THRESHOLD_THRUST_ANGLE = (float)(Math.PI/20);
     private static final float STANDARD_CUBE_SIZE = 10f;
