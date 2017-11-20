@@ -113,6 +113,11 @@ public class Window {
 		if (visible)
 			glfwShowWindow(getHandler());
 		
+		if (visible)
+			this.FOV = (float) Math.toRadians(60.0f);
+		else
+			this.FOV = (float) Math.toRadians(120.0f);
+		
 		// This line is critical for LWJGL's interoperation with GLFW's
 		// OpenGL context, or any context that is managed externally.
 		// LWJGL detects the context that is current in the current thread,
@@ -144,10 +149,10 @@ public class Window {
 	public void initWindow(World world, Settings setting) {
 		this.setting = setting;
 		this.world = world;
-		if (setting == Settings.DRONE_CAM)
-			this.FOV = (float) Math.toRadians(120.0f);
-		else
-			this.FOV = (float) Math.toRadians(60.0f);
+//		if (setting == Settings.DRONE_CAM)
+//			this.FOV = (float) Math.toRadians(120.0f);
+//		else
+//			this.FOV = (float) Math.toRadians(60.0f);
 		
 		glfwMakeContextCurrent(getHandler());
 		glEnable(GL_DEPTH_TEST);
@@ -266,7 +271,7 @@ public class Window {
 		projectionMatrix = getProjectionMatrix();
 	}
 	
-	public Matrix4f getAdvancedModelMatrix(Vector3f orientation, Matrix4f modelMatrix) {
+	public Matrix4f getAdvancedModelMatrix(Vector3f orientation, Matrix4f modelMatrix	) {
 		
 		Matrix3f pitchMatrix = new Matrix3f(new Vector3f(1, 0, 0), new Vector3f(0, (float) Math.cos(orientation.y), (float) -Math.sin(orientation.y)), new Vector3f(0, (float) Math.sin(orientation.y), (float) Math.cos(orientation.y)));
         Matrix3f yawMatrix = new Matrix3f(new Vector3f((float) Math.cos(orientation.x), 0, (float) Math.sin(orientation.x)), new Vector3f(0, 1, 0), new Vector3f((float) -Math.sin(orientation.x), 0, (float) Math.cos(orientation.x)));

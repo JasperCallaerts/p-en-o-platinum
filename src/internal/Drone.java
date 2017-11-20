@@ -47,7 +47,9 @@ public class Drone implements WorldObject {
 
 		// the cube associated with the drone
 		try {
-			this.setAssociatedCube(new Cube(position.convertToVector3f(), new Vector3f(240f, 100f, 100f)));
+			Cube droneCube = new Cube(position.convertToVector3f(), new Vector3f(240f, 100f, 100f));
+//			droneCube.setSize(new Vector3f(8f, 1f, 2f));
+			this.setAssociatedCube(droneCube);
 		}catch(NullPointerException e){
 			//let it go
 			System.out.println("Null on assocCube");

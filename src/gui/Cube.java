@@ -88,15 +88,14 @@ public class Cube{
 	private Mesh mesh;
 	private Matrix4f modelMatrix = new Matrix4f();
 	private Vector3f position = new Vector3f();
+	private Vector3f size = new Vector3f(1f, 1f, 1f);
 	
 	static public void setGraphics(Graphics graphics) {
 		g = graphics;
 	}
 	
 	public Cube(Vector3f position, Vector3f colour) {
-//		setColours(colour);
-		float[] col = {colour.x, colour.y, colour.z};
-		setColours(Vector3f.ArrayToVector3f(col));
+		setColours(colour);
 		
 		for (String key: g.windows.keySet()) {
 			glfwMakeContextCurrent(g.windows.get(key).getHandler());
@@ -127,11 +126,19 @@ public class Cube{
 	}
 	
 	public Matrix4f getModelMatrix() {
-		return modelMatrix;
+		return modelMatrix.multiply(Matrix4f.scale(size.x , size.y, size.z));
 	}
 	
 	public Vector3f getPos() {
 		return this.position;
+	}
+	
+	public void setSize(float size) {
+		this.size = new Vector3f(size, size, size);
+	}
+	
+	public void setSize(Vector3f size) {
+		this.size = size;
 	}
 	
 	private void setColours(Vector3f colour) {

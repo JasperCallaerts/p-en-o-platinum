@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.List;
 
 import gui.Cube;
+import math.Vector3f;
 /*
 *//**
  * Created by Martijn on 26/10/2017.
@@ -44,6 +45,7 @@ public class WorldBuilder {
     			Vector color = colors.get(i);
     			Block block = new Block(position);
             	Cube cube = new Cube(position.convertToVector3f(), color.convertToVector3f());
+            	cube.setSize(1f);
             	block.setAssocatedCube(cube);
     		}
     	}
