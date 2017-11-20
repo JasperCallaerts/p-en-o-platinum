@@ -125,8 +125,16 @@ public class Cube{
 		return Vector.vector3fToVector(this.getPos());
 	}
 	
+	public Matrix4f getMatrix() {
+		return getModelMatrix().multiply(getSizeMatrix());
+	}
+	
 	public Matrix4f getModelMatrix() {
-		return modelMatrix.multiply(Matrix4f.scale(size.x , size.y, size.z));
+		return modelMatrix;
+	}
+	
+	public Matrix4f getSizeMatrix() {
+		return Matrix4f.scale(size.x , size.y, size.z);
 	}
 	
 	public Vector3f getPos() {

@@ -1,6 +1,8 @@
 package internal;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
 import gui.Cube;
 import math.Vector3f;
@@ -71,6 +73,7 @@ public class Block implements WorldObject {
 	private Vector position;
 
 	private Cube blockCube;
+//	private Set<Cube> blockCubes = new HashSet<>();
 
 	/**
 	 * Flag that stores if the block was visited by the drone.

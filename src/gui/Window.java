@@ -222,9 +222,9 @@ public class Window {
 
         for (WorldObject object: world.getObjectSet()) {
         	if (object.getClass() == Block.class)
-        		program.setUniform("modelMatrix", object.getAssociatedCube().getModelMatrix());
+        		program.setUniform("modelMatrix", object.getAssociatedCube().getMatrix());
         	else 
-        		program.setUniform("modelMatrix", getAdvancedModelMatrix(((Drone) object).getOrientation().convertToVector3f().negate(), object.getAssociatedCube().getModelMatrix()));
+        		program.setUniform("modelMatrix", getAdvancedModelMatrix(((Drone) object).getOrientation().convertToVector3f().negate(), object.getAssociatedCube().getModelMatrix(), object.getAssociatedCube().getSizeMatrix()));
     		object.getAssociatedCube().render();
     	}
 		
@@ -271,7 +271,7 @@ public class Window {
 		projectionMatrix = getProjectionMatrix();
 	}
 	
-	public Matrix4f getAdvancedModelMatrix(Vector3f orientation, Matrix4f modelMatrix	) {
+	public Matrix4f getAdvancedModelMatrix(Vector3f orientation, Matrix4f modelMatrix, Matrix4f sizeMatrix) {
 		
 		Matrix3f pitchMatrix = new Matrix3f(new Vector3f(1, 0, 0), new Vector3f(0, (float) Math.cos(orientation.y), (float) -Math.sin(orientation.y)), new Vector3f(0, (float) Math.sin(orientation.y), (float) Math.cos(orientation.y)));
         Matrix3f yawMatrix = new Matrix3f(new Vector3f((float) Math.cos(orientation.x), 0, (float) Math.sin(orientation.x)), new Vector3f(0, 1, 0), new Vector3f((float) -Math.sin(orientation.x), 0, (float) Math.cos(orientation.x)));
@@ -284,7 +284,7 @@ public class Window {
         Vector3f up = transformationMatrix.multiply(new Vector3f(0, 1,0));
         Vector3f look = transformationMatrix.multiply(new Vector3f(0,0, -1));
         
-		return modelMatrix.multiply(Matrix4f.viewMatrix(right, up, look, new Vector3f()));
+		return modelMatrix.multiply(Matrix4f.viewMatrix(right, up, look, new Vector3f())).multiply(sizeMatrix);
 	}
 	
 	public Matrix4f getChaseView() {
