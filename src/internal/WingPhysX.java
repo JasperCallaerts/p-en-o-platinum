@@ -67,14 +67,19 @@ public abstract class WingPhysX {
     public Vector getLift(Vector orientation, Vector rotation, Vector velocity){
         Vector normal = this.projectOnWorld(this.getNormal(), orientation);
         Vector airspeed = this.getAbsoluteVelocity(orientation, rotation,  velocity);
+        Vector projectedAirspeed = this.calcProjectedAirspeed(airspeed, rotation);
         float angleOfAttack = this.calcAngleOfAttack(orientation, rotation, velocity);
+        if(Math.abs(angleOfAttack) > Math.abs(this.getMaximumAngleOfAttack())){
+            this.setFaultyAngleOfAttack((float) (angleOfAttack*180/Math.PI));
+            throw new AngleOfAttackException(this);
+        }
         float liftSlope = this.getLiftSlope();
 
         // calculate s^2
-        float airspeedSquared = airspeed.scalarProduct(airspeed);
+        float airspeedSquared = projectedAirspeed.scalarProduct(projectedAirspeed);
 
         float scalarPart =  airspeedSquared*angleOfAttack*liftSlope;
-        Vector lift = normal.scalarMult(-scalarPart);
+        Vector lift = normal.scalarMult(scalarPart);
         return lift;
     }
 
@@ -92,6 +97,11 @@ public abstract class WingPhysX {
      * returns the attackVector
      */
     public abstract Vector getAttackVector();
+
+    /**
+     * returns the axis vector
+     */
+    public abstract Vector getAxisVector();
 
     /**
      * projects the vector onto the axis of the drone
@@ -112,8 +122,15 @@ public abstract class WingPhysX {
     /**
      * Getter for the angle of attack
      */
-    public float getAngleOfAttack(){
-        return this.angleOfAttack;
+    public float getFaultyAngleOfAttack(){
+        return this.faultyAngleOfAttack;
+    }
+
+    /**
+     * Setter fot the faultyAngleOfAttack
+     */
+    public void setFaultyAngleOfAttack(float faultyAngleOfAttack){
+        this.faultyAngleOfAttack = faultyAngleOfAttack;
     }
 
     /**
@@ -121,7 +138,7 @@ public abstract class WingPhysX {
      * @param orientation the orientation of the drone (heading, pitch, roll)
      * @param rotation the rotation of the drone, given in the world axis system
      * @param velocity the velocity of the center of mass of the drone given in the world axis system
-     * @post new angleOfAttack = -atan2(Airspeed*Normal, Airspeed*attackvector)
+     * @post new faultyAngleOfAttack = -atan2(Airspeed*Normal, Airspeed*attackvector)
      */
     public float calcAngleOfAttack(Vector orientation, Vector rotation, Vector velocity){
         //need for the projected version of all the vectors because the airspeed is in the world axis
@@ -129,29 +146,38 @@ public abstract class WingPhysX {
         Vector normal = this.projectOnWorld(this.getNormal(), orientation);
         Vector attackVector = this.projectOnWorld(this.getAttackVector(), orientation);
 
-
-        Vector projectedAirspeed = airspeed;//.orthogonalProjection(normal);
-
+        Vector projectedAirspeed = calcProjectedAirspeed(airspeed, orientation);//.orthogonalProjection(normal);
+        //System.out.println("Airspeed: " + airspeed +", Projected Airspeed: " + projectedAirspeed + ", Normal: " + attackVector);
         float numerator = projectedAirspeed.scalarProduct(normal);
         float denominator = projectedAirspeed.scalarProduct(attackVector);
 
         //set the angle of attack anyway, can be used for diagnostics
-        float angleOfAttack = (float)Math.atan2(numerator, denominator);
-        if(!canHaveAsAngleOfAttack(angleOfAttack)){
-            throw new AngleOfAttackException(INVALID_AOA, this);
-        }
+        float angleOfAttack = -(float)Math.atan2(numerator, denominator);
+
         return angleOfAttack;
+
+    }
+
+    /**
+     * Calculates the projected airspeed of the wing
+     * @param airspeed the relative airspeed
+     * @param orientation the orientation of the drone
+     * @return the projected airspeed of the wing
+     */
+    public Vector calcProjectedAirspeed(Vector airspeed, Vector orientation){
+        Vector axisVector = PhysXEngine.droneOnWorld(this.getAxisVector(), orientation);
+        return airspeed.orthogonalProjection(axisVector);
 
     }
 
     /**
      * Checks if the given angle of attack is valid for the given wing
      * @param angleOfAttack floating point number containing the angle of attack
-     * @return true if and only if angleOfAttack is part of the interval [-PI/2.0, getMaximumAngleOfAttack]
+     * @return true if and only if faultyAngleOfAttack is part of the interval [-PI/2.0, getMaximumAngleOfAttack]
      * note: maybe the lower bound needs to be changed - PI/2.0 is just a guess
      */
     public boolean canHaveAsAngleOfAttack(float angleOfAttack){
-        return true; //angleOfAttack >= -PI/2.0 && angleOfAttack <= this.getMaximumAngleOfAttack();
+        return true; //faultyAngleOfAttack >= -PI/2.0 && faultyAngleOfAttack <= this.getMaximumAngleOfAttack();
     }
 
     /**
@@ -264,6 +290,18 @@ public abstract class WingPhysX {
         return liftSlope > 0;
     }
 
+
+
+    @Override
+    public String toString() {
+        return "WingPhysX{" +
+                "wingInclination=" + wingInclination*180/Math.PI +
+                ", relativePosition=" + relativePosition +
+                ", liftSlope=" + liftSlope +
+                ", faultyAngleOfAttack=" + faultyAngleOfAttack +
+                '}';
+    }
+
     /**
      * Variable that holds the inclination of the wing
      */
@@ -293,7 +331,8 @@ public abstract class WingPhysX {
     /**
      * Variable that holds the angle of attack of the drone
      */
-    private float angleOfAttack;
+    private float faultyAngleOfAttack;
+
 
     /*
     Exception Strings

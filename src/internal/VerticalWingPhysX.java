@@ -44,6 +44,12 @@ public class VerticalWingPhysX extends WingPhysX {
         return new Vector(x_part, y_part, z_part);
     }
 
+    @Override
+    public Vector getAxisVector() {
+        return axisVector;
+    }
+
+    public final Vector axisVector =  new Vector(0,1,0);
     public final Vector normal = new Vector(1,0,0);
 
 }
