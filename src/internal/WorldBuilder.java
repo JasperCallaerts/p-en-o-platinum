@@ -45,7 +45,9 @@ public class WorldBuilder {
     			Block block = new Block(position);
             	Cube cube = new Cube(position.convertToVector3f(), color.convertToVector3f());
             	block.setAssocatedCube(cube);
+            	world.addWorldObject(block);
     		}
+    		
     	}
         
         //world.addWorldObject(block1);
