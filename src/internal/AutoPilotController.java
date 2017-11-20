@@ -51,7 +51,7 @@ public class AutoPilotController {
 
     private void startTurnDescend(ControlOutputs outputs, float xPosCube, float yPosCube){
         outputs.setHorStabInclination(Math.min(STANDARD_INCLINATION*Math.abs(yPosCube)/30f,MAX_HOR_STAB_INCLINATION));
-        outputs.setHorStabInclination(-Math.min(STANDARD_INCLINATION*Math.abs(yPosCube)/20f,MAX_HOR_STAB_INCLINATION));
+
     }
 
     private void startTurnAscend(ControlOutputs outputs,  float xPosCube, float yPosCube){
@@ -72,8 +72,8 @@ public class AutoPilotController {
 
     	}
     	
-    	outputs.setRightWingInclination(TURNING_INCLINATION ); // + MAIN_STABLE_INCLINATION
-        outputs.setLeftWingInclination(-TURNING_INCLINATION); // + MAIN_STABLE_INCLINATION
+    	outputs.setRightWingInclination(TURNING_INCLINATION + MAIN_STABLE_INCLINATION);
+        outputs.setLeftWingInclination(-TURNING_INCLINATION + MAIN_STABLE_INCLINATION);
 
         this.getFlightRecorder().appendControlLog("TurningRight, Horizontal Stabilizer: " +
                 outputs.getHorStabInclination()*RAD2DEGREE + "; Left Main: " +outputs.getLeftWingInclination()*RAD2DEGREE +
@@ -90,8 +90,8 @@ public class AutoPilotController {
 
     	}
 
-        outputs.setRightWingInclination(-TURNING_INCLINATION ); // + MAIN_STABLE_INCLINATION
-        outputs.setLeftWingInclination(TURNING_INCLINATION ); // + MAIN_STABLE_INCLINATION
+        outputs.setRightWingInclination(-TURNING_INCLINATION + MAIN_STABLE_INCLINATION); // + MAIN_STABLE_INCLINATION
+        outputs.setLeftWingInclination(TURNING_INCLINATION + MAIN_STABLE_INCLINATION); // + MAIN_STABLE_INCLINATION
         this.getFlightRecorder().appendControlLog("TurningLeft, Horizontal Stabilizer: " +
                 outputs.getHorStabInclination()*RAD2DEGREE + "; Left Main: " +outputs.getLeftWingInclination()*RAD2DEGREE +
                 "; Right Main: " + outputs.getRightWingInclination()*RAD2DEGREE);
@@ -253,11 +253,10 @@ public class AutoPilotController {
 
     private FlightRecorder flightRecorder;
 
-    private static final float STANDARD_INCLINATION = (float)Math.PI/9;
+    private static final float STANDARD_INCLINATION = (float)Math.PI/8;
     public static final float MAIN_STABLE_INCLINATION = (float)Math.PI/12;
-    private static final float MAX_HOR_STAB_INCLINATION = (float)Math.PI/9;
-    private static final float TURNING_INCLINATION = (float)Math.PI/9;
-    private static final float NO_INCLINATION = 0.0f;
+    private static final float MAX_HOR_STAB_INCLINATION = (float)Math.PI/4;
+    private static final float TURNING_INCLINATION = (float)Math.PI/8;
     private static final int BIAS = 0;
     private static final float THRESHOLD_DISTANCE = 5f;
     private static final float STANDARD_THRUST = 32.859283f;
@@ -269,7 +268,6 @@ public class AutoPilotController {
     private static final float ROLL_THESHOLD = (float) (Math.PI * 3.0f/180.0f);
     private static final float MAXTHRUST = 250.0f;
     private static final float RAD2DEGREE = (float) (180.0f/Math.PI);
-
     /*
     Error Messages
      */

@@ -1,5 +1,7 @@
 package internal;
 
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,25 +19,77 @@ public class FlightRecorder {
         // empty constructor
     }
 
-    public boolean diagnoseWingIssues(float maxAOA){
+    /**
+     * Prints the diagnosis on screen and saves it to the given file
+     * @param maxAOA the max angle of attack to look for
+     * @param filename the name of the file to place the diagnosis in
+     * @return true of the diagnosis was successful
+     * @throws FileNotFoundException
+     */
+    public boolean saveDiagnosisWingIssues(float maxAOA, String filename) throws FileNotFoundException {
+
+        String diagnosisString = diagnoseWingIssues(maxAOA);
+        //write the diagnosis to file
+        System.out.println("printing diagnosis");
+        PrintWriter printerOutput = new PrintWriter(filename);
+        printerOutput.print(diagnosisString);
+        printerOutput.close();
+        System.out.println("printing ended");
+        //report success
+        return diagnosisString.length()>0;
+    }
+
+    public String diagnoseWingIssues(float maxAOA){
+        String diagnosisString = "";
+        int logSize = this.getLogSize();
         List<List<Float>> wingList = this.getWingRecords();
         boolean diagnosis = false;
+        diagnosisString += "############## Wing Diagnosis Space ##############\n\n";
         for(int i = 1; i < wingList.size(); i+= 2){
             for(Float elem: wingList.get(i)){
                 if(Math.abs(elem)>= maxAOA){
                     diagnosis = true;
-                    System.out.println("faulty Wing: " + i/2);
-                    System.out.println("Inclination Issue: " + wingList.get(i-1));
-                    System.out.println("AOA Issue: " + wingList.get(i));
+                    diagnosisString += "Faulty wing: " + getWingName(i/2) + "\n";
+                    diagnosisString +=  logSize + " last wing inclinations: " + wingList.get(i-1) + "\n";
+                    diagnosisString +=  logSize + " last angles of attack: " + wingList.get(i) + "\n\n";
                     //nothing to do here anymore, break the loop
                     break;
                 }
             }
         }
 
-        System.out.println("Controls: " + this.getControlActionsLog());
+        if(!diagnosis){
+            diagnosisString += "No diagnosis was found, was the angle of attack valid?";
+        }
 
-        return diagnosis;
+        diagnosisString += logSize + " last Positions: " + this.getPositionLog() + "\n";
+        diagnosisString += logSize + " last Velocities: " + this.getVelocityLog() + "\n";
+        diagnosisString += logSize + " last Orientations: " + this.getOrientationLog() + "\n";
+        diagnosisString += logSize + " last Rotations: " + this.getRotationLog() + "\n";
+        diagnosisString += logSize + " last controls: " + this.getControlActionsLog() + "\n";
+
+        System.out.println(diagnosisString);
+
+        return diagnosisString;
+    }
+
+    public void dumpLog(String filename){
+        //todo Implement, just dump the log in the provided file
+    }
+
+    public String getWingName(int wingNumber){
+        switch (wingNumber){
+            case 0:
+                return "Right main wing";
+            case 1:
+                return "Left main wing";
+            case 2:
+                return "Horizontal Stabilizer";
+            case 3:
+                return "Vertical Stabilizer";
+            default:
+                throw new IllegalArgumentException(NO_SUCH_WING);
+        }
     }
 
     public void appendPositionLog(Vector logVar){
@@ -225,4 +279,9 @@ public class FlightRecorder {
      * Flag that signals if the flight recorder is in record mode
      */
     private boolean recordOn = true;
+
+    /*
+    Error messages
+     */
+    private final static String NO_SUCH_WING = "The number provided does not correspond with a wing";
 }

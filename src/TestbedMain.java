@@ -141,6 +141,13 @@ public class TestbedMain implements Runnable{
                 testbedServer.close();
                 break;
 
+            } catch(AngleOfAttackException ex){
+                System.out.println("Closing down Testbed Server");
+                inputStream.close();
+                outputStream.close();
+                testbedClientSocket.close();
+                testbedServer.close();
+                throw new AngleOfAttackException(ex.getCauseWing());
             }
         }
     }
@@ -194,7 +201,7 @@ public class TestbedMain implements Runnable{
                 // elapsedTime replace by getTimePassed()
                 if (!isFirstRun()) {
                     drone.setAutopilotOutputs(autopilotOutputs);
-                        this.getWorld().advanceWorldState(TIME_STEP, STEPS_PER_ITERATION);
+                    this.getWorld().advanceWorldState(TIME_STEP, STEPS_PER_ITERATION);
 
 
                 } else {

@@ -536,7 +536,7 @@ public class PhysXEngine {
     private Vector calcAcceleration(Vector thrustVector, Vector orientation, Vector rotation, Vector velocity){
         Vector externalForce = getTotalExternalForcesWorld(thrustVector, orientation, rotation, velocity);
         float totalMass = this.getTotalMass();
-
+        System.out.println("output force: " + externalForce);
         return externalForce.scalarMult(1/totalMass);
 
     }

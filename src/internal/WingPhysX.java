@@ -44,7 +44,6 @@ public abstract class WingPhysX {
      */
     public Vector getAbsoluteVelocity(Vector orientation, Vector rotation, Vector velocity){
 
-
         //the relative position vector of the wing to the mass center of the drone
         Vector relativePos = this.getRelativePosition();
         //calculate the absolute position vector of the wing to the center of mass
@@ -71,7 +70,7 @@ public abstract class WingPhysX {
         float angleOfAttack = this.calcAngleOfAttack(orientation, rotation, velocity);
         if(Math.abs(angleOfAttack) > Math.abs(this.getMaximumAngleOfAttack())){
             this.setFaultyAngleOfAttack((float) (angleOfAttack*180/Math.PI));
-            throw new AngleOfAttackException(this);
+            //throw new AngleOfAttackException(this);
         }
         float liftSlope = this.getLiftSlope();
 

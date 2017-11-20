@@ -79,7 +79,7 @@ public class Drone implements WorldObject {
 
 		//calculate the next state of the physics engine
 		PhysicsEngineState nextState = this.getPhysXEngine().getNextStatePhysXEngine(deltaTime, autopilotOutputs, this.getPosition(),
-				this.getVelocity(), this.getOrientation(), this.getRotationVector(), INSIGNIFICANCE, PhysXEngine.RK4_METHOD);
+				this.getVelocity(), this.getOrientation(), this.getRotationVector(), INSIGNIFICANCE, PhysXEngine.EULER_METHOD);
 
 		Vector differencePos = (nextState.getPosition()).vectorDifference(this.getPosition());
 

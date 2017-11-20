@@ -38,7 +38,16 @@ public class SocketMain {
                 case AngleOfAttackException.TAG:
                     WingPhysX causeWing = ((AngleOfAttackException)ex).getCauseWing();
                     System.out.println(causeWing + "\n\n");
-                    boolean diagnosis = FLIGHT_RECORDER.diagnoseWingIssues((float) (40*Math.PI/180.f));
+
+                    boolean diagnosis = false;
+                    System.out.println("Starting Diagnosis");
+                    try {
+                        diagnosis = FLIGHT_RECORDER.saveDiagnosisWingIssues((float) (40*Math.PI/180), "diagnosis.txt");
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    }
+                    System.out.println("Diagnosis ended");
+
                     if(!diagnosis) {
                         int index = 0;
                         for (List<Float> record : FLIGHT_RECORDER.getWingRecords()) {
