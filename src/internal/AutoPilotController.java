@@ -117,7 +117,10 @@ public class AutoPilotController {
         AutopilotInputs currentInputs = this.getCurrentInputs();
         //APCamera.loadNextImage(currentInputs.getImage());
         APCamera.loadNewImage(currentInputs.getImage());
-        Vector center = APCamera.getCenterOfNCubes(2);
+        
+        Vector center = APCamera.getCenterOfNCubes(1).scalarMult(2f).vectorSum(APCamera.getCenterOfNCubes(5).scalarMult(1f)).scalarMult(1f);
+//        Vector center = APCamera.getCenterOfNCubes(1);
+//        Vector center = APCamera.getCenterOfNCubes(1);
         float xPosition = center.getxValue();
         float yPosition = -center.getyValue();
 

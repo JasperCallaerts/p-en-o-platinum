@@ -227,10 +227,10 @@ public class WorldGenerator {
 		ArrayList<Vector> allPositions = allPositionsGenerator();
 		
 		//uncomment the line below for cubes with different colors
-		ArrayList<Vector> allColors = colorGenerator();
+		//ArrayList<Vector> allColors = colorGenerator();
 		
 		//uncomment the line below for red cubes only
-		//ArrayList<Vector> allColors = redGenerator();
+		ArrayList<Vector> allColors = redGenerator();
 
 		//the current objective is visit all
 		World world = new World(World.VISIT_ALL_OBJECTIVE);
