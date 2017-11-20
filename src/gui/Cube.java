@@ -2,6 +2,7 @@ package gui;
 
 import internal.HSVconverter;
 import internal.Vector;
+import math.Matrix3f;
 import math.Matrix4f;
 import math.Vector3f;
 
@@ -89,12 +90,14 @@ public class Cube{
 	private Matrix4f modelMatrix = new Matrix4f();
 	private Vector3f position = new Vector3f();
 	private Vector3f size = new Vector3f(1f, 1f, 1f);
+	private Vector3f relativePosition = new Vector3f();
+	private Cube attachedCube = null;
 	
 	static public void setGraphics(Graphics graphics) {
 		g = graphics;
 	}
 	
-	public Cube(Vector3f position, Vector3f colour) {
+	private Cube(Vector3f colour) {
 		setColours(colour);
 		
 		for (String key: g.windows.keySet()) {
@@ -103,8 +106,21 @@ public class Cube{
 			mesh.init(positions, colours, indices);
 			glfwMakeContextCurrent(NULL);
 		}
+	}
+	
+	public Cube(Vector3f position, Vector3f colour) {
+		this(colour);
 		
 		this.position = position;
+		modelMatrix = Matrix4f.translate(position.x, position.y, position.z);
+	}
+
+	public Cube(Vector3f relativePosition, Vector3f colour, Cube attachedCube) {
+		this(colour);
+		
+		this.relativePosition = relativePosition;
+		this.attachedCube  = attachedCube;
+		this.position = relativePosition.add(attachedCube.getPos());
 		modelMatrix = Matrix4f.translate(position.x, position.y, position.z);
 	}
 
@@ -116,8 +132,13 @@ public class Cube{
 		mesh.delete();
 	}
 
-	public void update(Vector3f displacement) {
-		this.position = this.position.add(displacement);
+	public void update(Vector3f displacement, Vector3f orientation) {
+//		if (attachedCube == null) {
+//			Matrix3f transformation = Window.getTransformationMatrix(orientation.negate());
+//			Vector3f difference = transformation.multiply(displacement);
+//			this.position = this.position.add(difference);
+//		} else
+			this.position = this.position.add(displacement);
 		modelMatrix = Matrix4f.translate(position.x, position.y, position.z);
 	}
 

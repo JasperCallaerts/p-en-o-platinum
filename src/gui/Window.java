@@ -221,11 +221,13 @@ public class Window {
         program.setUniform("viewMatrix", viewMatrix);
 
         for (WorldObject object: world.getObjectSet()) {
-        	if (object.getClass() == Block.class)
-        		program.setUniform("modelMatrix", object.getAssociatedCube().getMatrix());
-        	else 
-        		program.setUniform("modelMatrix", getAdvancedModelMatrix(((Drone) object).getOrientation().convertToVector3f().negate(), object.getAssociatedCube().getModelMatrix(), object.getAssociatedCube().getSizeMatrix()));
-    		object.getAssociatedCube().render();
+        	for (Cube cube: object.getAssociatedCubes()) {
+	        	if (object.getClass() == Block.class)
+	        		program.setUniform("modelMatrix", cube.getMatrix());
+	        	else 
+	        		program.setUniform("modelMatrix", getAdvancedModelMatrix(((Drone) object).getOrientation().convertToVector3f().negate(), cube.getModelMatrix(), cube.getSizeMatrix()));
+	    		cube.render();
+        	}
     	}
 		
 		program.unbind();
@@ -244,7 +246,8 @@ public class Window {
 	     * Releases in use OpenGL resources.
 	     */
 		for (WorldObject object: world.getObjectSet()) {
-    		object.getAssociatedCube().delete();
+			for (Cube cube: object.getAssociatedCubes())
+				cube.delete();
     	}
 		
 		terminated = true;
@@ -273,12 +276,7 @@ public class Window {
 	
 	public Matrix4f getAdvancedModelMatrix(Vector3f orientation, Matrix4f modelMatrix, Matrix4f sizeMatrix) {
 		
-		Matrix3f pitchMatrix = new Matrix3f(new Vector3f(1, 0, 0), new Vector3f(0, (float) Math.cos(orientation.y), (float) -Math.sin(orientation.y)), new Vector3f(0, (float) Math.sin(orientation.y), (float) Math.cos(orientation.y)));
-        Matrix3f yawMatrix = new Matrix3f(new Vector3f((float) Math.cos(orientation.x), 0, (float) Math.sin(orientation.x)), new Vector3f(0, 1, 0), new Vector3f((float) -Math.sin(orientation.x), 0, (float) Math.cos(orientation.x)));
-        Matrix3f rollMatrix = new Matrix3f(new Vector3f((float) Math.cos(orientation.z), (float) Math.sin(orientation.z), 0), new Vector3f((float) -Math.sin(orientation.z), (float) Math.cos(orientation.z), 0), new Vector3f(0, 0, 1));
-        		
-        Matrix3f transformationMatrix = yawMatrix.multiply(pitchMatrix).multiply(rollMatrix);
-        transformationMatrix = transformationMatrix.transpose();
+		Matrix3f transformationMatrix = getTransformationMatrix(orientation);
         
         Vector3f right = transformationMatrix.multiply(new Vector3f(1,0,0));
         Vector3f up = transformationMatrix.multiply(new Vector3f(0, 1,0));
@@ -314,18 +312,24 @@ public class Window {
         	dronePosition = drone.getPosition().convertToVector3f();
         }
         
-        Matrix3f pitchMatrix = new Matrix3f(new Vector3f(1, 0, 0), new Vector3f(0, (float) Math.cos(orientation.y), (float) -Math.sin(orientation.y)), new Vector3f(0, (float) Math.sin(orientation.y), (float) Math.cos(orientation.y)));
-        Matrix3f yawMatrix = new Matrix3f(new Vector3f((float) Math.cos(orientation.x), 0, (float) Math.sin(orientation.x)), new Vector3f(0, 1, 0), new Vector3f((float) -Math.sin(orientation.x), 0, (float) Math.cos(orientation.x)));
-        Matrix3f rollMatrix = new Matrix3f(new Vector3f((float) Math.cos(orientation.z), (float) Math.sin(orientation.z), 0), new Vector3f((float) -Math.sin(orientation.z), (float) Math.cos(orientation.z), 0), new Vector3f(0, 0, 1));
-        		
-        Matrix3f transformationMatrix = pitchMatrix.multiply(yawMatrix).multiply(rollMatrix);
-        transformationMatrix = transformationMatrix.transpose();
+        Matrix3f transformationMatrix = getTransformationMatrix(orientation);
         
         Vector3f right = transformationMatrix.multiply(new Vector3f(1,0,0));
         Vector3f up = transformationMatrix.multiply(new Vector3f(0,1,0));
         Vector3f look = transformationMatrix.multiply(new Vector3f(0,0,-1));
 
 		return Matrix4f.viewMatrix(right, up, look, dronePosition);
+	}
+	
+	public static Matrix3f getTransformationMatrix(Vector3f orientation) {
+		Matrix3f pitchMatrix = new Matrix3f(new Vector3f(1, 0, 0), new Vector3f(0, (float) Math.cos(orientation.y), (float) -Math.sin(orientation.y)), new Vector3f(0, (float) Math.sin(orientation.y), (float) Math.cos(orientation.y)));
+        Matrix3f yawMatrix = new Matrix3f(new Vector3f((float) Math.cos(orientation.x), 0, (float) Math.sin(orientation.x)), new Vector3f(0, 1, 0), new Vector3f((float) -Math.sin(orientation.x), 0, (float) Math.cos(orientation.x)));
+        Matrix3f rollMatrix = new Matrix3f(new Vector3f((float) Math.cos(orientation.z), (float) Math.sin(orientation.z), 0), new Vector3f((float) -Math.sin(orientation.z), (float) Math.cos(orientation.z), 0), new Vector3f(0, 0, 1));
+        		
+        Matrix3f transformationMatrix = yawMatrix.multiply(pitchMatrix).multiply(rollMatrix);
+        transformationMatrix = transformationMatrix.transpose();
+        
+        return transformationMatrix;
 	}
 	
 	public Matrix4f getProjectionMatrix() {

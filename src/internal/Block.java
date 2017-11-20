@@ -24,8 +24,8 @@ public class Block implements WorldObject {
 	}
 
 	@Override
-	public Cube getAssociatedCube(){
-		return this.blockCube;
+	public Set<Cube> getAssociatedCubes(){
+		return this.blockCubes;
 	}
 
 	/**
@@ -35,7 +35,7 @@ public class Block implements WorldObject {
 	public void setAssocatedCube(Cube cube){
 		if(!canHaveAsCube(cube))
 			throw new IllegalArgumentException(INVALID_CUBE);
-		this.blockCube = cube;
+		this.blockCubes.add(cube);
 	}
 
 	/**
@@ -44,7 +44,7 @@ public class Block implements WorldObject {
 	 * @return true if and only if cube is not initialized and the position of the cube and the block are the same
 	 */
 	private boolean canHaveAsCube(Cube cube){
-		return this.getAssociatedCube() == null && cube.getPosition().rangeEquals(this.getPosition(), maxPosDifference);
+		return cube.getPosition().rangeEquals(this.getPosition(), maxPosDifference);
 	}
 
 	/**
@@ -72,8 +72,7 @@ public class Block implements WorldObject {
 
 	private Vector position;
 
-	private Cube blockCube;
-//	private Set<Cube> blockCubes = new HashSet<>();
+	private Set<Cube> blockCubes = new HashSet<>();
 
 	/**
 	 * Flag that stores if the block was visited by the drone.

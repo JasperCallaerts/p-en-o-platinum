@@ -3,6 +3,8 @@ package internal;
 
 import java.io.IOException;
 import java.lang.Math;
+import java.util.HashSet;
+import java.util.Set;
 
 import Autopilot.AutopilotConfig;
 import Autopilot.AutopilotOutputs;
@@ -47,9 +49,24 @@ public class Drone implements WorldObject {
 
 		// the cube associated with the drone
 		try {
-			Cube droneCube = new Cube(position.convertToVector3f(), new Vector3f(240f, 100f, 100f));
-			droneCube.setSize(new Vector3f(8f, 0.5f, 2f));
-			this.setAssociatedCube(droneCube);
+			Cube droneCube1 = new Cube(position.convertToVector3f(), new Vector3f(240f, 100f, 100f));
+			droneCube1.setSize(new Vector3f(8f, 0.5f, 2f));
+			this.setAssociatedCube(droneCube1);
+			
+			Vector3f position2 = new Vector3f(0f, 0f, 1f);
+			Cube droneCube2 = new Cube(position2, new Vector3f(240f, 100f, 100f), droneCube1);
+			droneCube2.setSize(new Vector3f(1f, 1f, 6f));
+			this.setAssociatedCube(droneCube2);
+			
+			Vector3f position3 = new Vector3f(0f, 0.5f, 4f);
+			Cube droneCube3 = new Cube(position3, new Vector3f(240f, 100f, 100f), droneCube1);
+			droneCube3.setSize(new Vector3f(0.2f, 1f, 1f));
+			this.setAssociatedCube(droneCube3);
+			
+			Vector3f position4 = new Vector3f(0f, 0f, 5f);
+			Cube droneCube4 = new Cube(position4, new Vector3f(240f, 100f, 100f), droneCube1);
+			droneCube4.setSize(new Vector3f(3f, 0.2f, 1f));
+			this.setAssociatedCube(droneCube4);
 		}catch(NullPointerException e){
 			//let it go
 			System.out.println("Null on assocCube");
@@ -88,7 +105,8 @@ public class Drone implements WorldObject {
 
 		// move the cube representing the drone
 		try{
-			this.getAssociatedCube().update(differencePos.convertToVector3f());
+			for (Cube cube: this.getAssociatedCubes())
+				cube.update(differencePos.convertToVector3f(), getOrientation().convertToVector3f());
 		}catch(NullPointerException e){
 			//let it go
 		}
@@ -106,17 +124,17 @@ public class Drone implements WorldObject {
 	 ############################# Gui configuration methods #############################
 	 */
 
-	public Cube getAssociatedCube() {
-		return droneCube;
+	public Set<Cube> getAssociatedCubes() {
+		return droneCubes;
 	}
 
 	/**
 	 * Setter for the drone cube
-	 * @param droneCube the cube representing the drone
+	 * @param droneCubes the cubes representing the drone
 	 * Immutable!
 	 */
 	private void setAssociatedCube(Cube droneCube) {
-		this.droneCube = droneCube;
+		this.droneCubes.add(droneCube);
 	}
 
 	/**
@@ -124,7 +142,7 @@ public class Drone implements WorldObject {
 	 * @return true if and only if the
 	 */
 	private boolean canHaveAsDroneCube(Cube droneCube){
-		return this.getAssociatedCube() == null && droneCube.getPosition().rangeEquals(this.getPosition(), maxPosDifference);
+		return droneCube.getPosition().rangeEquals(this.getPosition(), maxPosDifference);
 	}
 	/*
 	 ############################# Drone configuration methods #############################
@@ -570,9 +588,9 @@ public class Drone implements WorldObject {
 
 
 	/**
-	 * Variable that stores the cube representing the drone
+	 * Variable that stores the cubes representing the drone
 	 */
-	private Cube droneCube;
+	private Set<Cube> droneCubes = new HashSet<>();
 
 	/**
 	 * variables used for the configuration of the streams
