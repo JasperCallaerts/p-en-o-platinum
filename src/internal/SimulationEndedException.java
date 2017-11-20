@@ -7,6 +7,13 @@ package internal;
 public class SimulationEndedException extends IllegalArgumentException {
 
     public SimulationEndedException(){
-        System.out.println("Hurray the drone has reached the cube!");
+        //System.out.println("Hurray the drone has reached the cube!");
     }
+
+    @Override
+    public String toString() {
+        return TAG;
+    }
+
+    public final static String TAG = "SIMULATION_ENDED";
 }

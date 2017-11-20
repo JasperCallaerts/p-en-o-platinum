@@ -2,9 +2,11 @@ import Autopilot.AutopilotInputs;
 import Autopilot.AutopilotOutputs;
 import gui.Cube;
 import gui.Graphics;
+import gui.Settings;
 import gui.Time;
 import gui.Window;
 import internal.*;
+import math.Vector3f;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -25,16 +27,22 @@ public class Main {
 		// Cube needs graphics to be able to initialize cubes
 		Cube.setGraphics(graphics);
 
-		// initialize the windows
-		Window droneCam = new Window(1000, 1000, 0.5f, 0.4f, "bytestream window", false);
-		Window droneView = new Window(960, 1000, 0.0f, 0.4f, "Drone simulator 2017", true);
-		Window personView = new Window(960, 1000, 1f, 0.4f, "Drone simulator 2017", true);
-//		Window textWindow = new Window(500, 500, 0.5f, 0.5f, "text window", true, droneCam); // Not implemented yet
+		// Construct the windows
+		Window droneCam = new Window(200, 200, 0.5f, 0.4f, "bytestream window", new Vector3f(1.0f, 1.0f, 1.0f), false);
+		Window topDownView = new Window(960, 510, 1f, 0.05f, "Top down view", new Vector3f(1.0f, 1.0f, 1.0f), true);
+		Window sideView = new Window(960, 510, 1f, 1f, "Side view", new Vector3f(1.0f, 1.0f, 1.0f), true);
+		Window chaseView = new Window(960, 510, 0f, 1f, "Chase view", new Vector3f(1.0f, 1.0f, 1.0f), true);
+		Window droneView = new Window(960, 510, 0.0f, 0.05f, "Drone view", new Vector3f(1.0f, 1.0f, 1.0f), true);
+//		Window independentView = new Window(960, 1000, 1f, 0.4f, "Independent camera", new Vector3f(0.5f, 0.8f, 1.0f), true);
+//		Window textWindow = new Window(500, 500, 0.5f, 0.5f, "text window", new Vector3f(0.0f, 0.0f, 0.0f), true); // Not implemented yet
 
 		// add the windows to graphics
-		graphics.addWindow("camera", droneCam);
-		graphics.addWindow("third person view", personView);
-		graphics.addWindow("drone view", droneView);
+		graphics.addWindow("bytestream window", droneCam);
+		graphics.addWindow("Drone view", droneView);
+		graphics.addWindow("Top down view", topDownView);
+		graphics.addWindow("Side view", sideView);
+		graphics.addWindow("Chase view", chaseView);
+//		graphics.addWindow("independent view", independentView);
 //		graphics.addWindow("textWindow", textWindow); // Not implemented yet
 		
 		
@@ -59,7 +67,7 @@ public class Main {
         	Cube cube = new Cube(position.convertToVector3f(), COLOR.convertToVector3f());
         	block.setAssocatedCube(cube);
         	blocks.add(block);
-        }*/
+        }
         
         Vector COLOR = new Vector(1.0f, 0.0f,0.0f);
         BlockCoordinatesParser parser = new BlockCoordinatesParser(COORDINATES_FILEPATH);
@@ -74,12 +82,18 @@ public class Main {
         
         world.addWorldObject(blocks.get(0));
         world.addWorldObject(blocks.get(1));
+        */
         
-        // Put a world in the windows
-        droneCam.initWorld(world, true);
-        personView.initWorld(world, false);
-        droneView.initWorld(world, true);
-      
+        
+        // Initialize the windows
+        droneCam.initWindow(world, Settings.DRONE_CAM);
+        droneView.initWindow(world, Settings.DRONE_CAM);
+        topDownView.initWindow(world, Settings.DRONE_TOP_DOWN_CAM);
+        chaseView.initWindow(world, Settings.DRONE_CHASE_CAM);
+        sideView.initWindow(world, Settings.DRONE_SIDE_CAM);
+//        independentView.initWindow(world, Settings.INDEPENDENT_CAM);
+//        textWindow.initWindow(droneCam);
+
         // set state
         boolean goalNotReached = true;
         boolean configuredAutopilot = false;
@@ -89,7 +103,7 @@ public class Main {
         // initialize time handler
      	Time.initTime();
      		
-        while (!graphics.isTerminated()) {
+        while(!graphics.isTerminated()) {
 
 //            long startTime = System.currentTimeMillis();
         	

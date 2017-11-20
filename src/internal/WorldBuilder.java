@@ -1,8 +1,5 @@
 package internal;
 
-
-import gui.Cube;
-
 /**
  * Created by Martijn on 26/10/2017.
  * a class to build a world, set the standard configuration here.
@@ -14,6 +11,9 @@ public class WorldBuilder {
     // Deprecated: all blocks are generated in main loop
     //public final static Vector BLOCKPOS = new Vector(0.0f, 0.489f, -6.9098f);
     public final static Vector COLOR = new Vector(1.0f, 0.0f,0.0f);
+    private static int numberOfBlocks = 5;
+    public final static WorldGenerator wg = new WorldGenerator(numberOfBlocks);
+
 
     public WorldBuilder(){
         //do nothing
@@ -25,6 +25,7 @@ public class WorldBuilder {
         //block1.setAssocatedCube(cube1);
 
         World world = new World();
+        world = wg.createWorld();
         //world.addWorldObject(block1);
         world.addWorldObject(DRONE);
 

@@ -41,10 +41,8 @@ public class Window {
 
 	private Input input;
 	private ShaderProgram program;
-
-	private boolean droneView;  
 	
-    private static final float FOV = (float) Math.toRadians(60.0f);
+    private static float FOV = (float) Math.toRadians(120.0f);
 	private static final float NEAR = 0.01f;
 	private static final float FAR = 1000.f;
 	
@@ -60,13 +58,15 @@ public class Window {
 
 	private Window dependableWindow = null;
 
+	private Settings setting;
+
 	/**
 	 * Creates a window.
      * Initializes the OpenGL state. Creating programs and sets 
      * appropriate state. 
 	 * @param visible 
      */
-	public Window(int width, int height, float xOffset, float yOffset, String title, boolean visible) {
+	public Window(int width, int height, float xOffset, float yOffset, String title, Vector3f color, boolean visible) {
 		WIDTH = width;
 		HEIGHT = height;
 		this.title = title;
@@ -121,18 +121,43 @@ public class Window {
 		capabilities = GL.createCapabilities();
 
 		// Set the clear color
-		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+		glClearColor(color.x, color.y, color.z, 1.0f);
+        
+		glfwMakeContextCurrent(NULL);
+	}
+	
+	public void initWindow(Window window) {
+		this.setting = Settings.TEXT_WINDOW;
+		this.dependableWindow = window;
+		
+		glfwMakeContextCurrent(getHandler());
+		
+		program = new ShaderProgram(false, "resources/default.vert", "resources/default.frag");	
 
+        program.init();
+        
+        input = new Input(setting);
+        
+        glfwMakeContextCurrent(NULL);
+	}
+	
+	public void initWindow(World world, Settings setting) {
+		this.setting = setting;
+		this.world = world;
+		if (setting != Settings.DRONE_CAM)
+			FOV = FOV / 2f;
+		
+		glfwMakeContextCurrent(getHandler());
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LESS);
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
 		
-		input = new Input();
-		
-		program = new ShaderProgram(false, "resources/default.vert", "resources/default.frag");	
+		program = new ShaderProgram(false, "resources/3dWorld.vert", "resources/3dWorld.frag");	
 
         program.init();
+        
+        input = new Input(setting);
         
         try {
 			program.createUniform("projectionMatrix");
@@ -142,26 +167,23 @@ public class Window {
 			e.printStackTrace();
 		}
         
-		glfwMakeContextCurrent(NULL);
-	}
-	
-	public Window(int width, int height, float xOffset, float yOffset, String title, boolean visible, Window droneCam) {
-		this(width, height, xOffset, yOffset, title, visible);
-		this.dependableWindow = droneCam;
-	}
-	
-	public void initWorld(World world, boolean cameraOnDrone) {
-		this.droneView = cameraOnDrone;
-		this.world = world;
-		
-		glfwMakeContextCurrent(getHandler());
-		if (!cameraOnDrone)
+        float ratio;
+		try (MemoryStack stack = MemoryStack.stackPush()) {
+			long window = GLFW.glfwGetCurrentContext();
+			IntBuffer width = stack.mallocInt(1);
+			IntBuffer height = stack.mallocInt(1);
+			GLFW.glfwGetFramebufferSize(window, width, height);
+			ratio = (float) width.get() / (float) height.get();
+		}
+        projectionMatrix = Matrix4f.perspective(FOV, ratio, NEAR, FAR);
+        
+		if (setting == Settings.INDEPENDENT_CAM)
 			glfwSetInputMode(getHandler(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 		glfwMakeContextCurrent(NULL);
 	}
 
 	public void render() {
-		if (this.isText())
+		if (setting == Settings.TEXT_WINDOW)
 			renderText();
 		else
 			renderFrame();
@@ -183,6 +205,8 @@ public class Window {
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the buffers
 
+		if (setting == Settings.INDEPENDENT_CAM)
+			input.processInput();
 		updateMatrices();
 	
 		program.bind();
@@ -190,7 +214,10 @@ public class Window {
         program.setUniform("viewMatrix", viewMatrix);
 
         for (WorldObject object: world.getObjectSet()) {
-    		program.setUniform("modelMatrix", object.getAssociatedCube().getModelMatrix());
+        	if (object.getClass() == Block.class)
+        		program.setUniform("modelMatrix", object.getAssociatedCube().getModelMatrix());
+        	else 
+        		program.setUniform("modelMatrix", getAdvancedModelMatrix(((Drone) object).getOrientation().convertToVector3f().negate(), object.getAssociatedCube().getModelMatrix()));
     		object.getAssociatedCube().render();
     	}
 		
@@ -225,13 +252,51 @@ public class Window {
 	}
 	
 	public void updateMatrices() {
-		if (cameraIsOnDrone())
-			viewMatrix = getDroneView();
-		else
-			viewMatrix = getViewMatrix();
-		
+		switch (setting) {
+		case DRONE_CAM: viewMatrix = getDroneView();
+						break;
+		case DRONE_CHASE_CAM: viewMatrix = getChaseView();
+						break;
+		default: viewMatrix = input.getViewMatrix();
+			break;
+		}
 		
 		projectionMatrix = getProjectionMatrix();
+	}
+	
+	public Matrix4f getAdvancedModelMatrix(Vector3f orientation, Matrix4f modelMatrix) {
+		
+		Matrix3f pitchMatrix = new Matrix3f(new Vector3f(1, 0, 0), new Vector3f(0, (float) Math.cos(orientation.y), (float) -Math.sin(orientation.y)), new Vector3f(0, (float) Math.sin(orientation.y), (float) Math.cos(orientation.y)));
+        Matrix3f yawMatrix = new Matrix3f(new Vector3f((float) Math.cos(orientation.x), 0, (float) Math.sin(orientation.x)), new Vector3f(0, 1, 0), new Vector3f((float) -Math.sin(orientation.x), 0, (float) Math.cos(orientation.x)));
+        Matrix3f rollMatrix = new Matrix3f(new Vector3f((float) Math.cos(orientation.z), (float) Math.sin(orientation.z), 0), new Vector3f((float) -Math.sin(orientation.z), (float) Math.cos(orientation.z), 0), new Vector3f(0, 0, 1));
+        		
+        Matrix3f transformationMatrix = yawMatrix.multiply(pitchMatrix).multiply(rollMatrix);
+        transformationMatrix = transformationMatrix.transpose();
+        
+        Vector3f right = transformationMatrix.multiply(new Vector3f(1,0,0));
+        Vector3f up = transformationMatrix.multiply(new Vector3f(0, 1,0));
+        Vector3f look = transformationMatrix.multiply(new Vector3f(0,0, -1));
+        
+		return modelMatrix.multiply(Matrix4f.viewMatrix(right, up, look, new Vector3f()));
+	}
+	
+	public Matrix4f getChaseView() {
+		Vector3f orientation = new Vector3f();
+		Vector3f dronePosition = new Vector3f();
+        for (Drone drone: world.getDroneSet()) {
+        	orientation = drone.getOrientation().convertToVector3f();
+        	dronePosition = drone.getPosition().convertToVector3f();
+        }
+        Matrix3f yawMatrix = new Matrix3f(new Vector3f((float) Math.cos(orientation.x), 0, (float) Math.sin(orientation.x)), new Vector3f(0, 1, 0), new Vector3f((float) -Math.sin(orientation.x), 0, (float) Math.cos(orientation.x)));
+        Matrix3f transformationMatrix = yawMatrix.transpose();
+        
+        Vector3f right = transformationMatrix.multiply(new Vector3f(1,0,0));
+        Vector3f up = transformationMatrix.multiply(new Vector3f(0,1,0));
+        Vector3f look = transformationMatrix.multiply(new Vector3f(0,0,-1));
+        
+        Vector3f position = dronePosition.add(new Vector3f(-10 * look.x, 0f, -10 * look.z));
+		
+		return Matrix4f.viewMatrix(right, up, look, position);
 	}
 	
 	public Matrix4f getDroneView() {   
@@ -267,17 +332,9 @@ public class Window {
 		}
         return Matrix4f.perspective(FOV, ratio, NEAR, FAR);
 	}
-	
-	public Matrix4f getViewMatrix() {
-		return input.getViewMatrix();
-	}
-	
-	public boolean cameraIsOnDrone() {
-		return droneView;
-	}
-	
-	public boolean isText() {
-		if (dependableWindow == null)
+
+	public boolean uses3d() {
+		if (setting == Settings.TEXT_WINDOW)
 			return false;
 		return true;
 	}

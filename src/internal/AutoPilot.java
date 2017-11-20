@@ -27,7 +27,6 @@ public class AutoPilot implements Autopilot {
 
     	// set the controller of the autopilot
     	this.setController(new AutoPilotController(this));
-    	lastPosition = new Vector();
 
     }
 
@@ -45,7 +44,7 @@ public class AutoPilot implements Autopilot {
 
     @Override
     public void simulationEnded() {
-        // TODO close world?
+
     }
     
 
@@ -76,45 +75,7 @@ public class AutoPilot implements Autopilot {
 
     }
 
-    /**
-     * @param inputs
-     * @return Autopilotoutputs {Thrust, L/Rwinginclination, hor/verstabinclination}
-     * @throws IOException
-     */
-    private AutopilotOutputs calculate(AutopilotInputs inputs) throws IOException {
-        update(inputs);
-        AutopilotOutputs output = new AutopilotOutputs() {
 
-
-            @Override
-            public float getThrust() {
-                return getThrustOut();
-            }
-
-            @Override
-            public float getLeftWingInclination() {
-                return getLeftWingInclinationOut();
-            }
-
-            @Override
-            public float getRightWingInclination() {
-                return getRightWingInclinationOut();
-            }
-
-            @Override
-            public float getHorStabInclination() {
-                return getHorStabInclinationOut();
-            }
-
-            @Override
-            public float getVerStabInclination() {
-                return getVerStabInclinationOut();
-            }
-        };
-        //DataOutputStream dataInputStream = new DataOutputStream(new FileOutputStream(dataStreamLocationOutputs));
-        //AutopilotOutputsWriter.write(dataInputStream, output);
-        return output;
-    }
 
     private AutopilotOutputs getControlOutputs(AutopilotInputs inputs){
     	AutoPilotController controller = this.getController();
@@ -122,39 +83,6 @@ public class AutoPilot implements Autopilot {
     	return controller.getControlActions();
 	}
 
-    /**
-     * @throws IOException
-     */
-    public void setupAutopilotOutputs() throws IOException {
-       // DataOutputStream dataOutputStream =
-       //         new DataOutputStream(new FileOutputStream(dataStreamLocationOutputs));
-
-        AutopilotOutputs value = new AutopilotOutputs() {
-            public float getThrust() {
-                return getThrustOut();
-            }
-
-            public float getLeftWingInclination() {
-                return getLeftWingInclinationOut();
-            }
-
-            public float getRightWingInclination() {
-                return getRightWingInclinationOut();
-            }
-
-            public float getHorStabInclination() {
-                return getHorStabInclinationOut();
-            }
-
-            public float getVerStabInclination() {
-                return getVerStabInclinationOut();
-            }
-        };
-
-        //AutopilotOutputsWriter.write(dataOutputStream, value);
-
-        //dataOutputStream.close();
-    }
 
     /**
      * getter for the maximum thrust
@@ -173,152 +101,15 @@ public class AutoPilot implements Autopilot {
         this.maxThrust = maxThrust;
     }
 
-    /**
-     * checks if the supplied max thrust is valid
-     * @param maxThrust the max thrust to be checked
-     * @return true if and only if the maximum thrust > 0.0
-     * @author Martijn Sauwens
-     */
-    public static boolean isValidMaxThrust(float maxThrust){
-        return maxThrust > 0.0f;
-    }
 
-    /**
-     * @return true if and only if the autopilot is configured
-     * @author Martijn
-     */
-    public boolean isConfiguredAP() {
-        return configuredAP;
-    }
-
-    /**
-     * Variable for the filename that's created when making the AutopilotOutputs datastream
-     */
-    private String dataStreamLocationOutputs = "APOutputs.txt";
-	private float thrust;
-	private float leftWingInclination;
-	private float rightWingInclination;
-	private float horStabInclination;
-	private float verStabInclination;
-	
 	private List<Vector> currentPath;
 	private AutoPilotCamera APCamera;
-	
+
 
     private boolean configuredAP;
     private float maxThrust = 1f;
-	
-	//------- Simple Controlling Methods -------
-	/**
-	 * @author anthonyrathe
-	 */
-	private void clockRollStart(){
-		this.setLeftWingInclinationOut((float)-STANDARD_INCLINATION);
-		this.setRightWingInclinationOut((float)STANDARD_INCLINATION);
-	}
-	
-	/**
-	 * @author anthonyrathe
-	 */
-	private void counterClockRollStart(){
-		this.setLeftWingInclinationOut((float)STANDARD_INCLINATION);
-		this.setRightWingInclinationOut((float)-STANDARD_INCLINATION);
-	}
-	
-	/**
-	 * @author anthonyrathe
-	 */
-	private void stopRoll(){
-		this.setLeftWingInclinationOut(STABLE_INCLINATION);
-		this.setRightWingInclinationOut(STABLE_INCLINATION);
-	}
-	
-	/**
-	 * @author anthonyrathe
-	 */
-	private void startTurnLeft(){
-		this.setVerStabInclinationOut((float)-STANDARD_INCLINATION);
-	}
-	
-	/**
-	 * @author anthonyrathe
-	 */
-	private void startSharpTurnLeft(){
-		this.setVerStabInclinationOut((float)-SHARP_INCLINATION);
-	}
-	
-	/**
-	 * @author anthonyrathe
-	 */
-	private void startTurnRight(){
-		this.setVerStabInclinationOut((float)STANDARD_INCLINATION);
-	}
-	
-	/**
-	 * @author anthonyrathe
-	 */
-	private void startSharpTurnRight(){
-		this.setVerStabInclinationOut((float)SHARP_INCLINATION);
-	}
-	
-	/**
-	 * @author anthonyrathe
-	 */
-	private void stopTurn(){
-		this.setVerStabInclinationOut(0f);
-	}
-	
-	/**
-	 * @author anthonyrathe
-	 */
-	private void startAscend(){
-		this.setHorStabInclinationOut((float)-STANDARD_INCLINATION);
-	}
-	
-	/**
-	 * @author anthonyrathe
-	 */
-	private void startSteapAscend(){
-		this.setHorStabInclinationOut((float)-SHARP_INCLINATION);
-	}
-	
-	/**
-	 * @author anthonyrathe
-	 */
-	private void startDescend(){
-		this.setHorStabInclinationOut((float)STANDARD_INCLINATION);
-	}
-	
-	/**
-	 * @author anthonyrathe
-	 */
-	private void startSteapDescend(){
-		this.setHorStabInclinationOut((float)SHARP_INCLINATION);
-	}
-	
-	/**
-	 * @author anthonyrathe
-	 */
-	private void stopAscendDescend(){
-		this.setHorStabInclinationOut(0f);
-	}
-	
-	/**
-	 * @author anthonyrathe
-	 */
-	private void thrustOn(){
-		this.setThrustOut(1);
-	}
-	
-	/**
-	 * @author anthonyrathe
-	 */
-	private void thrustOff(){
-		this.setThrustOut(0);
-	}
-	
-	//------- END Drone Controlling Methods -------
-	
+
+
 	//------- Pathfinding -------
 	/**
 	 * @author anthonyrathe
@@ -414,20 +205,7 @@ public class AutoPilot implements Autopilot {
 		}
 		return nextNode;
 	}
-	
-	/**
-	 * @author anthonyrathe
-	 * @param pitch
-	 * @param yaw
-	 * @param roll
-	 * @return
-	 */
-	private Vector pitchRollYawToWorld(float pitch, float roll, float yaw){
-		double z = -Math.cos((double)yaw) * Math.cos((double)pitch);
-		double x = -Math.sin((double)yaw) * Math.cos((double)pitch);
-		double y = Math.sin((double)pitch);
-		return new Vector((float)x, (float)y, (float)z);
-	}
+
 	
 	/**
 	 * Method that updates the desired inclinations and thrust
@@ -483,138 +261,18 @@ public class AutoPilot implements Autopilot {
 		} 
 		
 	}*/
-	
-	private Vector lastPosition;
-	
-	/**
-	 * Method that updates the desired inclinations and thrust
-	 * Strategy applied:
-	 * 	- If destination is located on the upper half of the screen, start ascending. Start descending if located on the lower half of the screen.
-	 * 	- If destination is located on the right half of the screen, start rolling clockwise. Start rolling counterclockwise if located on the left half.
-	 * @author anthonyrathe
-	 */
-	public void update(AutopilotInputs inputs) throws IOException{
-		
-		getAPCamera().loadNextImage(inputs.getImage());
-		float pitch = inputs.getPitch();
-		float xPosition = APCamera.getDestination().getxValue();
-		float yPosition = -APCamera.getDestination().getyValue();
-		this.lastPosition = new Vector(xPosition, yPosition, 0);
-		
-		int cubeSize = Math.max(APCamera.getTotalQualifiedPixels(),1);
 
-		
-		//int threshold = (int)THRESHOLD_PIXELS*STANDARD_CUBE_SIZE/cubeSize;
-		int threshold = 3;
-		float angle = (float)Math.PI/6;
-		float factor = 1.0f;
-		
-		// Thrust
-		//System.out.println(getHorStabInclinationOut());
-		if (pitch > INCREASE_THRUST_ANGLE) {
-			this.setThrustOut(Math.min(Math.max((float)(STANDARD_THRUST/INCREASE_THRUST_ANGLE), STANDARD_THRUST),150));
-		}else {
-			this.setThrustOut(STANDARD_THRUST);
-		}
-		//this.setThrustOut(STANDARD_THRUST*1.7f);
-		
-		// Ascend/Descend
-		if(yPosition < -threshold){
-			// Descend
 
-			//System.out.println("This is your captain speaking: the red cube is located underneath us");
-			//this.startDescend();
-			this.setHorStabInclinationOut((float)(angle*((100+yPosition)/100)));
-		}else if(yPosition >= -threshold*factor && yPosition <= threshold*factor){
-			// Stop descending/ascending
-			//this.stopAscendDescend();
-		}else if(yPosition > threshold){
-			// Ascend
-
-			//System.out.println("This is your captain speaking: the red cube is located above us");
-			//this.startAscend();
-			this.setHorStabInclinationOut((float)(-angle*((100-yPosition)/100)));
-		}
-		
-		// Turn
-		if(xPosition > threshold){
-			// Turn right
-
-			//System.out.println("This is your captain speaking: the red cube is located at our right-hand-side");
-			//this.startTurnRight();
-			this.setVerStabInclinationOut((float)(angle*((100-xPosition)/100)));
-		}else if(xPosition >= -threshold*factor && xPosition <= threshold*factor){
-
-			// Stop turning
-			this.stopTurn();
-		}else if(xPosition < -threshold){
-			// Turn left
-
-			//System.out.println("This is your captain speaking: the red cube is located at our left-hand-side");
-			//this.startTurnLeft();
-			this.setVerStabInclinationOut((float)(-angle*((100+xPosition)/100)));
-		} 
-	
-		
-		
-	}
 	
 	
 	
 	//------- END Actual Autopilot -------
-	
-
-	public float getThrustOut() {
-		return thrust;
-	}
-	public void setThrustOut(float thrust){
-		this.thrust = thrust;
-	}
-	
-	
-	public float getLeftWingInclinationOut() {
-		return leftWingInclination;
-	}
-	private void setLeftWingInclinationOut(float inclination){
-		leftWingInclination = inclination;
-	}
-
-
-	public float getRightWingInclinationOut() {
-		return rightWingInclination;
-	}
-	private void setRightWingInclinationOut(float inclination){
-		rightWingInclination = inclination;
-	}
-	
-	public float getHorStabInclinationOut() {
-		return horStabInclination;
-	}
-	public void setHorStabInclinationOut(float inclination){
-		horStabInclination = inclination;
-	}
-
-	public float getVerStabInclinationOut() {
-		return verStabInclination;
-	}
-	public void setVerStabInclinationOut(float inclination){
-		verStabInclination = inclination;
-	}
 
 
 
 	/*
     Getters & Setters
      */
-
-	//TODO make checkers for the mass variables
-	/**
-	 * Method that returns the control actions of the controller
-	 * @return AutoPilotOutputs containing the control actions of the autopilot
-	 */
-	private AutopilotOutputs getControlOutputs(){
-		return controller.getControlActions();
-	}
 
 	/**
 	 * Getter for the autopilot controller
