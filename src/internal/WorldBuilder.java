@@ -23,8 +23,8 @@ public class WorldBuilder {
     public final BlockCoordinatesParser parser = new BlockCoordinatesParser("src/internal/blockCoordinates.txt");
 
 
-    public WorldBuilder() {
-        //do nothing
+    public WorldBuilder(FlightRecorder flightRecorder) {
+        DRONE.getPhysXEngine().setFlightRecorder(flightRecorder);
     }
 
     public World createWorld() throws IOException{
@@ -70,5 +70,7 @@ public class WorldBuilder {
 
         return world;
     }
+
+    private FlightRecorder flightRecorder;
 
 }

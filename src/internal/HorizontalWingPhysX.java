@@ -54,10 +54,17 @@ public class HorizontalWingPhysX extends WingPhysX {
 
     }
 
+    @Override
     public Vector getNormal(){
         return this.normal;
     }
 
+    @Override
+    public Vector getAxisVector() {
+        return axisVector;
+    }
+
+    public final Vector axisVector = new Vector(1, 0, 0);
     public final Vector normal = new Vector(0,1,0);
 
 

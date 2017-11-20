@@ -30,7 +30,6 @@ public class PhysXEngine {
         this.setEnginePosition();
         this.setInertiaTensor();
 
-
     }
 
     /**
@@ -45,13 +44,20 @@ public class PhysXEngine {
      * @return a PhysicsEngineState object containing the state of the drone at moment t + deltaTime
      * @author Martijn Sauwens
      */
-    public PhysicsEngineState getNextStatePhysXEngine(float deltaTime, AutopilotOutputs inputs,  Vector position, Vector velocity, Vector orientation, Vector rotation, float INSIGNIFICANCE){
+    public PhysicsEngineState getNextStatePhysXEngine(float deltaTime, AutopilotOutputs inputs,  Vector position,
+                                                      Vector velocity, Vector orientation, Vector rotation, float INSIGNIFICANCE, String DIFF_MODE){
+
 
         //adjust the inclinations of the wings
         this.getMainRight().setWingInclination(inputs.getRightWingInclination());
         this.getMainLeft().setWingInclination(inputs.getLeftWingInclination());
         this.getHorizontalStabilizer().setWingInclination(inputs.getHorStabInclination());
         this.getVerticalStabilizer().setWingInclination(inputs.getVerStabInclination());
+
+        //record for debugging purposes
+        if(this.getFlightRecorder() != null && this.getFlightRecorder().isRecordOn()){
+            this.recordWingState(orientation, rotation, velocity);
+        }
 
         //check if the thrust is valid
         if(!canHaveAsThrust(inputs.getThrust()))
@@ -64,9 +70,21 @@ public class PhysXEngine {
         Vector nextPosition = this.getNextPosition(deltaTime, acceleration, position, velocity);
         Vector angularAcceleration = this.calcAngularAcceleration(orientation, rotation, velocity);
         Vector angularAccelerationWorld = droneOnWorld(angularAcceleration, orientation);
-        Vector nextRotation = this.getNextRotationVector(deltaTime, angularAccelerationWorld, rotation);
-        //Vector nextRotation = this.getNextRotationCauchy(deltaTime, orientation, rotation, velocity);
-        //Vector nextRotation = this.getNextRotationRK4(deltaTime, orientation, rotation, velocity);
+        Vector nextRotation;
+        switch(DIFF_MODE){
+            case EULER_METHOD:
+                nextRotation = this.getNextRotationEuler(deltaTime, angularAccelerationWorld, rotation);
+                break;
+            case CAUCHY_METHOD:
+                nextRotation = this.getNextRotationCauchy(deltaTime, orientation, rotation, velocity, angularAcceleration);
+                break;
+            case RK4_METHOD:
+                nextRotation = this.getNextRotationRK4(deltaTime, orientation, rotation, velocity, angularAcceleration);
+                break;
+            default:
+                throw new IllegalArgumentException(ILLEGAL_DIFF_METHOD);
+        }
+
         Vector nextOrientation = this.getNextOrientation(deltaTime, angularAccelerationWorld, orientation, rotation);
 
         PhysicsEngineState state = new PhysicsEngineState() {
@@ -91,44 +109,106 @@ public class PhysXEngine {
             }
         };
 
+        //record: for debugging purposes
+        if(this.getFlightRecorder() != null && this.getFlightRecorder().isRecordOn()){
+            this.recordEngineState(state);
+        }
+
         return state;
+    }
+
+    /**
+     * Method that records the state of the physicsEngine
+     * @param state the state of the Physics engine at the end of the calculations
+     */
+    private void recordEngineState(PhysicsEngineState state){
+        FlightRecorder flightRecorder = this.getFlightRecorder();
+        //the state of the drone
+        flightRecorder.appendPositionLog(state.getPosition());
+        flightRecorder.appendVelocityLog(state.getVelocity());
+        flightRecorder.appendOrientationLog(state.getOrientation());
+        flightRecorder.appendRotationLog(state.getRotation());
+    }
+
+    /**
+     * Method that records the state of the wings, used in debugging
+     * @param orientation the orientation of the drone
+     * @param rotation the rotation of the drone
+     * @param velocity the velocity of the drone
+     */
+    private void recordWingState(Vector orientation, Vector rotation, Vector velocity){
+        FlightRecorder flightRecorder = this.getFlightRecorder();
+        WingPhysX rightMain = this.getMainRight();
+        WingPhysX leftMain = this.getMainLeft();
+        WingPhysX horStab = this.getHorizontalStabilizer();
+        WingPhysX verStab = this.getVerticalStabilizer();
+
+        float CONVERSION = 180/(float)Math.PI;
+
+        //log the right wing
+        flightRecorder.appendRightMainInclLog(rightMain.getWingInclination()*CONVERSION);
+        float rightAOA = rightMain.calcAngleOfAttack(orientation, rotation, velocity);
+        flightRecorder.appendRightMainAOALog(rightAOA*CONVERSION);
+
+        //log the left wing
+        flightRecorder.appendLeftMainInclLog(leftMain.getWingInclination()*CONVERSION);
+        float leftAOA = leftMain.calcAngleOfAttack(orientation, rotation, velocity);
+        flightRecorder.appendLeftMainAOALog(leftAOA*CONVERSION);
+
+        //log the horStabilizer
+        flightRecorder.appendHorStabInclLog(horStab.getWingInclination()*CONVERSION);
+        float horStabAOA = horStab.calcAngleOfAttack(orientation, rotation, velocity);
+        flightRecorder.appendHorStabAOALog(horStabAOA*CONVERSION);
+
+        //log the verStabilizer
+        flightRecorder.appendVerStabInclLog(verStab.getWingInclination()*CONVERSION);
+        float verStabAOA = verStab.calcAngleOfAttack(orientation, rotation, velocity);
+        flightRecorder.appendVerStabAOALog(verStabAOA*CONVERSION);
+
     }
 
     /**
      * Calculate the next rotation  using the Cauchy method
      * assumption made: Orientation doesn't change during the calculation (so also no change in velocity)
+     * @param deltaTime the time step used in the differentiation
+     * @param orientation the orientation of the drone at moment k (given in the world axis system)
+     * @param rotation the rotation of the drone at moment k (given in the world axis system)
+     * @param velocity the velocity of the drone at moment k (given in the world axis system)
+     * @param angularAcceleration the angular acceleration of the drone given in the drone axis system
      * @return the angular acceleration of the drone
      * @author Martijn Sauwens
      */
-    private Vector getNextRotationCauchy(float deltaTime, Vector orientation, Vector rotation, Vector velocity){
+    private Vector getNextRotationCauchy(float deltaTime, Vector orientation, Vector rotation, Vector velocity, Vector angularAcceleration){
 
-        Vector k1 = droneOnWorld(this.calcAngularAcceleration(orientation, rotation, velocity), orientation);
-        Vector orientationIntermediary = orientation.vectorSum(k1.scalarMult(deltaTime/2)); // yk + h/2*k1 with h the step size
+        Vector k1 = droneOnWorld(angularAcceleration, orientation);
+        Vector rotationK1 = rotation.vectorSum(k1.scalarMult(deltaTime/2)); // yk + h/2*k1 with h the step size
         //fill in the new orientation to calculate the next angular acceleration
-        Vector k2 = droneOnWorld(this.calcAngularAcceleration(orientationIntermediary, rotation, velocity), orientationIntermediary);
-        return orientation.vectorSum(k2.scalarMult(deltaTime));
+        //Vector orientation, Vector rotationVector, Vector velocity
+        Vector k2 = droneOnWorld(this.calcAngularAcceleration(orientation, rotationK1, velocity), orientation);
+        return rotation.vectorSum(k2.scalarMult(deltaTime));
     }
 
     /**
      * Calculate the next rotation using the Runge Kutta differentiation method
-     * @param deltaTime the timestep
+     * @param deltaTime the time step
      * @param orientation the orientation
      * @param rotation the rotation
      * @param velocity the velocity
+     * @param angularAcceleration the current angular acceleration of the drone given in the drone axis system
      * @return a vector containing the angular acceleration of the drone
      * @author Martijn Sauwens
      */
-    private Vector getNextRotationRK4(float deltaTime, Vector orientation, Vector rotation, Vector velocity){
-        Vector k1 =  droneOnWorld(this.calcAngularAcceleration(orientation, rotation, velocity), orientation);
-        Vector orientationK1 = orientation.vectorSum(k1.scalarMult(deltaTime/2.0f));
-        Vector k2 =  droneOnWorld(this.calcAngularAcceleration(orientationK1, rotation, velocity), orientationK1);
-        Vector orientationK2 = orientation.vectorSum(k2.scalarMult(deltaTime/2.0f));
-        Vector k3 =   droneOnWorld(this.calcAngularAcceleration(orientationK2, rotation, velocity), orientationK2);
-        Vector orientationK3 = orientation.vectorSum(k3.scalarMult(deltaTime));
-        Vector k4 =  droneOnWorld(this.calcAngularAcceleration(orientationK3, rotation, velocity), orientationK3);
+    private Vector getNextRotationRK4(float deltaTime, Vector orientation, Vector rotation, Vector velocity, Vector angularAcceleration){
+        Vector k1 =  droneOnWorld(angularAcceleration, orientation);
+        Vector rotationK1 = rotation.vectorSum(k1.scalarMult(deltaTime/2.0f));
+        Vector k2 =  droneOnWorld(this.calcAngularAcceleration(orientation, rotationK1, velocity), orientation);
+        Vector rotationK2 = rotation.vectorSum(k2.scalarMult(deltaTime/2.0f));
+        Vector k3 =   droneOnWorld(this.calcAngularAcceleration(orientation, rotationK2, velocity), orientation);
+        Vector rotationK3 = rotation.vectorSum(k3.scalarMult(deltaTime));
+        Vector k4 =  droneOnWorld(this.calcAngularAcceleration(orientation, rotationK3, velocity), orientation);
 
-        Vector result = k1.vectorSum(k2.scalarMult(2.0f)).vectorSum(k3.scalarMult(2.0f)).vectorSum(k4).scalarMult(deltaTime/6.0f);
-        return orientation.vectorSum(result);
+        Vector result = (k1.vectorSum((k2.scalarMult(2.0f))).vectorSum((k3.scalarMult(2.0f))).vectorSum(k4)).scalarMult(deltaTime/6.0f);
+        return rotation.vectorSum(result);
     }
 
 
@@ -393,7 +473,7 @@ public class PhysXEngine {
      * @param currentRotation the rotation vector of the drone, given in the world axis
      * @return a vector containing the next rotation vector given in the world axis
      */
-    private Vector getNextRotationVector(float deltaTime, Vector angularAcceleration, Vector currentRotation){
+    private Vector getNextRotationEuler(float deltaTime, Vector angularAcceleration, Vector currentRotation){
         Vector deltaRotation = angularAcceleration.scalarMult(deltaTime);
 
         return currentRotation.vectorSum(deltaRotation);
@@ -758,7 +838,7 @@ public class PhysXEngine {
      * setter for the main right wing of the physics engine
      * @param mainRight the desired main right wing of the physics engine
      */
-    public void setMainRight(HorizontalWingPhysX mainRight) {
+    private void setMainRight(HorizontalWingPhysX mainRight) {
         this.mainRight = mainRight;
     }
 
@@ -806,8 +886,34 @@ public class PhysXEngine {
      * Setter for the vertical stabilizer physics of the engine
      * @param verticalStabilizer the vertical stabilizer
      */
-    public void setVerticalStabilizer(VerticalWingPhysX verticalStabilizer) {
+    private void setVerticalStabilizer(VerticalWingPhysX verticalStabilizer) {
         this.verticalStabilizer = verticalStabilizer;
+    }
+
+    /**
+     * @return an array of strings containing all the available differentiation methods
+     */
+    public static String[] getDiffMethods(){
+        return new String[]{EULER_METHOD, CAUCHY_METHOD, RK4_METHOD};
+    }
+
+    /**
+     * Getter for the flight Recorder
+     * @return the flight recorder of the drone
+     */
+    public FlightRecorder getFlightRecorder() {
+        return flightRecorder;
+    }
+
+    /**
+     * Seter for the flight recorder of the drone
+     * @param flightRecorder desired flight recorder
+     */
+    public void setFlightRecorder(FlightRecorder flightRecorder) {
+        if(this.flightRecorder != null) {
+            throw new IllegalStateException(RECORDER_ENABLED);
+        }
+        this.flightRecorder = flightRecorder;
     }
 
     /**
@@ -844,6 +950,11 @@ public class PhysXEngine {
      */
     private Vector enginePosition;
 
+    /**
+     * Variable that stores the flight recorder of the drone
+     */
+    private FlightRecorder flightRecorder;
+
 
     /*
     Error messages
@@ -860,6 +971,16 @@ public class PhysXEngine {
     private final static String INVALID_TIMESTEP = "The provided time needs to be strictly positive";
     private final static String AUTOPILOT_CONFIG = "the autopilot has already been initialized";
     private final static String INVALID_CONFIG = "The physics engine is already configured";
+    private final static String ILLEGAL_DIFF_METHOD = "The differentiation method that was supplied is not implemented " +
+            "in the physics engine. Please contact P&O platinum to implement this method";
+    private final static String RECORDER_ENABLED = "there is already a recorder present for the engine";
+
+    /*
+    Strings used for configurations
+     */
+    public final static String EULER_METHOD = "Euler differentiation";
+    public final static String CAUCHY_METHOD = "Cauchy differentiation";
+    public final static String RK4_METHOD = "Runge Kutta four differentiation";
 
 
     public PhysXOptimisations createPhysXOptimisations(){

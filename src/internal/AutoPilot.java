@@ -292,6 +292,14 @@ public class AutoPilot implements Autopilot {
 	}
 
 	/**
+	 * Setter for the flight recorder of the controller
+	 * @param flightRecorder the flight recorder of the controller
+	 */
+	public void setFlightRecorder(FlightRecorder flightRecorder){
+		this.getController().setFlightRecorder(flightRecorder);
+	}
+
+	/**
 	 * Getter for the main wing mass of the drone
 	 * @return a floating point number containing the mass of the main wing
 	 */

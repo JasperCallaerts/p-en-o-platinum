@@ -48,6 +48,10 @@ public class AngleOfAttackException extends IllegalStateException {
         return this.causeWing;
     }
 
+    @Override
+    public String toString() {
+        return TAG;
+    }
 
     /**
      * Variable that stores the wing that caused the exception
@@ -59,4 +63,5 @@ public class AngleOfAttackException extends IllegalStateException {
      */
     private String causeMessage;
 
+    public final static String TAG = "AngleOfAttackException";
 }

@@ -4,13 +4,11 @@ import internal.*;
 import math.Vector3f;
 
 
-
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.concurrent.BlockingQueue;
 
 
 /**
@@ -23,9 +21,10 @@ public class TestbedMain implements Runnable{
      * Initialize the main method for the testbed
      * see old mainloop for more info
      */
-    public TestbedMain(String connectionName, int connectionPort, boolean showAllWidows) {
+    public TestbedMain(String connectionName, int connectionPort, boolean showAllWidows, FlightRecorder flightRecorder) {
         this.setConnectionName(connectionName);
         this.setConnectionPort(connectionPort);
+        this.setFlightRecorder(flightRecorder);
         this.showAllWindows = showAllWidows;
         //this.setQueue(queue);
     }
@@ -66,7 +65,7 @@ public class TestbedMain implements Runnable{
 
 
         // drone builder covers all the stuff involving building the drone, adjust parameters there
-        WorldBuilder worldBuilder = new WorldBuilder();
+        WorldBuilder worldBuilder = new WorldBuilder(this.getFlightRecorder());
         this.setDrone(worldBuilder.DRONE);
         this.setWorld(worldBuilder.createWorld());//.createSimpleWorld();
 
@@ -195,7 +194,9 @@ public class TestbedMain implements Runnable{
                 // elapsedTime replace by getTimePassed()
                 if (!isFirstRun()) {
                     drone.setAutopilotOutputs(autopilotOutputs);
-                    this.getWorld().advanceWorldState(TIME_STEP, STEPS_PER_ITERATION);
+                        this.getWorld().advanceWorldState(TIME_STEP, STEPS_PER_ITERATION);
+
+
                 } else {
                     firstRun = false;
                 }
@@ -418,6 +419,14 @@ public class TestbedMain implements Runnable{
         return showAllWindows;
     }
 
+    public FlightRecorder getFlightRecorder() {
+        return flightRecorder;
+    }
+
+    public void setFlightRecorder(FlightRecorder flightRecorder) {
+        this.flightRecorder = flightRecorder;
+    }
+
     /*  private boolean isGoalNotReached() {
         return goalNotReached;
     }
@@ -431,6 +440,7 @@ public class TestbedMain implements Runnable{
     private World world;
     private Graphics graphics;
     private Drone drone;
+    private FlightRecorder flightRecorder;
 
     private Block block0;
     private Block block1;
