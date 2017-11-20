@@ -159,8 +159,6 @@ public class Main {
             	blocks.remove(0);
             	
                 
-            	
-                
             }
 //            long endTime = System.currentTimeMillis();
 //            long timeDiff = endTime - startTime;
