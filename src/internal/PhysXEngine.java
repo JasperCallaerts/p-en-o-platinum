@@ -73,7 +73,7 @@ public class PhysXEngine {
         Vector nextRotation;
         switch(DIFF_MODE){
             case EULER_METHOD:
-                nextRotation = this.getNextRotationEuler(deltaTime, orientation, rotation);
+                nextRotation = this.getNextRotationEuler(deltaTime, angularAccelerationWorld, rotation);
                 break;
             case CAUCHY_METHOD:
                 nextRotation = this.getNextRotationCauchy(deltaTime, orientation, rotation, velocity, angularAcceleration);

@@ -72,8 +72,8 @@ public class AutoPilotController {
 
     	}
     	
-    	outputs.setRightWingInclination(TURNING_INCLINATION ); // + MAIN_STABLE_INCLINATION
-        outputs.setLeftWingInclination(-TURNING_INCLINATION); // + MAIN_STABLE_INCLINATION
+    	outputs.setRightWingInclination(TURNING_INCLINATION + MAIN_STABLE_INCLINATION);
+        outputs.setLeftWingInclination(-TURNING_INCLINATION + MAIN_STABLE_INCLINATION);
 
         this.getFlightRecorder().appendControlLog("TurningRight, Horizontal Stabilizer: " +
                 outputs.getHorStabInclination()*RAD2DEGREE + "; Left Main: " +outputs.getLeftWingInclination()*RAD2DEGREE +
@@ -90,8 +90,8 @@ public class AutoPilotController {
 
     	}
 
-        outputs.setRightWingInclination(-TURNING_INCLINATION ); // + MAIN_STABLE_INCLINATION
-        outputs.setLeftWingInclination(TURNING_INCLINATION ); // + MAIN_STABLE_INCLINATION
+        outputs.setRightWingInclination(-TURNING_INCLINATION + MAIN_STABLE_INCLINATION);
+        outputs.setLeftWingInclination(TURNING_INCLINATION + MAIN_STABLE_INCLINATION);
         this.getFlightRecorder().appendControlLog("TurningLeft, Horizontal Stabilizer: " +
                 outputs.getHorStabInclination()*RAD2DEGREE + "; Left Main: " +outputs.getLeftWingInclination()*RAD2DEGREE +
                 "; Right Main: " + outputs.getRightWingInclination()*RAD2DEGREE);
@@ -135,7 +135,7 @@ public class AutoPilotController {
         float xPosition = center.getxValue();
         float yPosition = -center.getyValue();
 
-        //System.out.println("Center location: " + center);
+        System.out.println("Center location: " + center);
 
         int cubeSize = Math.round(center.getzValue());
         //System.out.println(cubeSize);
@@ -253,10 +253,10 @@ public class AutoPilotController {
 
     private FlightRecorder flightRecorder;
 
-    private static final float STANDARD_INCLINATION = (float)Math.PI/9;
+    private static final float STANDARD_INCLINATION = (float)Math.PI/8;
     public static final float MAIN_STABLE_INCLINATION = (float)Math.PI/12;
-    private static final float MAX_HOR_STAB_INCLINATION = (float)Math.PI/9;
-    private static final float TURNING_INCLINATION = (float)Math.PI/9;
+    private static final float MAX_HOR_STAB_INCLINATION = (float)Math.PI/4;
+    private static final float TURNING_INCLINATION = (float)Math.PI/8;
     private static final float NO_INCLINATION = 0.0f;
     private static final int BIAS = 0;
     private static final float THRESHOLD_DISTANCE = 5f;

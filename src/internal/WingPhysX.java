@@ -71,7 +71,7 @@ public abstract class WingPhysX {
         float angleOfAttack = this.calcAngleOfAttack(orientation, rotation, velocity);
         if(Math.abs(angleOfAttack) > Math.abs(this.getMaximumAngleOfAttack())){
             this.setFaultyAngleOfAttack((float) (angleOfAttack*180/Math.PI));
-            throw new AngleOfAttackException(this);
+            //throw new AngleOfAttackException(this);
         }
         float liftSlope = this.getLiftSlope();
 
