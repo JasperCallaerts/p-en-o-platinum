@@ -196,10 +196,14 @@ public class World {
 
 				block.setVisited();
 
+
 				System.out.print("Visited blocks: ");
 				for(Block block1: this.getBlockSet()){
-					if(block1.isVisited())
-						System.out.print(block1 +", ");
+					if(block1.isVisited()) {
+						this.removeWorldObject(block1);
+						this.getBlockSet().remove(block);
+						System.out.print(block1 + ", ");
+					}
 				}
 
 				System.out.println(" ");

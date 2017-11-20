@@ -42,7 +42,7 @@ public class Window {
 	private Input input;
 	private ShaderProgram program;
 	
-    private static float FOV = (float) Math.toRadians(120.0f);
+    private float FOV;
 	private static final float NEAR = 0.01f;
 	private static final float FAR = 1000.f;
 	
@@ -144,8 +144,10 @@ public class Window {
 	public void initWindow(World world, Settings setting) {
 		this.setting = setting;
 		this.world = world;
-		if (setting != Settings.DRONE_CAM)
-			FOV = FOV / 2f;
+		if (setting == Settings.DRONE_CAM)
+			this.FOV = (float) Math.toRadians(120.0f);
+		else
+			this.FOV = (float) Math.toRadians(60.0f);
 		
 		glfwMakeContextCurrent(getHandler());
 		glEnable(GL_DEPTH_TEST);

@@ -36,12 +36,12 @@ public class Input {
     Input(Settings setting) {
     	switch (setting) {
     	case DRONE_TOP_DOWN_CAM: 
-    		position = new Vector3f(0f, 80f, -60f);
+    		position = new Vector3f(0f, 150f, -160f);
     		yaw = (float) Math.PI/2;
     		pitch = (float) -Math.PI/2;
     		break;
     	case DRONE_SIDE_CAM: 
-    		position = new Vector3f(80f, 0f, -60f);
+    		position = new Vector3f(150f, 0f, -160f);
     		yaw = (float) Math.PI/2;			
     		break;
     	default: position = new Vector3f();
