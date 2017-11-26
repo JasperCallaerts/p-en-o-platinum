@@ -214,6 +214,15 @@ public class Matrix3f {
 
         return result;
     }
+    
+    public static Matrix3f transformationMatrix(Vector3f orientation) {
+    	Matrix3f pitchMatrix = new Matrix3f(new Vector3f(1, 0, 0), new Vector3f(0, (float) Math.cos(orientation.y), (float) -Math.sin(orientation.y)), new Vector3f(0, (float) Math.sin(orientation.y), (float) Math.cos(orientation.y)));
+        Matrix3f yawMatrix = new Matrix3f(new Vector3f((float) Math.cos(orientation.x), 0, (float) Math.sin(orientation.x)), new Vector3f(0, 1, 0), new Vector3f((float) -Math.sin(orientation.x), 0, (float) Math.cos(orientation.x)));
+        Matrix3f rollMatrix = new Matrix3f(new Vector3f((float) Math.cos(orientation.z), (float) Math.sin(orientation.z), 0), new Vector3f((float) -Math.sin(orientation.z), (float) Math.cos(orientation.z), 0), new Vector3f(0, 0, 1));
+        		
+        Matrix3f transformationMatrix = yawMatrix.multiply(pitchMatrix).multiply(rollMatrix);
+        return transformationMatrix;
+    }
 
     /**
      * Stores the matrix in a given Buffer.
@@ -226,5 +235,16 @@ public class Matrix3f {
         buffer.put(m02).put(m12).put(m22);
         buffer.flip();
     }
-
+    
+    /**
+     * Return a 4x4 extension of a 3x3 matrix
+     */
+    public static Matrix4f extend(Matrix3f mat) {
+    	Vector4f col1 = new Vector4f(mat.m00, mat.m10, mat.m20, 0f);
+    	Vector4f col2 = new Vector4f(mat.m01, mat.m11, mat.m21, 0f);
+    	Vector4f col3 = new Vector4f(mat.m02, mat.m12, mat.m22, 0f);
+    	Vector4f col4 = new Vector4f(0f, 0f, 0f, 1f);
+    	
+    	return new Matrix4f(col1, col2, col3, col4);
+    }
 }
