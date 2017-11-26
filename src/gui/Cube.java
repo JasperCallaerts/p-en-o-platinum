@@ -91,7 +91,6 @@ public class Cube{
 	private Vector3f position = new Vector3f();
 	private Vector3f size = new Vector3f(1f, 1f, 1f);
 	private Vector3f relativePosition = new Vector3f();
-	private Cube attachedCube = null;
 	private Vector3f orientation = new Vector3f();
 	
 	static public void setGraphics(Graphics graphics) {
@@ -119,7 +118,6 @@ public class Cube{
 		this(colour);
 		
 		this.relativePosition = relativePosition;
-		this.attachedCube  = attachedCube;
 		this.position = attachedCube.getPos();
 	}
 
@@ -171,6 +169,11 @@ public class Cube{
 		Vector3f negX = Vector3f.ArrayToVector3f(HSVconverter.HSVtoRGB2(colour.x, colour.y, 0.30f * colour.z));
 		Vector3f posZ = Vector3f.ArrayToVector3f(HSVconverter.HSVtoRGB2(colour.x, colour.y, 0.70f * colour.z));
 		Vector3f negZ = Vector3f.ArrayToVector3f(HSVconverter.HSVtoRGB2(colour.x, colour.y, 0.45f * colour.z));
+		
+		if (colour.x == 240f) {
+			System.out.println(colour.x + " " + colour.y + " " + colour.z);
+			System.out.println(posY.x + " " + posY.y + " " + posY.z + " " + negY.x + " " + negY.y + " " + negY.z);
+		}
 		
 		colours = new float[]{
 				posZ.x, posZ.y, posZ.z,
