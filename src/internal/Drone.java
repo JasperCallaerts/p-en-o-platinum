@@ -55,10 +55,10 @@ public class Drone implements WorldObject {
 			
 			Vector3f position2 = new Vector3f(0f, 0f, 1f);
 			Cube droneCube2 = new Cube(position2, new Vector3f(240f, 1f, 1f), droneCube1);
-			droneCube2.setSize(new Vector3f(1f, 1f, 6f));
+			droneCube2.setSize(new Vector3f(1f, 1f, 4f));
 			this.setAssociatedCube(droneCube2);
 			
-			Vector3f position3 = new Vector3f(0f, 0.5f, 4f);
+			Vector3f position3 = new Vector3f(0f, 0.5f, 5f);
 			Cube droneCube3 = new Cube(position3, new Vector3f(240f, 1f, 1f), droneCube1);
 			droneCube3.setSize(new Vector3f(0.2f, 1f, 1f));
 			this.setAssociatedCube(droneCube3);
@@ -67,6 +67,26 @@ public class Drone implements WorldObject {
 			Cube droneCube4 = new Cube(position4, new Vector3f(240f, 1f, 1f), droneCube1);
 			droneCube4.setSize(new Vector3f(3f, 0.2f, 1f));
 			this.setAssociatedCube(droneCube4);
+			
+			Vector3f position5 = new Vector3f(0f, 0f, 4f);
+			Cube droneCube5 = new Cube(position5, new Vector3f(240f, 1f, 1f), droneCube1);
+			droneCube5.setSize(new Vector3f(0.7f, 0.5f, 2f));
+			this.setAssociatedCube(droneCube5);
+			
+			Vector3f position6 = new Vector3f(0f, 0.2f, 0f);
+			Cube droneCube6 = new Cube(position6, new Vector3f(240f, 1f, 1f), droneCube1);
+			droneCube6.setSize(new Vector3f(1.5f, 1f, 3f));
+			this.setAssociatedCube(droneCube6);
+			
+			Vector3f position7 = new Vector3f(0f, 0.7f, 0f);
+			Cube droneCube7 = new Cube(position7, new Vector3f(240f, 1f, 1f), droneCube1);
+			droneCube7.setSize(new Vector3f(0.7f, 0.5f, 2f));
+			this.setAssociatedCube(droneCube7);
+			
+			Vector3f position8 = new Vector3f(0f, 0f, -1f);
+			Cube droneCube8 = new Cube(position8, new Vector3f(240f, 1f, 1f), droneCube1);
+			droneCube8.setSize(new Vector3f(1f, 1f, 2f));
+			this.setAssociatedCube(droneCube8);
 			
 //			Cube droneCube = new Cube(position.convertToVector3f(), new Vector3f(240f, 1f, 1f));
 //			this.setAssociatedCube(droneCube);
