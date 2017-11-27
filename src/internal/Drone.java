@@ -156,27 +156,12 @@ public class Drone implements WorldObject {
 		return droneCubes;
 	}
 
-	/**
-	 * Setter for the drone cube
 
-	 * @param droneCubes the cubes representing the drone
-	 * Immutable!
-
-	 */
 	private void setAssociatedCube(Cube droneCube) {
 		this.droneCubes.add(droneCube);
 	}
 
-	/**
-	 * checks of the drone can have the given cube representing it
-	 *
-	 * @return true if and only if the
-	 */
 
-	private boolean canHaveAsDroneCube(Cube droneCube) {
-		return this.getAssociatedCube() == null && droneCube.getPosition().rangeEquals(this.getPosition(), maxPosDifference);
-
-	}
 	/*
 	 ############################# Drone configuration methods #############################
 	  */

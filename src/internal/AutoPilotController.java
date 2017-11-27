@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import static java.lang.Math.*;
 
@@ -116,13 +117,8 @@ public class AutoPilotController {
 //        Vector center = APCamera.getCenterOfNCubes(1);
         float xPosition = center.getxValue();
         float yPosition = -center.getyValue();
-        
-        //System.out.println(xPosition + " : " + yPosition);
-
-        System.out.println("Center location: " + center);
 
         int cubeSize = Math.round(center.getzValue());
-        //System.out.println(cubeSize);
 
         //int threshold = Math.max(Math.round(THRESHOLD_PIXELS*NORMAL_CUBE_SIZE/cubeSize),1);
         int threshold = Math.round(THRESHOLD_DISTANCE);
@@ -137,13 +133,14 @@ public class AutoPilotController {
         // Thrust
        this.setThrustOut(controlOutputs);
 
-        FlightRecorder recorder = this.getFlightRecorder();
+        String controlString = "Control action ";
+
         // Roll
         if(xPosition > threshold){
             // Turn right
             //System.out.println("This is your captain speaking: the red cube is located at our right-hand-side");
             this.startTurnRight(controlOutputs, xPosition, yPosition);
-            recorder.appendControlLog("Turning Right: \n");
+            controlString += "Turning Right: \n";
         }else if(xPosition >= -threshold && xPosition <= threshold){
             // Stop turning
             this.stopTurn(controlOutputs, xPosition, yPosition);
@@ -154,25 +151,25 @@ public class AutoPilotController {
                 // Descend
                 //System.out.println("This is your captain speaking: the red cube is located underneath us");
                 this.startDescend(controlOutputs, xPosition, yPosition);
-                recorder.appendControlLog("Start Descend: \n");
+                controlString += "Start Descend: \n";
 
             }else if((yPosition >= -threshold - bias && yPosition <= threshold - bias) && (xPosition >= -threshold && xPosition <= threshold)){
                 // Stop descending/ascending
                 this.stopAscendDescend(controlOutputs, xPosition, yPosition);
-                recorder.appendControlLog("Stop Ascending: \n");
+                controlString += "Stop Ascending: \n";
 
             }else if(yPosition > threshold - bias && (xPosition >= -threshold && xPosition <= threshold)){
                 // Ascend
                 //System.out.println("This is your captain speaking: the red cube is located above us");
                 this.startAscend(controlOutputs, xPosition, yPosition);
-                recorder.appendControlLog("Start Ascending: \n");
+                controlString += "Start Ascending: \n";
 
             }
         }else if(xPosition < -threshold){
             // Turn left
             //System.out.println("This is your captain speaking: the red cube is located at our left-hand-side");
             this.startTurnLeft(controlOutputs, xPosition, yPosition);
-            recorder.appendControlLog("Start Turn left: \n");
+            controlString += "Start Turn left: \n";
         }
 
         this.rollControl(controlOutputs);
@@ -421,6 +418,18 @@ public class AutoPilotController {
         return PhysXEngine.HPRtoRotation(rotationHPR, currentOrient);
     }
 
+    private void logControlActions(ControlOutputs outputs, String controlString){
+
+        controlString += "Left wing inclination: "  + outputs.getLeftWingInclination()*RAD2DEGREE + "\n";
+        controlString += "Right wing inclination: " + outputs.getRightWingInclination()*RAD2DEGREE + "\n";
+        controlString += "Horizontal stabilizer inclination: " + outputs.getHorStabInclination()*RAD2DEGREE + "\n";
+        controlString += "Vertical wing inclination" + outputs.getVerStabInclination()*RAD2DEGREE + "\n";
+
+        // write the controls to the recorder
+        FlightRecorder recorder = this.getFlightRecorder();
+        recorder.appendControlLog(controlString);
+    }
+
     /**
      * determines the largest value of both entries, if both are negative an exception is thrown
      * @param entry1 the first entry to check
@@ -537,7 +546,7 @@ public class AutoPilotController {
     private static final float TURNING_INCLINATION = (float) PI/8;
     private static final float ERROR_INCLINATION_MARGIN = (float) (5*PI/180);
     private static final int BIAS = 0;
-    private static final float THRESHOLD_DISTANCE = 5f;
+    private static final float THRESHOLD_DISTANCE = 3f;
     private static final float STANDARD_THRUST = 32.859283f*2;
     private static final float THRUST_FACTOR = 2.0f;
     private static final float THRESHOLD_THRUST_ANGLE = (float)(PI/20);
