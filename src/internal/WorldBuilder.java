@@ -19,7 +19,7 @@ public class WorldBuilder {
     public final static Vector BLOCKPOS = new Vector(0.0f, 0.489f, -6.9098f);
     public final static Vector COLOR = new Vector(0.0f, 1.0f, 70.0f);
     public final static boolean LOAD_COORDINATES = false;
-    private static int numberOfBlocks = 5;
+    private static int numberOfBlocks = 7;
     public final static WorldGenerator wg = new WorldGenerator(numberOfBlocks);
     public final BlockCoordinatesParser parser = new BlockCoordinatesParser("src/internal/blockCoordinates.txt");
 

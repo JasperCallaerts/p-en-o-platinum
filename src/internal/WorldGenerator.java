@@ -157,16 +157,39 @@ public class WorldGenerator {
 		float val = (float) r.nextGaussian() * 14 - 55;
 		return val;
 	}
+
+	/**
+	 * Generates a radius in the following range: [0,10] following a uniform distribution
+	 */
+	public float radiusGen(){
+		Random r = new Random();
+		float val = r.nextFloat() * 10;
+		return val;
+	}
+
+
+	/**
+	 * Generates an angle in the following range: [0,2PI] following a uniform distribution
+	 */
+	public float angleGen(){
+		Random r = new Random();
+		float val = r.nextFloat() * (float) (2*Math.PI);
+		return val;
+	}
 	
 	/**
 	 * Generates a position vector using x-,y- and zPosGen
 	 * When an x or y or z value is lower or higher than the boundary of the interval defined in those functions, 
 	 * the x or y or z (respectively) value is set to lowest or highest (respectively) value allowed 
 	 */
-	public Vector positionGenerator(){
-		float x = xPosGen();
-		float y = yPosGen();
-		float z = zPosGen();
+	public Vector positionGenerator(){;
+
+		float r =  radiusGen();
+		float a = angleGen();
+
+		float x = (float) Math.cos(a) * r;
+		float y = (float) Math.sin(a) * r;
+		float z = -40f;
 		
 		if (x > 10){
 			x = 10f;
