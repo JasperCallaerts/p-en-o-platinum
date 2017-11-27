@@ -388,6 +388,10 @@ public class Matrix4f {
         return translation;
     }
 
+    public static Matrix4f translate(Vector3f translation) {
+    	return translate(translation.x, translation.y, translation.z);
+    }
+    
     /**
      * Creates a rotation matrix. Similar to
      * <code>glRotate(angle, x, y, z)</code>.
@@ -424,6 +428,12 @@ public class Matrix4f {
 
         return rotation;
     }
+    
+    public static Matrix4f rotate(Vector3f orientation) {;
+//    	return new Matrix4f();
+    	Matrix3f transformation =  Matrix3f.transformationMatrix(orientation).transpose();
+    	return Matrix3f.extend(transformation);
+    }
 
     /**
      * Creates a scaling matrix. Similar to <code>glScale(x, y, z)</code>.
@@ -442,6 +452,10 @@ public class Matrix4f {
         scaling.m22 = z;
 
         return scaling;
+    }
+    
+    public static Matrix4f scale(Vector3f scaling) {
+        return scale(scaling.x, scaling.y, scaling.z);
     }
 
     /**

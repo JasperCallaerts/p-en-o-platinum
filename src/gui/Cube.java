@@ -2,8 +2,10 @@ package gui;
 
 import internal.HSVconverter;
 import internal.Vector;
+import math.Matrix3f;
 import math.Matrix4f;
 import math.Vector3f;
+import math.Vector4f;
 
 import java.util.Arrays;
 
@@ -86,15 +88,16 @@ public class Cube{
 	static Graphics g;
 	
 	private Mesh mesh;
-	private Matrix4f modelMatrix = new Matrix4f();
 	private Vector3f position = new Vector3f();
 	private Vector3f size = new Vector3f(1f, 1f, 1f);
+	private Vector3f relativePosition = new Vector3f();
+	private Vector3f orientation = new Vector3f();
 	
 	static public void setGraphics(Graphics graphics) {
 		g = graphics;
 	}
 	
-	public Cube(Vector3f position, Vector3f colour) {
+	private Cube(Vector3f colour) {
 		setColours(colour);
 		
 		for (String key: g.windows.keySet()) {
@@ -103,9 +106,19 @@ public class Cube{
 			mesh.init(positions, colours, indices);
 			glfwMakeContextCurrent(NULL);
 		}
+	}
+	
+	public Cube(Vector3f position, Vector3f colour) {
+		this(colour);
 		
 		this.position = position;
-		modelMatrix = Matrix4f.translate(position.x, position.y, position.z);
+	}
+
+	public Cube(Vector3f relativePosition, Vector3f colour, Cube attachedCube) {
+		this(colour);
+		
+		this.relativePosition = relativePosition;
+		this.position = attachedCube.getPos();
 	}
 
 	public void render() {
@@ -116,29 +129,29 @@ public class Cube{
 		mesh.delete();
 	}
 
-	public void update(Vector3f displacement) {
+	public void update(Vector3f displacement, Vector3f orientation) {
+		this.orientation  = orientation.negate();
 		this.position = this.position.add(displacement);
-		modelMatrix = Matrix4f.translate(position.x, position.y, position.z);
 	}
 
 	public Vector getPosition(){
 		return Vector.vector3fToVector(this.getPos());
 	}
 	
-	public Matrix4f getMatrix() {
-		return getModelMatrix().multiply(getSizeMatrix());
-	}
-	
-	public Matrix4f getModelMatrix() {
-		return modelMatrix;
-	}
-	
-	public Matrix4f getSizeMatrix() {
-		return Matrix4f.scale(size.x , size.y, size.z);
+	public Vector3f getSize() {
+		return this.size;
 	}
 	
 	public Vector3f getPos() {
 		return this.position;
+	}
+	
+	public Vector3f getRelPos() {
+		Vector3f pos = this.position;
+		Matrix3f transformation = Matrix3f.transformationMatrix(this.orientation);
+		Vector3f difference = transformation.multiply(relativePosition);
+		pos = pos.add(difference);
+		return pos;
 	}
 	
 	public void setSize(float size) {
@@ -149,21 +162,18 @@ public class Cube{
 		this.size = size;
 	}
 	
-	private void setColours(Vector3f colour) {
-//		Vector3f posY = colour.scale(1.00f);
-//		Vector3f negY = colour.scale(0.15f);
-//		Vector3f posX = colour.scale(0.85f);
-//		Vector3f negX = colour.scale(0.30f);
-//		Vector3f posZ = colour.scale(0.70f);
-//		Vector3f negZ = colour.scale(0.45f);
-		
-		
+	private void setColours(Vector3f colour) {	
 		Vector3f posY = Vector3f.ArrayToVector3f(HSVconverter.HSVtoRGB2(colour.x, colour.y, 1.00f * colour.z));
 		Vector3f negY = Vector3f.ArrayToVector3f(HSVconverter.HSVtoRGB2(colour.x, colour.y, 0.15f * colour.z));
 		Vector3f posX = Vector3f.ArrayToVector3f(HSVconverter.HSVtoRGB2(colour.x, colour.y, 0.85f * colour.z));
 		Vector3f negX = Vector3f.ArrayToVector3f(HSVconverter.HSVtoRGB2(colour.x, colour.y, 0.30f * colour.z));
 		Vector3f posZ = Vector3f.ArrayToVector3f(HSVconverter.HSVtoRGB2(colour.x, colour.y, 0.70f * colour.z));
 		Vector3f negZ = Vector3f.ArrayToVector3f(HSVconverter.HSVtoRGB2(colour.x, colour.y, 0.45f * colour.z));
+		
+		if (colour.x == 240f) {
+			System.out.println(colour.x + " " + colour.y + " " + colour.z);
+			System.out.println(posY.x + " " + posY.y + " " + posY.z + " " + negY.x + " " + negY.y + " " + negY.z);
+		}
 		
 		colours = new float[]{
 				posZ.x, posZ.y, posZ.z,
