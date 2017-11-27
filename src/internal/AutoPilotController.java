@@ -3,6 +3,7 @@ package internal;
 import Autopilot.Autopilot;
 import Autopilot.AutopilotInputs;
 import Autopilot.AutopilotOutputs;
+import org.lwjgl.opengles.EXTRobustness;
 
 import javax.naming.ldap.Control;
 
@@ -44,162 +45,52 @@ public class AutoPilotController {
     }
 
     private void startDescend(ControlOutputs outputs, float xPosCube, float yPosCube){
-        PhysXEngine.PhysXOptimisations optimisations = this.getAssociatedAutopilot().getPhysXOptimisations();
-        AutopilotInputs inputs = this.getCurrentInputs();
-        Vector orientation = extractOrientation(inputs);
-        Vector rotation = this.getRotationApprox();
-        Vector velocity = this.getVelocityApprox();
-        float angleOfAttack = this.getAssociatedAutopilot().getConfig().getMaxAOA();
-
-        float inclination1 = optimisations.getMaxHorStabInclination(orientation, rotation, velocity, angleOfAttack);
-        float inclination2 = optimisations.getMaxHorStabInclination(orientation, rotation, velocity, -angleOfAttack);
-
-        float inclination = max(inclination1, inclination2);
-
-        outputs.setHorStabInclination(Math.min(STANDARD_INCLINATION*Math.abs(yPosCube)/20f,inclination - ERROR_INCLINATION_MARGIN));
-
-        if(this.getFlightRecorder() != null) {
-            this.getFlightRecorder().appendControlLog("Starting descend: " + outputs.getHorStabInclination() * RAD2DEGREE +
-            "; Possible Inclinations: "  + inclination1*RAD2DEGREE + "; " + inclination2*RAD2DEGREE  + "; Approx velocity: " + velocity + "; Approx rotation : " + rotation);
-            this.getFlightRecorder().appendVelApproxLog(velocity);
-            this.getFlightRecorder().appendRotApproxLog(rotation);
-        }
-
-        System.out.println("Descending");
+        outputs.setHorStabInclination(Math.min(STANDARD_INCLINATION*Math.abs(yPosCube)/20f,MAX_HOR_STAB_INCLINATION));
     }
 
     private void startAscend(ControlOutputs outputs,  float xPosCube, float yPosCube){
-
-        PhysXEngine.PhysXOptimisations optimisations = this.getAssociatedAutopilot().getPhysXOptimisations();
-        AutopilotInputs inputs = this.getCurrentInputs();
-        Vector orientation = extractOrientation(inputs);
-        Vector rotation = this.getRotationApprox();
-        Vector velocity = this.getVelocityApprox();
-        float angleOfAttack = this.getAssociatedAutopilot().getConfig().getMaxAOA();
-
-        float inclination1 = optimisations.getMaxHorStabInclination(orientation, rotation, velocity, angleOfAttack);
-        float inclination2 = optimisations.getMaxHorStabInclination(orientation, rotation, velocity, -angleOfAttack);
-
-
-        float inclination = max(inclination1, inclination2);
-
-        outputs.setHorStabInclination(-Math.min(STANDARD_INCLINATION*Math.abs(yPosCube)/20f, abs(inclination) - ERROR_INCLINATION_MARGIN));
-        if(this.getFlightRecorder() != null) {
-            this.getFlightRecorder().appendControlLog("Starting Ascend: " + outputs.getHorStabInclination() * RAD2DEGREE
-            + "; Possible Inclinations: " + inclination1*RAD2DEGREE + "; " + inclination2*RAD2DEGREE + "; Approx velocity: " + velocity + "; Approx rotation : " + rotation);
-            this.getFlightRecorder().appendVelApproxLog(velocity);
-            this.getFlightRecorder().appendRotApproxLog(rotation);
-        }
+        outputs.setHorStabInclination(-Math.min(STANDARD_INCLINATION*Math.abs(yPosCube)/20f,MAX_HOR_STAB_INCLINATION));
     }
 
     private void startTurnDescend(ControlOutputs outputs, float xPosCube, float yPosCube){
-        PhysXEngine.PhysXOptimisations optimisations = this.getAssociatedAutopilot().getPhysXOptimisations();
-        AutopilotInputs inputs = this.getCurrentInputs();
-        Vector orientation = extractOrientation(inputs);
-        Vector rotation = this.getRotationApprox();
-        Vector velocity = this.getVelocityApprox();
-        float angleOfAttack = this.getAssociatedAutopilot().getConfig().getMaxAOA();
-
-        float inclination1= optimisations.getMaxHorStabInclination(orientation, rotation, velocity, angleOfAttack);
-        float inclination2 = optimisations.getMaxHorStabInclination(orientation, rotation, velocity, -angleOfAttack);
-
-        float inclination = max(inclination1, inclination2);
-
-        outputs.setHorStabInclination(Math.min(STANDARD_INCLINATION*Math.abs(yPosCube)/30f, abs(inclination) - ERROR_INCLINATION_MARGIN));
+        outputs.setHorStabInclination(Math.min(STANDARD_INCLINATION*Math.abs(yPosCube)/30f,MAX_HOR_STAB_INCLINATION));
     }
 
     private void startTurnAscend(ControlOutputs outputs,  float xPosCube, float yPosCube){
-        PhysXEngine.PhysXOptimisations optimisations = this.getAssociatedAutopilot().getPhysXOptimisations();
-        AutopilotInputs inputs = this.getCurrentInputs();
-        Vector orientation = extractOrientation(inputs);
-        Vector rotation = this.getRotationApprox();
-        Vector velocity = this.getVelocityApprox();
-        float angleOfAttack = this.getAssociatedAutopilot().getConfig().getMaxAOA();
+        outputs.setHorStabInclination(-Math.min(STANDARD_INCLINATION*Math.abs(yPosCube)/30f,MAX_HOR_STAB_INCLINATION));
 
-        float inclination1 = optimisations.getMaxHorStabInclination(orientation, rotation, velocity, angleOfAttack);
-        float inclination2 = optimisations.getMaxHorStabInclination(orientation, rotation, velocity, -angleOfAttack);
-
-        float inclination = min(inclination1, inclination2);
-
-        outputs.setHorStabInclination(-Math.min(STANDARD_INCLINATION*Math.abs(yPosCube)/30f, Math.abs(inclination) - ERROR_INCLINATION_MARGIN));
     }
 
     private void stopAscendDescend(ControlOutputs outputs,  float xPosCube, float yPosCube){
         outputs.setHorStabInclination(STABILIZER_STABLE_INCLINATION);
-        if(this.getFlightRecorder() != null) {
-            this.getFlightRecorder().appendControlLog("Stopping Ascending or Descending");
-        }
     }
 
     private void startTurnRight(ControlOutputs outputs,  float xPosCube, float yPosCube){
-        //outputs.setVerStabInclination(STANDARD_INCLINATION);
-    	/*if (yPosCube >= 0) {
-    		startTurnAscend(outputs, xPosCube, yPosCube);
+        if (yPosCube >= 0) {
+            startTurnAscend(outputs, xPosCube, yPosCube);
 
-    	}else {
-    		startTurnDescend(outputs, xPosCube, yPosCube);
+        }else {
+            startTurnDescend(outputs, xPosCube, yPosCube);
 
-    	}*/
-        PhysXEngine.PhysXOptimisations optimisations = this.getAssociatedAutopilot().getPhysXOptimisations();
-        AutopilotInputs inputs = this.getCurrentInputs();
-        Vector orientation = extractOrientation(inputs);
-        Vector rotation = this.getRotationApprox();
-        Vector velocity = this.getVelocityApprox();
-        float angleOfAttack = this.getAssociatedAutopilot().getConfig().getMaxAOA();
-
-        float inclination1 = optimisations.getMaxVerStabInclination(orientation, rotation, velocity, angleOfAttack);
-        float inclination2 = optimisations.getMaxVerStabInclination(orientation, rotation, velocity, -angleOfAttack);
-
-        float inclination = min(inclination1, inclination2);
-
-        float minIncl = min(STANDARD_INCLINATION, abs(inclination) -  ERROR_INCLINATION_MARGIN);
-
-        outputs.setVerStabInclination(minIncl);
-
-        if(this.getFlightRecorder() != null){
-            this.getFlightRecorder().appendControlLog("Turn Right, Vertical Stabilizer: " + outputs.getVerStabInclination()*RAD2DEGREE +
-            "; Possible inclinations: " + inclination1*RAD2DEGREE + "; " + inclination2*RAD2DEGREE  + "; Approx velocity: " + velocity + "; Approx rotation : " + rotation);
-                    //", Horizontal Stabilizer: " + outputs.getHorStabInclination()*RAD2DEGREE);
-            this.getFlightRecorder().appendVelApproxLog(velocity);
-            this.getFlightRecorder().appendRotApproxLog(rotation);
         }
+
+        outputs.setRightWingInclination(TURNING_INCLINATION + MAIN_STABLE_INCLINATION);
+        outputs.setLeftWingInclination(-TURNING_INCLINATION + MAIN_STABLE_INCLINATION);
 
     }
 
     private void startTurnLeft(ControlOutputs outputs, float xPosCube, float yPosCube){
-        //outputs.setVerStabInclination(-STANDARD_INCLINATION);
-    	/*if (yPosCube >= 0) {
-    		startTurnAscend(outputs, xPosCube, yPosCube);
+        ///outputs.setVerStabInclination(-STANDARD_INCLINATION);
+        if (yPosCube >= 0) {
+            startTurnAscend(outputs, xPosCube, yPosCube);
 
-    	}else {
-    		startTurnDescend(outputs, xPosCube, yPosCube);
+        }else {
+            startTurnDescend(outputs, xPosCube, yPosCube);
 
-    	}*/
-
-        PhysXEngine.PhysXOptimisations optimisations = this.getAssociatedAutopilot().getPhysXOptimisations();
-        AutopilotInputs inputs = this.getCurrentInputs();
-        Vector orientation = extractOrientation(inputs);
-        Vector rotation = this.getRotationApprox();
-        Vector velocity = this.getVelocityApprox();
-
-        float angleOfAttack = this.getAssociatedAutopilot().getConfig().getMaxAOA();
-
-        // negative because we need a negative result (maybe update to MinNeg)
-        float inclination1 = optimisations.getMaxVerStabInclination(orientation, rotation, velocity, angleOfAttack);
-        float inclination2 = optimisations.getMaxVerStabInclination(orientation, rotation, velocity, -angleOfAttack);
-
-        float inclination = min(inclination1, inclination2);
-
-        float minIncl = -min(STANDARD_INCLINATION, Math.abs(inclination) - ERROR_INCLINATION_MARGIN);
-
-        outputs.setVerStabInclination(minIncl);
-
-        if(this.getFlightRecorder() != null){
-            this.getFlightRecorder().appendControlLog("Turn Left, Vertical Stabilizer: " + outputs.getVerStabInclination()*RAD2DEGREE +
-                    "; Possible Inclinations: " + inclination1*RAD2DEGREE + "; " + inclination2*RAD2DEGREE + "; Approx velocity: " + velocity + "; Approx rotation : " + rotation);
-            this.getFlightRecorder().appendVelApproxLog(velocity);
-            this.getFlightRecorder().appendRotApproxLog(rotation);
         }
+
+        outputs.setRightWingInclination(-TURNING_INCLINATION + MAIN_STABLE_INCLINATION);
+        outputs.setLeftWingInclination(TURNING_INCLINATION + MAIN_STABLE_INCLINATION);
 
     }
 
@@ -207,27 +98,6 @@ public class AutoPilotController {
         outputs.setVerStabInclination(STABILIZER_STABLE_INCLINATION);
         outputs.setRightWingInclination(MAIN_STABLE_INCLINATION);
         outputs.setLeftWingInclination(MAIN_STABLE_INCLINATION);
-        //stopAscendDescend(outputs, xPosCube, yPosCube);
-        //System.out.println("Turn NOT descending nor ascending");
-
-        if(this.getFlightRecorder() != null){
-            this.getFlightRecorder().appendControlLog("No Turn");
-        }
-
-    }
-
-    private void rollControl(ControlOutputs outputs){
-        AutopilotInputs input = this.getCurrentInputs();
-        float roll = input.getRoll();
-
-        if(roll >= ROLL_THESHOLD){
-            outputs.setRightWingInclination(-MAIN_STABLE_INCLINATION);
-        }
-        else if(roll <= - ROLL_THESHOLD){
-            outputs.setLeftWingInclination(-MAIN_STABLE_INCLINATION);
-        }else{
-            // change nothing
-        }
     }
 
     /**
@@ -267,12 +137,13 @@ public class AutoPilotController {
         // Thrust
        this.setThrustOut(controlOutputs);
 
-
+        FlightRecorder recorder = this.getFlightRecorder();
         // Roll
         if(xPosition > threshold){
             // Turn right
             //System.out.println("This is your captain speaking: the red cube is located at our right-hand-side");
             this.startTurnRight(controlOutputs, xPosition, yPosition);
+            recorder.appendControlLog("Turning Right: \n");
         }else if(xPosition >= -threshold && xPosition <= threshold){
             // Stop turning
             this.stopTurn(controlOutputs, xPosition, yPosition);
@@ -283,33 +154,221 @@ public class AutoPilotController {
                 // Descend
                 //System.out.println("This is your captain speaking: the red cube is located underneath us");
                 this.startDescend(controlOutputs, xPosition, yPosition);
+                recorder.appendControlLog("Start Descend: \n");
 
             }else if((yPosition >= -threshold - bias && yPosition <= threshold - bias) && (xPosition >= -threshold && xPosition <= threshold)){
                 // Stop descending/ascending
                 this.stopAscendDescend(controlOutputs, xPosition, yPosition);
+                recorder.appendControlLog("Stop Ascending: \n");
 
             }else if(yPosition > threshold - bias && (xPosition >= -threshold && xPosition <= threshold)){
                 // Ascend
                 //System.out.println("This is your captain speaking: the red cube is located above us");
                 this.startAscend(controlOutputs, xPosition, yPosition);
+                recorder.appendControlLog("Start Ascending: \n");
 
             }
         }else if(xPosition < -threshold){
             // Turn left
             //System.out.println("This is your captain speaking: the red cube is located at our left-hand-side");
             this.startTurnLeft(controlOutputs, xPosition, yPosition);
+            recorder.appendControlLog("Start Turn left: \n");
         }
 
         this.rollControl(controlOutputs);
 
+        this.angleOfAttackControl(controlOutputs);
         //System.out.println("Controls delivered");
         //System.out.println(controlOutputs);
 
         return controlOutputs;
     }
+
+
+    /*
+     * Supplementary control methods
+     */
+    private void rollControl(ControlOutputs outputs){
+        AutopilotInputs input = this.getCurrentInputs();
+        float roll = input.getRoll();
+
+        if(roll >= ROLL_THESHOLD){
+            outputs.setRightWingInclination(-MAIN_STABLE_INCLINATION);
+        }
+        else if(roll <= - ROLL_THESHOLD){
+            outputs.setLeftWingInclination(-MAIN_STABLE_INCLINATION);
+        }else{
+            // change nothing
+        }
+    }
+
+    /**
+     * Checks if the current control outputs are realisable under the angle of attack constraint provided
+     * by the autopilot configuration. If not the controls are adjusted to fit the constraints
+     * @param controlOutputs the control outputs to be checked
+     */
+    private void angleOfAttackControl(ControlOutputs controlOutputs){
+        //first prepare all the variables
+        PhysXEngine.PhysXOptimisations optimisations = this.getAssociatedAutopilot().getPhysXOptimisations();
+        AutopilotInputs inputs = this.getCurrentInputs();
+        Vector orientation = extractOrientation(inputs);
+        Vector velocity = this.getVelocityApprox();
+        Vector rotation = this.getRotationApprox();
+        float angleOfAttack = this.getAssociatedAutopilot().getConfig().getMaxAOA();
+
+        //change until the controls fit
+        AOAControlMainLeft(controlOutputs, optimisations,angleOfAttack, orientation, rotation, velocity);
+        AOAControlMainRight(controlOutputs, optimisations, angleOfAttack, orientation, rotation, velocity);
+        AOAControlHorStabilizer(controlOutputs, optimisations, angleOfAttack, orientation, rotation, velocity);
+        AOAControlVerStabilizer(controlOutputs, optimisations, angleOfAttack, orientation, rotation, velocity);
+    }
+
+    /**
+     * Checks if the control outputs are realisable under the AOA restrictions, if not change them to fit
+     * between the borders of what is allowed.
+     * @param controlOutputs the control outputs of the controller
+     * @param optimisations the physics optimisations used for the calculations
+     * @param angleOfAttack the maximum angle of attack
+     * @param orientation the orientation of the drone
+     * @param rotation the rotation of the drone (world-axis)
+     * @param velocity the velocity of the drone (world-axis)
+     * @return true if the controls were changed, false if not
+     * @author Martijn Sauwens
+     */
+    private boolean AOAControlMainLeft(ControlOutputs controlOutputs, PhysXEngine.PhysXOptimisations optimisations, float angleOfAttack,  Vector orientation, Vector rotation, Vector velocity){
+        float inclinationBorder1 = optimisations.getMaxLeftMainWingInclination(orientation, rotation, velocity, angleOfAttack);
+        float inclinationBorder2 = optimisations.getMaxLeftMainWingInclination(orientation, rotation, velocity, -angleOfAttack);
+
+        float desiredInclination = controlOutputs.getLeftWingInclination();
+
+        float realisableInclination = setBetween(desiredInclination, inclinationBorder1, inclinationBorder2, ERROR_INCLINATION_MARGIN);
+
+        controlOutputs.setLeftWingInclination(realisableInclination);
+
+        return desiredInclination == realisableInclination;
+    }
+
+    /**
+     * Checks if the control outputs are realisable under the AOA restrictions, if not change them to fit
+     * between the borders of what is allowed.
+     * @param controlOutputs the control outputs of the controller
+     * @param optimisations the physics optimisations used for the calculations
+     * @param angleOfAttack the maximum angle of attack
+     * @param orientation the orientation of the drone
+     * @param rotation the rotation of the drone (world-axis)
+     * @param velocity the velocity of the drone (world-axis)
+     * @return true if the controls were changed, false if not
+     * @author Martijn Sauwens
+     */
+    private boolean AOAControlMainRight(ControlOutputs controlOutputs, PhysXEngine.PhysXOptimisations optimisations, float angleOfAttack, Vector orientation, Vector rotation, Vector velocity){
+        float inclinationBorder1 = optimisations.getMaxRightMainWingInclination(orientation, rotation, velocity, angleOfAttack);
+        float inclinationBorder2 = optimisations.getMaxRightMainWingInclination(orientation, rotation, velocity, -angleOfAttack);
+
+        float desiredInclination = controlOutputs.getRightWingInclination();
+
+        float realisableInclination = setBetween(desiredInclination, inclinationBorder1, inclinationBorder2, ERROR_INCLINATION_MARGIN);
+
+        controlOutputs.setRightWingInclination(realisableInclination);
+
+        return desiredInclination == realisableInclination;
+    }
+
+    /**
+     * Checks if the control outputs are realisable under the AOA restrictions, if not change them to fit
+     * between the borders of what is allowed.
+     * @param controlOutputs the control outputs of the controller
+     * @param optimisations the physics optimisations used for the calculations
+     * @param angleOfAttack the maximum angle of attack
+     * @param orientation the orientation of the drone
+     * @param rotation the rotation of the drone (world-axis)
+     * @param velocity the velocity of the drone (world-axis)
+     * @return true if the controls were changed, false if not
+     * @author Martijn Sauwens
+     */
+    private boolean AOAControlHorStabilizer(ControlOutputs controlOutputs, PhysXEngine.PhysXOptimisations optimisations, float angleOfAttack, Vector orientation, Vector rotation, Vector velocity){
+
+        float inclinationBorder1 = optimisations.getMaxHorStabInclination(orientation, rotation, velocity, angleOfAttack);
+        float inclinationBorder2 = optimisations.getMaxHorStabInclination(orientation, rotation, velocity, -angleOfAttack);
+
+        float desiredInclination = controlOutputs.getHorStabInclination();
+
+        float realisableInclination = setBetween(desiredInclination, inclinationBorder1, inclinationBorder2, ERROR_INCLINATION_MARGIN);
+
+        controlOutputs.setHorStabInclination(realisableInclination);
+
+        return desiredInclination == realisableInclination;
+    }
+
+    /**
+     * Checks if the control outputs are realisable under the AOA restrictions, if not change them to fit
+     * between the borders of what is allowed.
+     * @param controlOutputs the control outputs of the controller
+     * @param optimisations the physics optimisations used for the calculations
+     * @param angleOfAttack the maximum angle of attack
+     * @param orientation the orientation of the drone
+     * @param rotation the rotation of the drone (world-axis)
+     * @param velocity the velocity of the drone (world-axis)
+     * @return true if the controls were changed, false if not
+     * @author Martijn Sauwens
+     */
+    private boolean AOAControlVerStabilizer(ControlOutputs controlOutputs, PhysXEngine.PhysXOptimisations optimisations, float angleOfAttack, Vector orientation, Vector rotation, Vector velocity){
+
+        float inclinationBorder1 = optimisations.getMaxVerStabInclination(orientation, rotation, velocity, angleOfAttack);
+        float inclinationBorder2 = optimisations.getMaxVerStabInclination(orientation, rotation, velocity, -angleOfAttack);
+
+        float desiredInclination = controlOutputs.getVerStabInclination();
+
+        float realisableInclination = setBetween(desiredInclination, inclinationBorder1, inclinationBorder2, ERROR_INCLINATION_MARGIN);
+
+        controlOutputs.setVerStabInclination(realisableInclination);
+
+        return desiredInclination == realisableInclination;
+    }
+
+
     /*
     Helper methods
      */
+    //TODO account for the fact that the distance between the borders could be smaller than the error margin
+    private float setBetween(float value, float border1, float border2, float errorMargin){
+        //first check if the value isn't already between the borders:
+        float[] borders = sortValue(border1, border2);
+        float lowerBorder = borders[0];
+        float upperBorder = borders[1];
+        //check if it is already between the borders
+        if(value >= lowerBorder && value <= upperBorder)
+            return value;
+
+        //if not so, set it between with a given error margin
+        //check if the value is closest to the lower border
+        if(abs(lowerBorder - value) <= abs(upperBorder - value)){
+            return lowerBorder - signum(lowerBorder)*errorMargin;
+        }else{
+            return upperBorder - signum(upperBorder)*errorMargin;
+        }
+
+    }
+
+    /**
+     * Sorts the two values
+     * @param value1 the first value to be sorted
+     * @param value2 the second value to be sorted
+     * @return an array of size 2 with the smallest value first and the largest second.
+     */
+    private float[] sortValue(float value1, float value2){
+
+        float[] sortedArray = new float[2];
+        if(value1 <= value2) {
+            sortedArray[0] = value1;
+            sortedArray[1] = value2;
+        }else{
+            sortedArray[0] = value2;
+            sortedArray[1] = value1;
+        }
+
+        return sortedArray;
+    }
+
     private float getTotalMass(){
         AutoPilot autopilot = this.getAssociatedAutopilot();
         float mainWings = autopilot.getMainWingMass()*2;
