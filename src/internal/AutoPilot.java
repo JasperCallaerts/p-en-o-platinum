@@ -26,7 +26,9 @@ public class AutoPilot implements Autopilot {
     public AutoPilot() {
 
     	// set the controller of the autopilot
-    	this.setController(new AutoPilotController(this));
+		//Todo uncomment when normal controller works again
+    	//this.setController(new AutoPilotController(this));
+    	this.attackController = new AutoPilotControllerNoAttack(this);
 
     }
 
@@ -56,6 +58,14 @@ public class AutoPilot implements Autopilot {
      */
     public void configureAutopilot(AutopilotConfig configuration, AutopilotInputs inputs) {
 
+    	//save the configuration:
+		this.setConfig(configuration);
+    	//initialize the Physics Engine
+		this.setPhysXEngine(new PhysXEngine(configuration));
+		//initialize the Physics Engine Optimisations
+		this.setPhysXOptimisations(this.getPhysXEngine().createPhysXOptimisations());
+
+
         //Initialize the autopilot camera
         byte[] inputImage = inputs.getImage();
         int nbRows = configuration.getNbRows();
@@ -65,21 +75,15 @@ public class AutoPilot implements Autopilot {
         this.setAPCamera(new AutoPilotCamera(inputImage, horizViewAngle, verticViewAngle, nbRows, nbColumns));
 
 
-        //initialize other parameters
-        this.setMaxThrust(configuration.getMaxThrust());
-		this.setEngineMass(configuration.getEngineMass());
-		this.setMainWingMass(configuration.getWingMass());
-		this.setStabilizerMass(configuration.getTailMass());
-
-        this.configuredAP = true;
-
     }
 
 
 
     private AutopilotOutputs getControlOutputs(AutopilotInputs inputs){
-    	AutoPilotController controller = this.getController();
-    	controller.setCurrentInputs(inputs);
+    	//AutoPilotController controller = this.getController();
+    	//controller.setCurrentInputs(inputs);
+		AutoPilotControllerNoAttack controller = this.attackController;
+		attackController.setCurrentInputs(inputs);
     	return controller.getControlActions();
 	}
 
@@ -90,65 +94,11 @@ public class AutoPilot implements Autopilot {
      * @author Martijn Sauwens
      */
     public float getMaxThrust() {
-        return maxThrust;
-    }
-    /**
-     * setter for the maximum thrust
-     * @param maxThrust the maximum thrust the AP may issue on the drone
-     * @author Martijn Sauwens
-     */
-    public void setMaxThrust(float maxThrust) {
-        this.maxThrust = maxThrust;
+        return this.getConfig().getMaxThrust();
     }
 
 
-	private List<Vector> currentPath;
-	private AutoPilotCamera APCamera;
 
-
-    private boolean configuredAP;
-    private float maxThrust = 1f;
-
-
-	//------- Pathfinding -------
-	/**
-	 * @author anthonyrathe
-	 */
-	private void updatePath(AutopilotInputs inputs) throws IOException{
-		int[] start = this.getPosition(inputs).toIntArray();
-		int[] end = this.getDestinationPosition().toIntArray();
-		Pathfinding pathFinding = new Pathfinding(new World(World.VISIT_ALL_OBJECTIVE));
-		List<int[]> pathInt = pathFinding.searchPath(start, end);
-		List<Vector> newPath = new ArrayList<Vector>();
-		for (int[] position : pathInt){
-			newPath.add(new Vector(position[0], position[1], position[2]));
-		}
-		this.currentPath = newPath;
-	}
-	
-	/**
-	 * @author anthonyrathe
-	 * @return
-	 */
-	private List<Vector> getPath(){
-		return this.currentPath;
-	}
-	
-	/**
-	 * @author anthonyrathe
-	 */
-	private void removeNodeFromPath(Vector node){
-		this.currentPath.remove(node);
-	}
-	
-	/**
-	 * @author anthonyrathe
-	 * @return
-	 */
-	private Vector getPosition(AutopilotInputs inputs){
-		return new Vector(inputs.getX(), inputs.getY(), inputs.getZ());
-	}
-	
 	/**
 	 * @author anthonyrathe
 	 */
@@ -166,103 +116,6 @@ public class AutoPilot implements Autopilot {
 		this.APCamera = newAPCamera;
 	}
 	
-	/**
-	 * @author anthonyrathe
-	 * @return
-	 */
-	private Vector getDestinationPosition(){
-		return getAPCamera().getDestination();
-	}
-	
-
-	//------- END Pathfinding -------
-	
-	//------- Actual Autopilot -------
-	/**
-	 * @author anthonyrathe
-	 * @return the node that currently is closest to the drone
-	 */
-	private Vector getNextNode(AutopilotInputs inputs) throws IOException{
-		updatePath(inputs);
-		Vector destination = getDestinationPosition();
-		Vector currentPosition = this.getPosition(inputs);
-		Vector nextNode = destination;
-		float smallestDistance = currentPosition.distanceBetween(getDestinationPosition());
-		for (Vector node : this.getPath()){
-			if(node.distanceBetween(currentPosition) <= NODE_REACHED_DISTANCE){
-				this.removeNodeFromPath(node);
-			}else if (node.distanceBetween(currentPosition) < smallestDistance 
-					&& node.distanceBetween(destination) <= currentPosition.distanceBetween(destination)){
-				smallestDistance = node.distanceBetween(currentPosition);
-				nextNode = node;
-			}
-		}
-		return nextNode;
-	}
-
-	
-	/**
-	 * Method that updates the desired inclinations and thrust
-	 * Strategy applied:
-	 * 	- find the closest node
-	 * 	- determine if node lies in the left or right half-space in relation to the drone (and the horizontal angle it makes with the orientationvector of the drone, ranging from -PI to 0 if node is to the left, and from 0 to +PI if node is to the right) 
-	 * 	- determine if node lies in the upper or lower half-space in relation to the drone (and the vertical angle it makes with the orientationvector of the drone, ranging from -PI to 0 if node is underneath the drone, and from 0 to +PI if node is above the drone)
-	 * 	- determine whether to roll clockwise, counterclockwise or not at all (based on previously determined angles)
-	 *  - determine whether to climb, descend or do nothing at all (based on previously determined angles)
-	 * @author anthonyrathe
-	 * @note this version of update will be used later on, when our image recognition allows for a 3D-mapping of the world
-	 * For the version currently in use, we will be basing our oriëntation on the relative position of red pixels on the 2D
-	 * surface of the screen.
-	 */
-
-	//TODO Max angle of attack error uitwerken
-	/*public void update(AutopilotInputs inputs) throws IOException{
-
-		Vector perpendicularAxis = pitchRollYawToWorld(inputs.getPitch()-(float)Math.PI/2, inputs.getRoll(), inputs.getHeading()); //pointed to the roof of the drone
-		Vector lateralAxis = pitchRollYawToWorld(inputs.getPitch(), inputs.getRoll(), inputs.getHeading()+(float)Math.PI/2); //pointed to the left of the drone
-		
-		Vector directionToNode = getPosition(inputs).vectorDifference(getDestinationPosition());
-		float verticalAngle = perpendicularAxis.getAngleBetween(directionToNode);
-		float horizontalAngle = lateralAxis.getAngleBetween(directionToNode);
-		
-		// Ascend/Descend
-		if (verticalAngle > Math.PI){
-			throw new IOException("Undefined angles");
-		}else if(verticalAngle > Math.PI + THRESHOLD_ANGLE && verticalAngle <= Math.PI){
-			// Descend
-			this.startDescend();
-		}else if(verticalAngle <= Math.PI + THRESHOLD_ANGLE && verticalAngle >= Math.PI - THRESHOLD_ANGLE){
-			// Stop descending/ascending
-			this.stopAscendDescend();
-		}else if(verticalAngle >= 0f && verticalAngle < Math.PI - THRESHOLD_ANGLE){
-			// Ascend
-			this.startAscend();
-		}
-
-		
-		// Roll
-		if (horizontalAngle > Math.PI){
-			throw new IOException("Undefined angles");
-		}else if(horizontalAngle > Math.PI + THRESHOLD_ANGLE && horizontalAngle <= Math.PI){
-			// Roll clockwise
-			this.clockRollStart();
-		}else if(horizontalAngle <= Math.PI + THRESHOLD_ANGLE && horizontalAngle >= Math.PI - THRESHOLD_ANGLE){
-			// Stop rolling
-			this.stopRoll();
-		}else if(horizontalAngle >= 0f && horizontalAngle < Math.PI - THRESHOLD_ANGLE){
-			// Roll counterclockwise
-			this.counterClockRollStart();
-		} 
-		
-	}*/
-
-
-	
-	
-	
-	//------- END Actual Autopilot -------
-
-
 
 	/*
     Getters & Setters
@@ -296,66 +149,87 @@ public class AutoPilot implements Autopilot {
 	 * @return a floating point number containing the mass of the main wing
 	 */
 	public float getMainWingMass() {
-		return mainWingMass;
+		return this.getConfig().getWingMass();
 	}
 
-	/**
-	 * Setter for the main wing mass of the drone
-	 * @param mainWingMass floating point number containing the mass of the main wing
-	 */
-	public void setMainWingMass(float mainWingMass) {
-		this.mainWingMass = mainWingMass;
-	}
 
 	/**
 	 * Getter for the mass of the stabilizer
 	 * @return floating point number containing the stabilizer mass
 	 */
 	public float getStabilizerMass() {
-		return stabilizerMass;
+		return this.getConfig().getTailMass();
 	}
 
-	/**
-	 * Setter for the mass of the stabilizer
-	 * @param stabilizerMass the mass of the stabilizer
-	 */
-	public void setStabilizerMass(float stabilizerMass) {
-		this.stabilizerMass = stabilizerMass;
-	}
 
 	/**
 	 * Getter for the mass of the engine
 	 * @return floating point containing the mass of the enige
 	 */
 	public float getEngineMass() {
-		return engineMass;
+		return this.getConfig().getEngineMass();
 	}
 
 	/**
-	 * Setter for the engine mass
-	 * @param engineMass the mass of the engine
+	 * Setter for the flight recorder
 	 */
-	public void setEngineMass(float engineMass) {
-		this.engineMass = engineMass;
+	public void setFlightRecorder(FlightRecorder flightRecorder){
+		//this.getController().setFlightRecorder(flightRecorder);
+		this.attackController.setFlightRecorder(flightRecorder);
+	}
+
+	public PhysXEngine getPhysXEngine() {
+		return physXEngine;
+	}
+
+	public void setPhysXEngine(PhysXEngine physXEngine) {
+		this.physXEngine = physXEngine;
+	}
+
+	public PhysXEngine.PhysXOptimisations getPhysXOptimisations() {
+		return physXOptimisations;
+	}
+
+	public void setPhysXOptimisations(PhysXEngine.PhysXOptimisations physXOptimisations) {
+		this.physXOptimisations = physXOptimisations;
+	}
+
+	public AutopilotConfig getConfig() {
+		return config;
+	}
+
+	public void setConfig(AutopilotConfig config) {
+		this.config = config;
 	}
 
 	/**
 	 * Object that stores the autopilot controller
 	 */
 	private AutoPilotController controller;
-	/**
-	 * variable that stores the mass of the main wings
-	 */
-	private float mainWingMass;
-	/**
-	 * variable that stores the mass of the stabilizers
-	 */
-	private float stabilizerMass;
 
 	/**
-	 * variable that stores the mass of the engine
+	 * Variable that stores the configuration of the autopilot
 	 */
-	private float engineMass;
+	private AutopilotConfig config;
+	/**
+	 * Variable that stores the autopilot camera
+	 */
+	private AutoPilotCamera APCamera;
+
+	/**
+	 * variable that stores the physics engine associated with the autopilot
+	 */
+	private PhysXEngine physXEngine;
+
+	/**
+	 * variable that stores the physic engine Optimisations
+	 */
+	private PhysXEngine.PhysXOptimisations physXOptimisations;
+
+	/**
+	 * used for engine validation
+	 */
+	private AutoPilotControllerNoAttack attackController;
 
 	//------- Parameters -------
 	private static final float STANDARD_INCLINATION = (float)Math.PI/8;

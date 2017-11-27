@@ -7,6 +7,7 @@ import org.junit.Test;
 import Autopilot.AutopilotConfig;
 import Autopilot.AutopilotInputs;
 
+import static java.lang.Math.PI;
 import static org.junit.Assert.assertNotEquals;
 
 import java.io.IOException;
@@ -36,7 +37,7 @@ public class autoPilotTests {
 	
 	public Vector position = new Vector(100,0,2);
 	public Vector velocity = new Vector(1,1,0);
-	public Vector orientation = new Vector((float)Math.PI,(float)Math.PI/2,0);
+	public Vector orientation = new Vector((float) PI,(float) PI/2,0);
 	public Vector rotation = new Vector(1,1,1);
 	
 	public Vector relPosWing1 = new Vector(1,0,0);
@@ -128,7 +129,7 @@ public class autoPilotTests {
         
 		System.out.println(Pixel.isEqualFloat(hValue, RED_H_VALUE, EPSILON) && Pixel.isEqualFloat(sValue, RED_S_VALUE, EPSILON) && Pixel.isEqualFloat(vValue, Z_AXIS_V_VALUE, EPSILON));
 		APInputs = new AutoPilotInputs(autoPilotTests.createImage(1, 6), 0f, 0f, 0f, 0f, 0f, 0f, 0f);
-		assertEquals(AP.simulationStarted(APConfig, APInputs).getHorStabInclination(), (float)Math.PI/3, delta);
+		assertEquals(AP.simulationStarted(APConfig, APInputs).getHorStabInclination(), (float) PI/3, delta);
 		
 	}
 	
@@ -141,6 +142,15 @@ public class autoPilotTests {
 		
 		
 		
+	}
+
+	@Test
+	public final void transformationsTest(){
+		Vector testVector = new Vector(1,2,3);
+		Vector orientationVector =new Vector((float)(20* PI/180), (float)(-5*PI/180), (float)(14*PI/180));
+		Vector transformed = PhysXEngine.getRotationHPR(testVector, orientationVector);
+		Vector result = PhysXEngine.HPRtoRotation(transformed, orientationVector);
+		System.out.println("Old: " + testVector + "; new: " + result );
 	}
 	
 	

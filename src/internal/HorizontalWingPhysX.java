@@ -54,11 +54,17 @@ public class HorizontalWingPhysX extends WingPhysX {
 
     }
 
+    @Override
+    public Vector getAxisVector() {
+        return this.axisVector;
+    }
+
     public Vector getNormal(){
-        return this.normal;
+        float inclination = this.getWingInclination();
+        return new Vector(0.f, (float)Math.cos(inclination), (float)Math.sin(inclination));
     }
 
     public final Vector normal = new Vector(0,1,0);
-
+    public final Vector axisVector = new Vector(1,0,0);
 
 }

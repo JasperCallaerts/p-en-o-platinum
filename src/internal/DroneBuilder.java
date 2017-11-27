@@ -152,7 +152,7 @@ public class DroneBuilder {
              */
             @Override
             public float getMaxAOA() {
-                return 0;
+                return (float) (40*Math.PI/180f);
             }
 
             /**

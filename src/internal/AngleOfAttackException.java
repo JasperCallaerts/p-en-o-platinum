@@ -59,4 +59,14 @@ public class AngleOfAttackException extends IllegalStateException {
      */
     private String causeMessage;
 
+    @Override
+    public String toString() {
+        return TAG;
+    }
+
+    /**
+     * Tag used for error examination
+     */
+    public final static String TAG = "AngleOfAttackException";
+
 }
