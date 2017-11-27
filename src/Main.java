@@ -149,14 +149,12 @@ public class Main {
             	// For testing purposes: add block after block, ensuring only two blocks exist at one time
             	if (blocks.size() >= 1) {
             		goalNotReached = true;
+            		world.removeWorldObject(blocks.get(0));
+                	blocks.remove(0);
             	}
             	
-            	if(blocks.size() > 2){
-            		world.addWorldObject(blocks.get(2));
-            	}
 
-            	world.removeWorldObject(blocks.get(0));
-            	blocks.remove(0);
+            	
             	
                 
             }
