@@ -73,12 +73,12 @@ public abstract class WingPhysX {
         Vector projectedAirspeed = airspeed.orthogonalProjection(axisVector);
         float angleOfAttack = this.calcAngleOfAttack(orientation, rotation, velocity);
         float liftSlope = this.getLiftSlope();
-
-        /*if(Math.abs(angleOfAttack) >= this.getMaximumAngleOfAttack()){
+        //System.out.println("angle of attack: " + angleOfAttack);
+        if(Math.abs(angleOfAttack) >= this.getMaximumAngleOfAttack()){
             System.out.println("AO<WA: " + angleOfAttack*RAD2DEGREE);
             System.out.println("CauseWing: " + this);
             throw new AngleOfAttackException(this);
-        }*/
+        }
 
 
         // calculate s^2

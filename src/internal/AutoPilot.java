@@ -27,8 +27,8 @@ public class AutoPilot implements Autopilot {
 
     	// set the controller of the autopilot
 		//Todo uncomment when normal controller works again
-    	//this.setController(new AutoPilotController(this));
-    	this.attackController = new AutoPilotControllerNoAttack(this);
+    	this.setController(new AutoPilotController(this));
+    	//this.attackController = new AutoPilotControllerNoAttack(this);
 
     }
 
@@ -80,10 +80,10 @@ public class AutoPilot implements Autopilot {
 
 
     private AutopilotOutputs getControlOutputs(AutopilotInputs inputs){
-    	//AutoPilotController controller = this.getController();
-    	//controller.setCurrentInputs(inputs);
-		AutoPilotControllerNoAttack controller = this.attackController;
-		attackController.setCurrentInputs(inputs);
+    	AutoPilotController controller = this.getController();
+    	controller.setCurrentInputs(inputs);
+		//AutoPilotControllerNoAttack controller = this.attackController;
+		//attackController.setCurrentInputs(inputs);
     	return controller.getControlActions();
 	}
 
@@ -174,8 +174,8 @@ public class AutoPilot implements Autopilot {
 	 * Setter for the flight recorder
 	 */
 	public void setFlightRecorder(FlightRecorder flightRecorder){
-		//this.getController().setFlightRecorder(flightRecorder);
-		this.attackController.setFlightRecorder(flightRecorder);
+		this.getController().setFlightRecorder(flightRecorder);
+		//this.attackController.setFlightRecorder(flightRecorder);
 	}
 
 	public PhysXEngine getPhysXEngine() {
