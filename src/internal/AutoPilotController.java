@@ -244,9 +244,10 @@ public class AutoPilotController {
         
         Vector center = APCamera.getCenterOfNCubes(1).scalarMult(2f).vectorSum(APCamera.getCenterOfNCubes(5).scalarMult(1f)).scalarMult(3f);
 //        Vector center = APCamera.getCenterOfNCubes(1);
-//        Vector center = APCamera.getCenterOfNCubes(1);
         float xPosition = center.getxValue();
         float yPosition = -center.getyValue();
+        
+        System.out.println(xPosition + " : " + yPosition);
 
         //System.out.println("Center location: " + center);
 

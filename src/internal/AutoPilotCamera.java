@@ -92,6 +92,7 @@ public class AutoPilotCamera {
                     .scalarMult(currentCube.getzValue());
             sumCoordinates = sumCoordinates.sum(currentWeightedCoord);
             totalPixels += currentCube.getzValue();
+            counter++;
         }
 
         //after the sum is completed return the weighted average
