@@ -148,7 +148,7 @@ public class Cube{
 	
 	public Vector3f getRelPos() {
 		Vector3f pos = this.position;
-		Matrix3f transformation = Matrix3f.transformationMatrix(this.orientation);
+		Matrix3f transformation = Matrix3f.transformationMatrix(this.orientation.negate()).transpose();
 		Vector3f difference = transformation.multiply(relativePosition);
 		pos = pos.add(difference);
 		return pos;
@@ -169,11 +169,6 @@ public class Cube{
 		Vector3f negX = Vector3f.ArrayToVector3f(HSVconverter.HSVtoRGB2(colour.x, colour.y, 0.30f * colour.z));
 		Vector3f posZ = Vector3f.ArrayToVector3f(HSVconverter.HSVtoRGB2(colour.x, colour.y, 0.70f * colour.z));
 		Vector3f negZ = Vector3f.ArrayToVector3f(HSVconverter.HSVtoRGB2(colour.x, colour.y, 0.45f * colour.z));
-		
-		if (colour.x == 240f) {
-			System.out.println(colour.x + " " + colour.y + " " + colour.z);
-			System.out.println(posY.x + " " + posY.y + " " + posY.z + " " + negY.x + " " + negY.y + " " + negY.z);
-		}
 		
 		colours = new float[]{
 				posZ.x, posZ.y, posZ.z,

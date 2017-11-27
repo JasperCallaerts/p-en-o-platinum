@@ -114,7 +114,7 @@ public class Window {
 			glfwShowWindow(getHandler());
 		
 		if (visible)
-			this.FOV = (float) Math.toRadians(120.0f);
+			this.FOV = (float) Math.toRadians(60.0f);
 		else
 			this.FOV = (float) Math.toRadians(120.0f);
 		
@@ -212,8 +212,6 @@ public class Window {
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the buffers
 
-		if (setting == Settings.INDEPENDENT_CAM)
-			input.processInput();
 		updateMatrices();
 	
 		program.bind();
@@ -262,14 +260,22 @@ public class Window {
 	}
 	
 	public void updateMatrices() {
-		switch (setting) {
-		case DRONE_CAM: viewMatrix = getDroneView();
-						break;
-		case DRONE_CHASE_CAM: viewMatrix = getChaseView();
-						break;
-		default: viewMatrix = input.getViewMatrix();
-			break;
-		}
+		if (Input.isKeyPressed(GLFW_KEY_R))
+			this.setting = Settings.DRONE_CAM;
+		else if (Input.isKeyPressed(GLFW_KEY_T))
+			this.setting = Settings.DRONE_TOP_DOWN_CAM;
+		else if (Input.isKeyPressed(GLFW_KEY_Y))
+			this.setting = Settings.DRONE_SIDE_CAM;
+		else if (Input.isKeyPressed(GLFW_KEY_U))
+			this.setting = Settings.DRONE_CHASE_CAM;
+		else if (Input.isKeyPressed(GLFW_KEY_I))
+			this.setting = Settings.INDEPENDENT_CAM;
+		else if (Input.isKeyPressed(GLFW_KEY_TAB))
+			this.setting = getSetting().next();
+		
+		if (getSetting() == Settings.INDEPENDENT_CAM)
+			input.processInput();
+		updateViewMatrix(setting);
 		
 		projectionMatrix = getProjectionMatrix();
 	}
@@ -282,12 +288,32 @@ public class Window {
 		return Matrix4f.translate(position).multiply(Matrix4f.rotate(orientation)).multiply(Matrix4f.scale(size));
 	}
 	
-	public Matrix4f getChaseView() {
-		return getView(new Vector3f(1f, 0f, 0f), new Vector3f(-1f, 0f, -1f).scale(10f));
+	public void updateViewMatrix() {
+		switch (getSetting()) {
+		case DRONE_CAM: 
+			this.viewMatrix = getView(new Vector3f(1f, 1f, 1f), new Vector3f(1f, 1f, 1f).scale(3f));
+			break;
+		case DRONE_CHASE_CAM: 
+			this.viewMatrix = getView(new Vector3f(1f, 0f, 0f), new Vector3f(-1f, 0f, -1f).scale(10f));
+			break;
+		default: 
+			this.viewMatrix = input.getViewMatrix(getSetting());
+			break;
+		}
 	}
 	
-	public Matrix4f getDroneView() {
-		return getView(new Vector3f(1f, 1f, 1f), new Vector3f(1f, 1f, 1f).scale(3f));
+	public void updateViewMatrix(Settings setting) {
+		switch (setting) {
+		case DRONE_CAM: 
+			this.viewMatrix = getView(new Vector3f(1f, 1f, 1f), new Vector3f(1f, 1f, 1f).scale(3f));
+			break;
+		case DRONE_CHASE_CAM: 
+			this.viewMatrix = getView(new Vector3f(1f, 0f, 0f), new Vector3f(-1f, 0f, -1f).scale(10f));
+			break;
+		default: 
+			this.viewMatrix = input.getViewMatrix(setting);
+			break;
+		}
 	}
 	
 	public Matrix4f getView(Vector3f camOrientation, Vector3f camPosition) {   

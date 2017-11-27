@@ -42,17 +42,20 @@ public class Input {
     		break;
     	case DRONE_SIDE_CAM: 
     		position = new Vector3f(150f, 0f, -160f);
-    		yaw = (float) Math.PI/2;			
+    		yaw = (float) Math.PI/2;
+    		pitch = 0;
     		break;
     	default: position = new Vector3f();
     		break;
     	}
     	
-    	mouse = new Mouse(GLFW.glfwGetCurrentContext());
-    	
     	right = new Vector3f((float) Math.cos(yaw), 0, (float) -Math.sin(yaw));
 		up = new Vector3f((float) (Math.sin(pitch)*Math.sin(yaw)), (float) Math.cos(pitch), (float) (Math.sin(pitch)*Math.cos(yaw)));
 		look = up.cross(right);
+    	
+    	mouse = new Mouse(GLFW.glfwGetCurrentContext());
+    	
+    	
     	
     }
 
@@ -95,6 +98,43 @@ public class Input {
 	}
 	
 	public Matrix4f getViewMatrix() {
+		return Matrix4f.viewMatrix(right, up, look, position);
+	}
+	
+	public Matrix4f getViewMatrix(Vector3f position, float yaw, float pitch) {
+		
+		this.position = position;
+		this.yaw = yaw;
+		this.pitch = pitch;
+		
+		right = new Vector3f((float) Math.cos(yaw), 0, (float) -Math.sin(yaw));
+		up = new Vector3f((float) (Math.sin(pitch)*Math.sin(yaw)), (float) Math.cos(pitch), (float) (Math.sin(pitch)*Math.cos(yaw)));
+		look = up.cross(right);
+		
+		return Matrix4f.viewMatrix(right, up, look, position);
+	}
+	
+public Matrix4f getViewMatrix(Settings setting) {
+		
+		switch (setting) {
+		case DRONE_TOP_DOWN_CAM: 
+			position = new Vector3f(0f, 150f, -160f);
+			yaw = (float) Math.PI/2;
+			pitch = (float) -Math.PI/2;
+			break;
+		case DRONE_SIDE_CAM: 
+			position = new Vector3f(150f, 0f, -160f);
+			yaw = (float) Math.PI/2;	
+			pitch = 0;
+			break;
+		default: position = new Vector3f();
+			break;
+		}
+		
+		right = new Vector3f((float) Math.cos(yaw), 0, (float) -Math.sin(yaw));
+		up = new Vector3f((float) (Math.sin(pitch)*Math.sin(yaw)), (float) Math.cos(pitch), (float) (Math.sin(pitch)*Math.cos(yaw)));
+		look = up.cross(right);
+		
 		return Matrix4f.viewMatrix(right, up, look, position);
 	}
 	
