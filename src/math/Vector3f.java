@@ -136,6 +136,13 @@ public class Vector3f {
         float z = this.z * scalar;
         return new Vector3f(x, y, z);
     }
+    
+    public Vector3f scale(Vector3f scalar) {
+        float x = this.x * scalar.x;
+        float y = this.y * scalar.y;
+        float z = this.z * scalar.z;
+        return new Vector3f(x, y, z);
+    }
 
     /**
      * Divides a vector by a scalar.
