@@ -201,10 +201,9 @@ public class World {
 						this.removeWorldObject(block1);
 						this.getBlockSet().remove(block);
 						//System.out.print("Visited block: " + block1);
+
 					}
 				}
-
-				System.out.println(" ");
 
 				//check if all the cubes are visited
 				for(Block currentBlock: this.getBlockSet()){

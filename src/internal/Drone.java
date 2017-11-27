@@ -161,6 +161,15 @@ public class Drone implements WorldObject {
 		this.droneCubes.add(droneCube);
 	}
 
+	/**
+	 * checks of the drone can have the given cube representing it
+	 *
+	 * @return true if and only if the
+	 */
+
+	private boolean canHaveAsDroneCube(Cube droneCube) {
+		return droneCube.getPosition().rangeEquals(this.getPosition(), maxPosDifference);
+
 
 	/*
 	 ############################# Drone configuration methods #############################

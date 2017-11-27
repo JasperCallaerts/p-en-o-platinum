@@ -114,7 +114,7 @@ public class Window {
 			glfwShowWindow(getHandler());
 		
 		if (visible)
-			this.FOV = (float) Math.toRadians(120.0f);
+			this.FOV = (float) Math.toRadians(60.0f);
 		else
 			this.FOV = (float) Math.toRadians(120.0f);
 		
