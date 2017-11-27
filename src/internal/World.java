@@ -200,7 +200,8 @@ public class World {
 					if(block1.isVisited()) {
 						this.removeWorldObject(block1);
 						this.getBlockSet().remove(block);
-						System.out.println("Visited block: " + block1);
+						//System.out.print("Visited block: " + block1);
+
 					}
 				}
 
