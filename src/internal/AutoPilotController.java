@@ -46,11 +46,13 @@ public class AutoPilotController {
     }
 
     private void startDescend(ControlOutputs outputs, float xPosCube, float yPosCube){
-        outputs.setHorStabInclination(Math.min(STANDARD_INCLINATION*Math.abs(yPosCube)/20f,MAX_HOR_STAB_INCLINATION));
+        System.out.println("Descending");
+    	outputs.setHorStabInclination(Math.min(STANDARD_INCLINATION*Math.abs(yPosCube)/20f,MAX_HOR_STAB_INCLINATION));
     }
 
     private void startAscend(ControlOutputs outputs,  float xPosCube, float yPosCube){
-        outputs.setHorStabInclination(-Math.min(STANDARD_INCLINATION*Math.abs(yPosCube)/20f,MAX_HOR_STAB_INCLINATION));
+        System.out.println("Ascending");
+    	outputs.setHorStabInclination(-Math.min(STANDARD_INCLINATION*Math.abs(yPosCube)/20f,MAX_HOR_STAB_INCLINATION));
     }
 
     private void startTurnDescend(ControlOutputs outputs, float xPosCube, float yPosCube){

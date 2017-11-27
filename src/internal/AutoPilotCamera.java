@@ -88,7 +88,6 @@ public class AutoPilotCamera {
         for(Vector currentCube: cubesInPicture){
             if(counter == nbOfCubes)
                 break;
-            System.out.println(currentCube.getxValue() + " : " + -currentCube.getyValue()  + " : " + currentCube.getzValue());
             Coordinates currentWeightedCoord = new Coordinates(currentCube.getxValue()-25f, -currentCube.getyValue())
                     .scalarMult(currentCube.getzValue());
             sumCoordinates = sumCoordinates.sum(currentWeightedCoord);
