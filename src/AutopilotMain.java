@@ -36,16 +36,19 @@ public class AutopilotMain implements Runnable {
             ((AutoPilot) this.getAutoPilot()).setFlightRecorder(this.getFlightRecorder());
         }
 
-        Socket autopilotClientSocket = new Socket(this.getConnectionName(), this.getConnectionPort());
-
-        DataInputStream inputStream = new DataInputStream(autopilotClientSocket.getInputStream());
-        DataOutputStream outputStream = new DataOutputStream(autopilotClientSocket.getOutputStream());
+        Socket autopilotClientSocket = null;
+        DataInputStream inputStream = null;
+        DataOutputStream outputStream = null;
         boolean firstRun = true;
         int connectionTrys = 0;
         int maxConnectionTrys = 1000;
         //first configure the autopilot
         while(firstRun){
             try{
+                autopilotClientSocket = new Socket(this.getConnectionName(), this.getConnectionPort());
+
+                inputStream = new DataInputStream(autopilotClientSocket.getInputStream());
+                outputStream = new DataOutputStream(autopilotClientSocket.getOutputStream());
                 AutopilotConfig config = AutopilotConfigReader.read(inputStream);
                 AutopilotInputs inputs = AutopilotInputsReader.read(inputStream);
                 AutopilotOutputs outputs = this.getAutoPilot().simulationStarted(config, inputs);
