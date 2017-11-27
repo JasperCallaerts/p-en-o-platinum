@@ -100,6 +100,7 @@ public class HSVconverter {
 	}
 	
 //		formula source:	http://www.rapidtables.com/convert/color/hsv-to-rgb.htm
+//		h from 0 to 360; s and v from 0 to 1
 		public static float[] HSVtoRGB2(float h, float s, float v){
 			float c = s*v;
 			float x = c * (1 - (Math.abs((h/60)%2-1)));

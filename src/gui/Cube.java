@@ -170,11 +170,6 @@ public class Cube{
 		Vector3f posZ = Vector3f.ArrayToVector3f(HSVconverter.HSVtoRGB2(colour.x, colour.y, 0.70f * colour.z));
 		Vector3f negZ = Vector3f.ArrayToVector3f(HSVconverter.HSVtoRGB2(colour.x, colour.y, 0.45f * colour.z));
 		
-		if (colour.x == 240f) {
-			System.out.println(colour.x + " " + colour.y + " " + colour.z);
-			System.out.println(posY.x + " " + posY.y + " " + posY.z + " " + negY.x + " " + negY.y + " " + negY.z);
-		}
-		
 		colours = new float[]{
 				posZ.x, posZ.y, posZ.z,
 				posZ.x, posZ.y, posZ.z,

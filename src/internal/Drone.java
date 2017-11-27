@@ -174,7 +174,7 @@ public class Drone implements WorldObject {
 	 */
 
 	private boolean canHaveAsDroneCube(Cube droneCube) {
-		return this.getAssociatedCube() == null && droneCube.getPosition().rangeEquals(this.getPosition(), maxPosDifference);
+		return droneCube.getPosition().rangeEquals(this.getPosition(), maxPosDifference);
 
 	}
 	/*

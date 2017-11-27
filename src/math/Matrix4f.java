@@ -430,7 +430,6 @@ public class Matrix4f {
     }
     
     public static Matrix4f rotate(Vector3f orientation) {;
-//    	return new Matrix4f();
     	Matrix3f transformation =  Matrix3f.transformationMatrix(orientation).transpose();
     	return Matrix3f.extend(transformation);
     }
