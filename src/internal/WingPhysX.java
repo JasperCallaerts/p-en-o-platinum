@@ -77,7 +77,7 @@ public abstract class WingPhysX {
         if(Math.abs(angleOfAttack) >= this.getMaximumAngleOfAttack()){
             System.out.println("AO<WA: " + angleOfAttack*RAD2DEGREE);
             System.out.println("CauseWing: " + this);
-            throw new AngleOfAttackException(this);
+            //throw new AngleOfAttackException(this);
         }
 
 
