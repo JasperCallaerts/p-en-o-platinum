@@ -148,7 +148,7 @@ public class Cube{
 	
 	public Vector3f getRelPos() {
 		Vector3f pos = this.position;
-		Matrix3f transformation = Matrix3f.transformationMatrix(this.orientation);
+		Matrix3f transformation = Matrix3f.transformationMatrix(this.orientation.negate()).transpose();
 		Vector3f difference = transformation.multiply(relativePosition);
 		pos = pos.add(difference);
 		return pos;

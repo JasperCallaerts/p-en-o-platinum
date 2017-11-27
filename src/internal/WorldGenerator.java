@@ -236,8 +236,8 @@ public class WorldGenerator {
 			Vector prevPos = allPositions.get(i-1);
 			Vector newPos = positionGenerator();
 			
-			Vector cubePos = new Vector(prevPos.getxValue() + newPos.getxValue(),
-					prevPos.getyValue() + newPos.getyValue(), prevPos.getzValue() + newPos.getzValue());
+			Vector cubePos = new Vector(newPos.getxValue(),
+					newPos.getyValue(), prevPos.getzValue() + newPos.getzValue());
 			allPositions.add(cubePos);
 		}
 		return allPositions;
