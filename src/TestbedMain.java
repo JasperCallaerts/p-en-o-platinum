@@ -35,7 +35,7 @@ public class TestbedMain implements Runnable{
      * Testbed is not initialized in the constructor because graphics need to be created
      * within one thread of control
      */
-    private void initTestbed(){
+    private void initTestbed() throws IOException {
 
         // initialize graphics capabilities
         this.setGraphics(new Graphics());
@@ -69,33 +69,7 @@ public class TestbedMain implements Runnable{
         WorldBuilder worldBuilder = new WorldBuilder();
         this.setDrone(worldBuilder.DRONE);
         this.setWorld(worldBuilder.createWorld());//.createSimpleWorld();
-
-        // initialize second, third, fourth and fifth block, for testing purposes
-/*        Vector BLOCKPOS = new Vector(2.0f, 6.0f, -40.0f);
-        Vector BLOCKPOS2 = new Vector(4.0f, 10.0f, -60.0f);
-        Vector BLOCKPOS3 = new Vector(5.0f, 8.0f, -80.0f);
-        Vector BLOCKPOS4 = new Vector(0.0f, 0.0f, -100.0f);
-        Vector COLOR = WorldBuilder.COLOR;
-
-        block1 = new Block(BLOCKPOS);
-        Cube cube1 = new Cube(BLOCKPOS.convertToVector3f(), COLOR.convertToVector3f());
-        block1.setAssocatedCube(cube1);
-
-        block2 = new Block(BLOCKPOS2);
-        Cube cube2 = new Cube(BLOCKPOS2.convertToVector3f(), COLOR.convertToVector3f());
-        block2.setAssocatedCube(cube2);
-
-        block3 = new Block(BLOCKPOS3);
-        Cube cube3 = new Cube(BLOCKPOS3.convertToVector3f(), COLOR.convertToVector3f());
-        block3.setAssocatedCube(cube3);
-
-        block4 = new Block(BLOCKPOS4);
-        Cube cube4 = new Cube(BLOCKPOS4.convertToVector3f(), COLOR.convertToVector3f());
-        block4.setAssocatedCube(cube4);
-
-        block0 = world.getRandomBlock();
-        world.addWorldObject(block1);*/
-        // END for testing purposes
+        this.getDrone().addFlightRecorder(this.getFlightRecorder());
 
         // Initialize the windows
         droneCam.initWindow(world, Settings.DRONE_CAM);
@@ -117,19 +91,20 @@ public class TestbedMain implements Runnable{
     public void testbedMainLoop() throws IOException, InterruptedException {
 
         this.initTestbed();
-
+        int step = 1;
         ServerSocket testbedServer = new ServerSocket(this.getConnectionPort());
         Socket testbedClientSocket = testbedServer.accept();
         DataInputStream inputStream = new DataInputStream(testbedClientSocket.getInputStream());
         DataOutputStream outputStream = new DataOutputStream(testbedClientSocket.getOutputStream());
         //write the configuration to the autopilot
-        configAutopilot(outputStream);
+        configAutopilot(outputStream, step);
 
         while(true) {
             //wait until the input is not null and advance if possible
             try {
+                step ++;
                 AutopilotOutputs output = AutopilotOutputsReader.read(inputStream);
-                AutopilotInputsWriter.write(outputStream, this.testbedStep(output));
+                AutopilotInputsWriter.write(outputStream, this.testbedStep(output, step));
             } catch (NullPointerException e) {
                 //let the null pointer fly
                 System.out.println("Catching Exception: waiting for autopilot output");
@@ -142,6 +117,14 @@ public class TestbedMain implements Runnable{
                 testbedServer.close();
                 break;
 
+            } catch(AngleOfAttackException ex){
+                //angle of attack exception has occurred close down the server
+                System.out.println("Closing down Testbed Server");
+                inputStream.close();
+                outputStream.close();
+                testbedClientSocket.close();
+                testbedServer.close();
+                throw new AngleOfAttackException(ex.getCauseWing());
             }
         }
     }
@@ -164,10 +147,10 @@ public class TestbedMain implements Runnable{
      * @throws IOException
      * @throws InterruptedException
      */
-    private void configAutopilot(DataOutputStream outputStream) throws IOException, InterruptedException {
+    private void configAutopilot(DataOutputStream outputStream, int step) throws IOException, InterruptedException {
         AutopilotConfigWriter.write(outputStream, this.getConfig());
         //instert a null pointer, will be ignored on the first step of the testbedstep method
-        AutopilotInputs autopilotInputs = this.testbedStep(null);
+        AutopilotInputs autopilotInputs = this.testbedStep(null, step);
         AutopilotInputsWriter.write(outputStream, autopilotInputs);
     }
 
@@ -176,11 +159,12 @@ public class TestbedMain implements Runnable{
      * Simulates one step of the testbed
      *
      * @param autopilotOutputs the outputs of the autopilot
+     * @param step  the n th step in the simulation
      * @return the inputs for the next step of the autopilot
      * @throws InterruptedException
      * @throws IOException
      */
-    public AutopilotInputs testbedStep(AutopilotOutputs autopilotOutputs) throws InterruptedException, IOException {
+    public AutopilotInputs testbedStep(AutopilotOutputs autopilotOutputs, int step) throws InterruptedException, IOException {
         AutopilotInputs autopilotInputs = null;
         // update time
         Time.update();
@@ -202,39 +186,13 @@ public class TestbedMain implements Runnable{
                 // render the windows and terminate graphics if all windows are closed
                 //possibly set this part apart from the try-catch
 
-
-            /*} catch (SimulationEndedException e) {
-                goalNotReached = false;
-
-                // Entire else clause is for testing purposes only
-                if (world.hasWorldObject(block0)) {
-                    world.removeBlocks();
-                    world.addWorldObject(block1);
-                    world.addWorldObject(block2);
-                    goalNotReached = true;
-                } else if (world.hasWorldObject(block1)) {
-                    world.removeBlocks();
-                    world.addWorldObject(block2);
-                    world.addWorldObject(block3);
-                    goalNotReached = true;
-                } else if (world.hasWorldObject(block2)) {
-                    world.removeBlocks();
-                    world.addWorldObject(block3);
-                    world.addWorldObject(block4);
-                    goalNotReached = true;
-                } else if (world.hasWorldObject(block3)) {
-                    world.removeBlocks();
-                    world.addWorldObject(block4);
-                    goalNotReached = true;
-                    throw new SimulationEndedException();
-                }*/
             } catch (IOException e) {
                 System.out.println("IO exception");
             }
 
             this.getGraphics().renderWindows();
             byte[] cameraImage = droneCam.getCameraView();
-            autopilotInputs = new MainAutopilotInputs(drone, cameraImage, (float) Time.getTimePassed());
+            autopilotInputs = new MainAutopilotInputs(drone, cameraImage, (float) step*TIME_STEP * STEPS_PER_ITERATION);
         }
 
         long timeLeft = (long) (FRAME_MILLIS - Time.timeSinceLastUpdate());
@@ -418,6 +376,16 @@ public class TestbedMain implements Runnable{
         return showAllWindows;
     }
 
+    public FlightRecorder getFlightRecorder() {
+        return flightRecorder;
+    }
+
+    public void setFlightRecorder(FlightRecorder flightRecorder) {
+        if(this.getFlightRecorder() != null)
+            throw new IllegalStateException(ALREADY_RECORDING);
+        this.flightRecorder = flightRecorder;
+    }
+
     /*  private boolean isGoalNotReached() {
         return goalNotReached;
     }
@@ -448,6 +416,7 @@ public class TestbedMain implements Runnable{
     private String connectionName;
     private int connectionPort;
     private boolean showAllWindows;
+    private FlightRecorder flightRecorder;
 //	Window textWindow = new Window(500, 500, 0.5f, 0.5f, "text window", new Vector3f(0.0f, 0.0f, 0.0f), true, droneCam); // Not implemented yet
 
 
@@ -456,5 +425,10 @@ public class TestbedMain implements Runnable{
      */
     private boolean goalNotReached = true;
     private boolean firstRun = true;
+
+    /*
+    Error Messages
+     */
+    private final static String ALREADY_RECORDING = "there is already a flight recorder recording";
 
 }

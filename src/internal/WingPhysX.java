@@ -57,6 +57,8 @@ public abstract class WingPhysX {
 
     }
 
+    public abstract Vector getAxisVector();
+
     /**
      * Calculates the lift of the Airfoil expressed in world axis
      * @param orientation the orientation of the drone (heading, pitch, roll)
@@ -65,13 +67,22 @@ public abstract class WingPhysX {
      * @return N*liftSlope*AOA*s^2
      */
     public Vector getLift(Vector orientation, Vector rotation, Vector velocity){
-        Vector normal = this.projectOnWorld(this.getNormal(), orientation);
+        Vector normal = PhysXEngine.droneOnWorld(this.getNormal(), orientation);
         Vector airspeed = this.getAbsoluteVelocity(orientation, rotation,  velocity);
+        Vector axisVector = PhysXEngine.droneOnWorld(this.getAxisVector(), orientation);
+        Vector projectedAirspeed = airspeed.orthogonalProjection(axisVector);
         float angleOfAttack = this.calcAngleOfAttack(orientation, rotation, velocity);
         float liftSlope = this.getLiftSlope();
 
+        /*if(Math.abs(angleOfAttack) >= this.getMaximumAngleOfAttack()){
+            System.out.println("AO<WA: " + angleOfAttack*RAD2DEGREE);
+            System.out.println("CauseWing: " + this);
+            throw new AngleOfAttackException(this);
+        }*/
+
+
         // calculate s^2
-        float airspeedSquared = airspeed.scalarProduct(airspeed);
+        float airspeedSquared = projectedAirspeed.scalarProduct(projectedAirspeed);
 
         float scalarPart =  airspeedSquared*angleOfAttack*liftSlope;
         Vector lift = normal.scalarMult(-scalarPart);
@@ -83,6 +94,8 @@ public abstract class WingPhysX {
     getters, setters and checkers for the drone
      */
 
+    //TODO was originally just the normal in the wing axis sytem, now it is changed
+    // to the drone axis system
     /**
      * Calculates the normal vector of the wing in the Drone's coordinate system
      */
@@ -126,33 +139,26 @@ public abstract class WingPhysX {
     public float calcAngleOfAttack(Vector orientation, Vector rotation, Vector velocity){
         //need for the projected version of all the vectors because the airspeed is in the world axis
         Vector airspeed = this.getAbsoluteVelocity(orientation, rotation, velocity);
-        Vector normal = this.projectOnWorld(this.getNormal(), orientation);
-        Vector attackVector = this.projectOnWorld(this.getAttackVector(), orientation);
+        Vector normal = PhysXEngine.droneOnWorld(this.getNormal(), orientation);
+        Vector axisVector = PhysXEngine.droneOnWorld(this.getAxisVector(), orientation);
+        Vector attackVector = PhysXEngine.droneOnWorld(this.getAttackVector(), orientation);
 
 
-        Vector projectedAirspeed = airspeed;//.orthogonalProjection(normal);
+        Vector projectedAirspeed = airspeed.orthogonalProjection(axisVector);//.orthogonalProjection(normal);
 
         float numerator = projectedAirspeed.scalarProduct(normal);
         float denominator = projectedAirspeed.scalarProduct(attackVector);
 
         //set the angle of attack anyway, can be used for diagnostics
         float angleOfAttack = (float)Math.atan2(numerator, denominator);
-        if(!canHaveAsAngleOfAttack(angleOfAttack)){
-            throw new AngleOfAttackException(INVALID_AOA, this);
-        }
+/*        if(Math.abs(angleOfAttack) >= this.getMaximumAngleOfAttack()){
+            System.out.println("Airspeed: " + projectedAirspeed);
+            System.out.println("numerator: " + numerator);
+        }*/
         return angleOfAttack;
 
     }
 
-    /**
-     * Checks if the given angle of attack is valid for the given wing
-     * @param angleOfAttack floating point number containing the angle of attack
-     * @return true if and only if angleOfAttack is part of the interval [-PI/2.0, getMaximumAngleOfAttack]
-     * note: maybe the lower bound needs to be changed - PI/2.0 is just a guess
-     */
-    public boolean canHaveAsAngleOfAttack(float angleOfAttack){
-        return true; //angleOfAttack >= -PI/2.0 && angleOfAttack <= this.getMaximumAngleOfAttack();
-    }
 
     /**
      * Basic getter for the wing inclination
@@ -241,6 +247,14 @@ public abstract class WingPhysX {
         return true;
     }
 
+    @Override
+    public String toString() {
+        return "WingPhysX{" +
+                "wingInclination=" + wingInclination*RAD2DEGREE +
+                ", relativePosition=" + relativePosition +
+                '}';
+    }
+
     /**
      * Checker for the angle of attack
      * @param maxAOA the maximum angle of attack
@@ -306,4 +320,9 @@ public abstract class WingPhysX {
     private final static String INVALID_DRONE = "The wing is already attached to a drone";
     private final static String INVALID_LIFTSLOPE = "The lift slope is invalid";
     private final static String INVALID_AOA = "The angle of attack has exeded the maximum value";
+
+    /*
+    Constants
+     */
+    private static final float RAD2DEGREE = (float) (180/Math.PI);
 }

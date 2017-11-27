@@ -92,6 +92,7 @@ public class AutoPilotCamera {
                     .scalarMult(currentCube.getzValue());
             sumCoordinates = sumCoordinates.sum(currentWeightedCoord);
             totalPixels += currentCube.getzValue();
+            counter++;
         }
 
         //after the sum is completed return the weighted average
@@ -154,6 +155,7 @@ public class AutoPilotCamera {
         //the offsets needed for the transformation of the coordinates
         float xOffset = this.getNbColumns()/2.0f;
         float yOffset = this.getNbRows()/2.0f;
+        
 
         //get the different colors
         for(Coordinates color: cubeMap.keySet()){
@@ -162,6 +164,7 @@ public class AutoPilotCamera {
             List<Coordinates> currentColorList = cubeMap.get(color);
             for(Coordinates colorPos: currentColorList){
                 //sum all the pixels
+            	colorPos = new Coordinates(colorPos.getXCoordinate()-xOffset, -colorPos.getYCoordinate()+yOffset);
                 colorSum = colorSum.sum(colorPos);
             }
             //the amount of colorPixels
@@ -171,8 +174,8 @@ public class AutoPilotCamera {
 
             //put the results in the map
             //the coordinates also need to be transformed for the autopilot, (0,0) is the middle of the screen
-            cubeCenterMap.put(color, new Vector(colorSum.getXCoordinate() - xOffset,
-                    -colorSum.getYCoordinate()+yOffset, nbColorPixels));
+            cubeCenterMap.put(color, new Vector(colorSum.getXCoordinate(),
+                    colorSum.getYCoordinate(), nbColorPixels));
         }
     }
 

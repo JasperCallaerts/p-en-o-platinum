@@ -18,7 +18,7 @@ public class WorldBuilder {
     // Deprecated: all blocks are generated in main loop
     public final static Vector BLOCKPOS = new Vector(0.0f, 0.489f, -6.9098f);
     public final static Vector COLOR = new Vector(0.0f, 1.0f, 70.0f);
-    public final static boolean LOAD_COORDINATES = false;
+    public final static boolean LOAD_COORDINATES = true;
     private static int numberOfBlocks = 5;
     public final static WorldGenerator wg = new WorldGenerator(numberOfBlocks);
     public final BlockCoordinatesParser parser = new BlockCoordinatesParser("src/internal/blockCoordinates.txt");
@@ -47,6 +47,7 @@ public class WorldBuilder {
             	Cube cube = new Cube(position.convertToVector3f(), color.convertToVector3f());
             	cube.setSize(1f);
             	block.setAssocatedCube(cube);
+            	world.addWorldObject(block);
     		}
     	}
         

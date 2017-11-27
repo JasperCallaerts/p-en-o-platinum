@@ -2,6 +2,11 @@ package internal;
 
 import Autopilot.AutopilotConfig;
 import Autopilot.AutopilotOutputs;
+import org.lwjgl.system.CallbackI;
+import sun.font.PhysicalFont;
+
+import static java.lang.Math.*;
+
 
 /**
  * Created by Martijn on 6/11/2017.
@@ -53,6 +58,10 @@ public class PhysXEngine {
         this.getHorizontalStabilizer().setWingInclination(inputs.getHorStabInclination());
         this.getVerticalStabilizer().setWingInclination(inputs.getVerStabInclination());
 
+        if(this.flightRecorder != null){
+            this.recordWingState(orientation, rotation, velocity);
+        }
+
         //check if the thrust is valid
         if(!canHaveAsThrust(inputs.getThrust()))
             throw new IllegalArgumentException(THRUST_OUT_OF_RANGE);
@@ -91,7 +100,50 @@ public class PhysXEngine {
             }
         };
 
+        if(this.getFlightRecorder() != null){
+            this.recordEngineState(state);
+        }
+
         return state;
+    }
+
+    private void recordWingState(Vector orientation, Vector rotation, Vector velocity){
+        FlightRecorder flightRecorder = this.getFlightRecorder();
+        WingPhysX rightMain = this.getMainRight();
+        WingPhysX leftMain = this.getMainLeft();
+        WingPhysX horStab = this.getHorizontalStabilizer();
+        WingPhysX verStab = this.getVerticalStabilizer();
+
+        float CONVERSION = 180/(float)Math.PI;
+
+        //log the right wing
+        flightRecorder.appendRightMainInclLog(rightMain.getWingInclination()*CONVERSION);
+        float rightAOA = rightMain.calcAngleOfAttack(orientation, rotation, velocity);
+        flightRecorder.appendRightMainAOALog(rightAOA*CONVERSION);
+
+        //log the left wing
+        flightRecorder.appendLeftMainInclLog(leftMain.getWingInclination()*CONVERSION);
+        float leftAOA = leftMain.calcAngleOfAttack(orientation, rotation, velocity);
+        flightRecorder.appendLeftMainAOALog(leftAOA*CONVERSION);
+
+        //log the horStabilizer
+        flightRecorder.appendHorStabInclLog(horStab.getWingInclination()*CONVERSION);
+        float horStabAOA = horStab.calcAngleOfAttack(orientation, rotation, velocity);
+        flightRecorder.appendHorStabAOALog(horStabAOA*CONVERSION);
+
+        //log the verStabilizer
+        flightRecorder.appendVerStabInclLog(verStab.getWingInclination()*CONVERSION);
+        float verStabAOA = verStab.calcAngleOfAttack(orientation, rotation, velocity);
+        flightRecorder.appendVerStabAOALog(verStabAOA*CONVERSION);
+    }
+
+    private void recordEngineState(PhysicsEngineState state){
+        FlightRecorder flightRecorder = this.getFlightRecorder();
+        //the state of the drone
+        flightRecorder.appendPositionLog(state.getPosition());
+        flightRecorder.appendVelocityLog(state.getVelocity());
+        flightRecorder.appendOrientationLog(state.getOrientation());
+        flightRecorder.appendRotationLog(state.getRotation());
     }
 
     /**
@@ -103,10 +155,10 @@ public class PhysXEngine {
     private Vector getNextRotationCauchy(float deltaTime, Vector orientation, Vector rotation, Vector velocity){
 
         Vector k1 = droneOnWorld(this.calcAngularAcceleration(orientation, rotation, velocity), orientation);
-        Vector orientationIntermediary = orientation.vectorSum(k1.scalarMult(deltaTime/2)); // yk + h/2*k1 with h the step size
+        Vector rotationK1 = rotation.vectorSum(k1.scalarMult(deltaTime/2)); // yk + h/2*k1 with h the step size
         //fill in the new orientation to calculate the next angular acceleration
-        Vector k2 = droneOnWorld(this.calcAngularAcceleration(orientationIntermediary, rotation, velocity), orientationIntermediary);
-        return orientation.vectorSum(k2.scalarMult(deltaTime));
+        Vector k2 = droneOnWorld(this.calcAngularAcceleration(orientation, rotationK1, velocity), orientation);
+        return rotation.vectorSum(k2.scalarMult(deltaTime));
     }
 
     /**
@@ -120,14 +172,14 @@ public class PhysXEngine {
      */
     private Vector getNextRotationRK4(float deltaTime, Vector orientation, Vector rotation, Vector velocity){
         Vector k1 =  droneOnWorld(this.calcAngularAcceleration(orientation, rotation, velocity), orientation);
-        Vector orientationK1 = orientation.vectorSum(k1.scalarMult(deltaTime/2.0f));
-        Vector k2 =  droneOnWorld(this.calcAngularAcceleration(orientationK1, rotation, velocity), orientationK1);
-        Vector orientationK2 = orientation.vectorSum(k2.scalarMult(deltaTime/2.0f));
-        Vector k3 =   droneOnWorld(this.calcAngularAcceleration(orientationK2, rotation, velocity), orientationK2);
-        Vector orientationK3 = orientation.vectorSum(k3.scalarMult(deltaTime));
-        Vector k4 =  droneOnWorld(this.calcAngularAcceleration(orientationK3, rotation, velocity), orientationK3);
+        Vector rotationK1 = rotation.vectorSum(k1.scalarMult(deltaTime/2.0f));
+        Vector k2 =  droneOnWorld(this.calcAngularAcceleration(orientation, rotationK1, velocity), orientation);
+        Vector rotationK2 = rotation.vectorSum(k2.scalarMult(deltaTime/2.0f));
+        Vector k3 =   droneOnWorld(this.calcAngularAcceleration(orientation, rotationK2, velocity), orientation);
+        Vector rotationK3 = rotation.vectorSum(k3.scalarMult(deltaTime));
+        Vector k4 =  droneOnWorld(this.calcAngularAcceleration(orientation, rotationK3, velocity), orientation);
 
-        Vector result = k1.vectorSum(k2.scalarMult(2.0f)).vectorSum(k3.scalarMult(2.0f)).vectorSum(k4).scalarMult(deltaTime/6.0f);
+        Vector result = (k1.vectorSum(k2.scalarMult(2.0f)).vectorSum(k3.scalarMult(2.0f)).vectorSum(k4)).scalarMult(deltaTime/6.0f);
         return orientation.vectorSum(result);
     }
 
@@ -175,6 +227,20 @@ public class PhysXEngine {
 
         return heading.matrixProduct(pitch).matrixProduct(roll);
     }
+
+    public static Vector HPRtoRotation(Vector rotationHPR, Vector orientation){
+        float heading = orientation.getxValue();
+        float pitch = orientation.getyValue();
+        float headingRotation = rotationHPR.getxValue();
+        float pitchRotation = rotationHPR.getyValue();
+        float rollRotation = rotationHPR.getzValue();
+        float xRotation = (float) (pitchRotation*cos(heading) + rollRotation*sin(heading)*cos(pitch));
+        float yRotation = (float) (- rollRotation * sin(pitch)  + headingRotation);
+        float zRotation = (float)( - pitchRotation*sin(heading) + rollRotation*cos(heading)*cos(pitch));
+
+        return new Vector(xRotation, yRotation, zRotation);
+    }
+
     /**
      * Calculates the projection of the provided rotation vector
      * @param rotationVector the rotation vector to be projected
@@ -186,10 +252,10 @@ public class PhysXEngine {
      * note: see notes on the calculations for clarification
      * @author Martijn Sauwens
      */
-    public Vector getRotationHPR(Vector rotationVector, Vector orientation){
-        Vector headingRotation = this.getHeadingRotationVector(rotationVector, orientation);
-        Vector pitchRotation = this.getPitchRotationVector(rotationVector, orientation);
-        Vector rollRotation = this.getRollRotationVector(rotationVector, orientation);
+    public static Vector getRotationHPR(Vector rotationVector, Vector orientation){
+        Vector headingRotation = getHeadingRotationVector(rotationVector, orientation);
+        Vector pitchRotation = getPitchRotationVector(rotationVector, orientation);
+        Vector rollRotation = getRollRotationVector(rotationVector, orientation);
 
         Vector sumHeadingPitch = headingRotation.vectorSum(pitchRotation);
         return sumHeadingPitch.vectorSum(rollRotation);
@@ -205,13 +271,13 @@ public class PhysXEngine {
      * 		   return new Vector( projectedHeading, 0, 0 )
      * @author Martijn Sauwens
      */
-    private Vector getHeadingRotationVector(Vector rotationVector, Vector orientation){
+    private static Vector getHeadingRotationVector(Vector rotationVector, Vector orientation){
         float heading = orientation.getxValue();
         float pitch = orientation.getyValue();
 
         float part1 = rotationVector.getyValue();
-        float part2 = (float) (rotationVector.getzValue()*Math.cos(heading)*Math.tan(pitch));
-        float part3 = (float) (rotationVector.getxValue()*Math.sin(heading)*Math.tan(pitch));
+        float part2 = (float) (rotationVector.getzValue()*Math.cos(heading)* tan(pitch));
+        float part3 = (float) (rotationVector.getxValue()*Math.sin(heading)* tan(pitch));
 
         float result = part1 + part2 + part3;
 
@@ -229,7 +295,7 @@ public class PhysXEngine {
      * 		   return new Vector (0 , projectedPitch, 0)
      * @author Martijn Sauwens
      */
-    private Vector getPitchRotationVector(Vector rotationVector, Vector orientation){
+    private static Vector getPitchRotationVector(Vector rotationVector, Vector orientation){
         float heading = orientation.getxValue();
 
         float part1 = (float) (rotationVector.getxValue()*Math.cos(heading));
@@ -251,7 +317,7 @@ public class PhysXEngine {
      *
      * @author Martijn Sauwens
      */
-    private Vector getRollRotationVector(Vector rotationVector, Vector orientation){
+    private static Vector getRollRotationVector(Vector rotationVector, Vector orientation){
         float heading = orientation.getxValue();
         float pitch = orientation.getyValue();
 
@@ -298,11 +364,11 @@ public class PhysXEngine {
         float pitchRotation = this.getPitchRotationVector(rotationVector, orientation).getyValue();
 
         //split up in parts for convenience
-        float part1 = (float) (AAVector.getyValue() + AAVector.getzValue()*Math.cos(heading)*Math.tan(pitch));
-        float part2 = (float) (-rotationVector.getzValue()*headingRotation*Math.sin(heading)*Math.tan(pitch));
+        float part1 = (float) (AAVector.getyValue() + AAVector.getzValue()*Math.cos(heading)* tan(pitch));
+        float part2 = (float) (-rotationVector.getzValue()*headingRotation*Math.sin(heading)* tan(pitch));
         float part3 = (float) (rotationVector.getzValue()*pitchRotation*Math.cos(heading)/(Math.cos(pitch)*Math.cos(pitch)));
-        float part4 = (float) (AAVector.getxValue()*Math.sin(heading)*Math.tan(pitch));
-        float part5 = (float) (rotationVector.getxValue()*headingRotation*Math.cos(heading)*Math.tan(pitch));
+        float part4 = (float) (AAVector.getxValue()*Math.sin(heading)* tan(pitch));
+        float part5 = (float) (rotationVector.getxValue()*headingRotation*Math.cos(heading)* tan(pitch));
         float part6 = (float) (rotationVector.getxValue()*pitchRotation*Math.sin(heading)/(Math.cos(pitch)*Math.cos(pitch)));
 
         return part1 + part2 + part3 + part4 + part5 + part6;
@@ -345,8 +411,8 @@ public class PhysXEngine {
         float pitch = orientation.getyValue();
         Vector AAVector = angularAccelerationVector;
 
-        float headingRotation = this.getHeadingRotationVector(rotationVector, orientation).getxValue();
-        float pitchRotation = this.getPitchRotationVector(rotationVector, orientation).getyValue();
+        float headingRotation = getHeadingRotationVector(rotationVector, orientation).getxValue();
+        float pitchRotation = getPitchRotationVector(rotationVector, orientation).getyValue();
 
         //split up for convenience
         float part1 = (float) (AAVector.getzValue()*Math.cos(heading)/Math.cos(pitch) -
@@ -806,8 +872,16 @@ public class PhysXEngine {
      * Setter for the vertical stabilizer physics of the engine
      * @param verticalStabilizer the vertical stabilizer
      */
-    public void setVerticalStabilizer(VerticalWingPhysX verticalStabilizer) {
+    private void setVerticalStabilizer(VerticalWingPhysX verticalStabilizer) {
         this.verticalStabilizer = verticalStabilizer;
+    }
+
+    public FlightRecorder getFlightRecorder() {
+        return flightRecorder;
+    }
+
+    public void setFlightRecorder(FlightRecorder flightRecorder) {
+        this.flightRecorder = flightRecorder;
     }
 
     /**
@@ -843,6 +917,11 @@ public class PhysXEngine {
      * Variable that stores the engine position of the drone
      */
     private Vector enginePosition;
+
+    /**
+     * Variable that stores the flightRecorder
+     */
+    private FlightRecorder flightRecorder;
 
 
     /*
@@ -966,6 +1045,114 @@ public class PhysXEngine {
             return new Vector(0,0, - bestThrust);
         }
 
+        /**
+         * Calculates the maximum right wing inclination for the given angle of attack
+         * @param orientation the orientation of the drone (heading, pitch, roll)
+         * @param rotation the rotation of the drone
+         * @param velocity the velocity of the drone (world axis system)
+         * @param angleOfAttack the angle of attack wherefore the inclination is calculated
+         * @return the maximum inclination of the right wing that is  possible under the given angle of attack
+         * @author Martijn Sauwens
+         */
+        public float getMaxRightMainWingInclination(Vector orientation, Vector rotation, Vector velocity, float angleOfAttack){
+            HorizontalWingPhysX rightMain = PhysXEngine.this.getMainRight();
+            return calcMaximalHorizontalInclination(orientation, rotation, velocity, angleOfAttack, rightMain);
+        }
+
+        /**
+         * Calculates the maximum left wing inclination for the given angle of attack
+         * @param orientation the orientation of the drone (heading, pitch, roll)
+         * @param rotation the rotation of the drone
+         * @param velocity the velocity of the drone (world axis system)
+         * @param angleOfAttack the angle of attack wherefore the inclination is calculated
+         * @return the maximum inclination of the left wing that is  possible under the given angle of attack
+         * @author Martijn Sauwens
+         */
+        public float getMaxLeftMainWingInclination(Vector orientation, Vector rotation, Vector velocity, float angleOfAttack){
+            HorizontalWingPhysX leftMain = PhysXEngine.this.getMainLeft();
+            return calcMaximalHorizontalInclination(orientation, rotation, velocity, angleOfAttack, leftMain);
+
+        }
+
+        /**
+         * Calculates the maximum horizontal stabilizer inclination for the given angle of attack
+         * @param orientation the orientation of the drone (heading, pitch, roll)
+         * @param rotation the rotation of the drone
+         * @param velocity the velocity of the drone (world axis system)
+         * @param angleOfAttack the angle of attack wherefore the inclination is calculated
+         * @return the maximum inclination of the horizontal stabilizer that is  possible under the given angle of attack
+         * @author Martijn Sauwens
+         */
+        public float getMaxHorStabInclination(Vector orientation, Vector rotation, Vector velocity, float angleOfAttack){
+            HorizontalWingPhysX horizontalStab = PhysXEngine.this.getHorizontalStabilizer();
+            return calcMaximalHorizontalInclination(orientation, rotation, velocity, angleOfAttack, horizontalStab);
+        }
+
+        /**
+         * Calculates the maximum vertical stabilizer inclination for the given angle of attack
+         * @param orientation the orientation of the drone (heading, pitch, roll)
+         * @param rotation the rotation of the drone
+         * @param velocity the velocity of the drone (world axis system)
+         * @param angleOfAttack the angle of attack wherefore the inclination is calculated
+         * @return the maximum inclination of the vertical stabilizer that is  possible under the given angle of attack
+         * @author Martijn Sauwens
+         */
+        public float getMaxVerStabInclination(Vector orientation, Vector rotation, Vector velocity, float angleOfAttack){
+            VerticalWingPhysX verticalStab = PhysXEngine.this.getVerticalStabilizer();
+            return calcMaximalVerticalInclination(orientation, rotation, velocity, angleOfAttack, verticalStab);
+        }
+
+
+        /**
+         * Calculates the maximum permitted inclination for a given angle of attack for a horizontal wing
+         * @param orientation the orientation of the drone
+         * @param rotation the rotation of the drone
+         * @param velocity the velocity of the center of the drone (world axis system)
+         * @param angleOfAttack the angle of attack wherefore the inclination is calculated
+         * @param wing the horizontal wing of the drone wherefore the inclination is calculated
+         * @return the maximum inclination of the horizontal wing that is possible under the given angle of attack
+         */
+        private float calcMaximalHorizontalInclination(Vector orientation, Vector rotation, Vector velocity,
+                                                      float angleOfAttack, HorizontalWingPhysX wing){
+            Vector absoluteAirspeed = wing.getAbsoluteVelocity(orientation, rotation, velocity);
+            Vector airspeedDrone = PhysXEngine.worldOnDrone(absoluteAirspeed, orientation);
+
+            //System.out.println("Airspeed in drone axis: " + airspeedDrone);
+
+            float yVelocity = airspeedDrone.getyValue();
+            float zVelocity = airspeedDrone.getzValue();
+
+            // secondly calculate the inclination permitted for the given angle of attack
+            float numerator = (float) (zVelocity*atan(angleOfAttack) + yVelocity);
+            float denominator = (float) (yVelocity*atan(angleOfAttack) - zVelocity);
+
+            return (float) atan2(numerator, denominator);
+        }
+
+        /**
+         * Calculates the maximum permitted inclination for a given angle of attack for a vertical wing
+         * @param orientation the orientation of the drone
+         * @param rotation the rotation of the drone
+         * @param velocity the velocity of the drone (world axis)
+         * @param angleOfAttack the angle of attack wherefore the inclination is calculated
+         * @param wing the vertical wing of the drone wherefore the inclination is calculated
+         * @return the maximum inclination of the vertical wing that is possible under the given angle of attack
+         */
+        private float calcMaximalVerticalInclination(Vector orientation, Vector rotation, Vector velocity,
+                                                    float angleOfAttack, VerticalWingPhysX wing){
+            // first get the airspeed
+            Vector absoluteAirspeed = wing.getAbsoluteVelocity(orientation, rotation, velocity);
+            Vector airspeedDrone = PhysXEngine.worldOnDrone(absoluteAirspeed, orientation);
+
+            float xVelocity = airspeedDrone.getxValue();
+            float zVelocity = airspeedDrone.getzValue();
+
+            // secondly calculate the inclination permitted for the given angle of attack
+            float numerator = (float) (xVelocity - zVelocity*atan(angleOfAttack));
+            float denominator = (float) (zVelocity + xVelocity*atan(angleOfAttack));
+
+            return (float) atan2(numerator, abs(denominator));
+        }
 
     }
 
