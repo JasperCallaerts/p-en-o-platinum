@@ -76,4 +76,9 @@ public class VectorTest {
 		System.out.println(converted[0] + ", " + converted[1] + ", " + converted[2]);
 	}
 
+	@Test
+	public final void orthogonalProjectionTester(){
+
+	}
+
 }

@@ -332,6 +332,7 @@ public class Vector {
 
 		Vector tempVector = normalizedNormal.scalarMult(numerator/denominator);
 
+		//System.out.println(this.vectorDifference(tempVector));
 		return this.vectorDifference(tempVector);
 
 

@@ -1,6 +1,7 @@
 import Autopilot.*;
 import internal.AutoPilot;
 import internal.AutoPilotConfig;
+import internal.FlightRecorder;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -13,10 +14,15 @@ import java.net.Socket;
  */
 public class AutopilotMain implements Runnable {
 
-    public AutopilotMain(String connectionName, int connectionPort, Autopilot autopilot) {
+    public AutopilotMain(String connectionName, int connectionPort, Autopilot autopilot, FlightRecorder flightRecorder) {
         this.setAutoPilot(autopilot);
         this.setConnectionName(connectionName);
         this.setConnectionPort(connectionPort);
+        try {
+            ((AutoPilot)autopilot).setFlightRecorder(flightRecorder);
+        }catch(ClassCastException e){
+            //let it go
+        }
     }
 
 

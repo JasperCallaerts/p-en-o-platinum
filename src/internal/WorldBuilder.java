@@ -23,8 +23,8 @@ public class WorldBuilder {
     public final BlockCoordinatesParser parser = new BlockCoordinatesParser("src/internal/blockCoordinates.txt");
 
 
-    public WorldBuilder() {
-        //do nothing
+    public WorldBuilder(FlightRecorder flightRecorder) {
+        DRONE.getPhysXEngine().setFlightRecorder(flightRecorder);
     }
 
     public World createWorld() throws IOException{
@@ -45,7 +45,9 @@ public class WorldBuilder {
     			Block block = new Block(position);
             	Cube cube = new Cube(position.convertToVector3f(), color.convertToVector3f());
             	block.setAssocatedCube(cube);
+            	world.addWorldObject(block);
     		}
+    		
     	}
         
         //world.addWorldObject(block1);
@@ -68,5 +70,7 @@ public class WorldBuilder {
 
         return world;
     }
+
+    private FlightRecorder flightRecorder;
 
 }
