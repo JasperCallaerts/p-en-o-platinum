@@ -308,7 +308,7 @@ public class Window {
 			this.viewMatrix = getView(new Vector3f(1f, 1f, 1f), new Vector3f(1f, 1f, 1f).scale(3f));
 			break;
 		case DRONE_CHASE_CAM: 
-			this.viewMatrix = getView(new Vector3f(1f, 0f, 0f), new Vector3f(-1f, 0f, -1f).scale(10f));
+			this.viewMatrix = getView(new Vector3f(1f, 0f, 0f), new Vector3f(-1f, 0f, -1f).scale(20f));
 			break;
 		default: 
 			this.viewMatrix = input.getViewMatrix(setting);

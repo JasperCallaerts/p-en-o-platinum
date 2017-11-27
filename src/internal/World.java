@@ -204,8 +204,6 @@ public class World {
 					}
 				}
 
-				System.out.println(" ");
-
 				//check if all the cubes are visited
 				for(Block currentBlock: this.getBlockSet()){
 					// if not return false
