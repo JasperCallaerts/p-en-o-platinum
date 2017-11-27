@@ -1,6 +1,7 @@
 import Autopilot.*;
 import internal.AutoPilot;
 import internal.AutoPilotConfig;
+import internal.FlightRecorder;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -20,7 +21,6 @@ public class AutopilotMain implements Runnable {
     }
 
 
-
     @Override
     public void run() {
         try {
@@ -31,13 +31,18 @@ public class AutopilotMain implements Runnable {
     }
 
     private void autopilotMainLoop() throws IOException, InterruptedException {
+
+        if(this.getAutoPilot() instanceof  AutoPilot){
+            ((AutoPilot) this.getAutoPilot()).setFlightRecorder(this.getFlightRecorder());
+        }
+
         Socket autopilotClientSocket = new Socket(this.getConnectionName(), this.getConnectionPort());
 
         DataInputStream inputStream = new DataInputStream(autopilotClientSocket.getInputStream());
         DataOutputStream outputStream = new DataOutputStream(autopilotClientSocket.getOutputStream());
         boolean firstRun = true;
         int connectionTrys = 0;
-        int maxConnectionTrys = 20;
+        int maxConnectionTrys = 1000;
         //first configure the autopilot
         while(firstRun){
             try{
@@ -47,10 +52,10 @@ public class AutopilotMain implements Runnable {
                 AutopilotOutputsWriter.write(outputStream, outputs);
                 firstRun = false;
 
-            }catch(NullPointerException e){
+            }/*catch(NullPointerException e){
                 //let the exception fly
                 System.out.println("Catching Exception: waiting for config input");
-            }catch(java.net.ConnectException e){
+            }*/catch(java.net.ConnectException e){
                 Thread.sleep(200);
                //if we tried to much, throw exception
                 if(connectionTrys == maxConnectionTrys)
@@ -66,9 +71,10 @@ public class AutopilotMain implements Runnable {
                 AutopilotInputs inputs = AutopilotInputsReader.read(inputStream);
                 AutopilotOutputs outputs = this.getAutoPilot().timePassed(inputs);
                 AutopilotOutputsWriter.write(outputStream, outputs);
-            }catch(NullPointerException e){
+            /*}catch(NullPointerException e){
                 //let the exception fly
                 System.out.println("Catching Exception: waiting for testbed input");
+                System.out.println(e);*/
             }catch(java.io.EOFException e){
                 System.out.println("Closing down Autopilot Client");
                 //the stream has stopped, close the socket
@@ -105,31 +111,17 @@ public class AutopilotMain implements Runnable {
         this.connectionPort = connectionPort;
     }
 
+    public FlightRecorder getFlightRecorder() {
+        return flightRecorder;
+    }
+
+    public void setFlightRecorder(FlightRecorder flightRecorder) {
+        this.flightRecorder = flightRecorder;
+    }
+
     private Autopilot autoPilot;
+    private FlightRecorder flightRecorder;
     private String connectionName;
     private int connectionPort;
 
 }
-
-  /*  *//**
-     * Configure the autopilot
-     * @param inputs
-     * @return
-     * @throws IOException
-     *//*
-    public AutopilotOutputs autopilotStep(AutopilotInputs inputs) throws IOException {
-
-        AutopilotOutputs outputs;
-
-        outputs = this.getAutoPilot().timePassed(inputs);
-
-        return outputs;
-    }
-
-    public AutopilotOutputs autopilotConfigStep(AutopilotInputs inputs, AutopilotConfig config) throws IOException {
-        AutopilotOutputs outputs;
-
-        outputs = this.getAutoPilot().simulationStarted(config, inputs);
-
-        return outputs;
-    }*/
