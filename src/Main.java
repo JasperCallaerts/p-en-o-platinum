@@ -55,7 +55,7 @@ public class Main {
         List<Block> blocks = new ArrayList<Block>();
 
         // INITIALIZE BLOCKS, for testing purposes
-        /*
+        
         float radius = 20f;
         int nbOfBlocks = 10;
         Vector COLOR = new Vector(1.0f, 0.0f,0.0f);
@@ -69,7 +69,7 @@ public class Main {
         	blocks.add(block);
         }
         
-        Vector COLOR = new Vector(1.0f, 0.0f,0.0f);
+//        Vector COLOR = new Vector(1.0f, 0.0f,0.0f);
         BlockCoordinatesParser parser = new BlockCoordinatesParser(COORDINATES_FILEPATH);
         for (Vector position : parser.getCoordinates()) {
         	Block block = new Block(position);
@@ -82,7 +82,7 @@ public class Main {
         
         world.addWorldObject(blocks.get(0));
         world.addWorldObject(blocks.get(1));
-        */
+        
         
         
         // Initialize the windows

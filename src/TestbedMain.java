@@ -44,7 +44,7 @@ public class TestbedMain implements Runnable{
         Cube.setGraphics(this.getGraphics());
 
         this.setDroneCam(new Window(200, 200, 0.5f, 0.4f, "bytestream window", new Vector3f(1.0f, 1.0f, 1.0f), false));
-        setDroneView(new Window(960, 510, 0.0f, 0.05f, "Drone view", new Vector3f(1.0f, 1.0f, 1.0f), true));
+        this.setDroneView(new Window(960, 510, 0.0f, 0.05f, "Drone view", new Vector3f(1.0f, 1.0f, 1.0f), true));
         if(this.getShowAllWindows()) {
             this.setTopDownView(new Window(960, 510, 1f, 0.05f, "Top down view", new Vector3f(1.0f, 1.0f, 1.0f), true));
             setSideView(new Window(960, 510, 1f, 1f, "Side view", new Vector3f(1.0f, 1.0f, 1.0f), true));
@@ -68,7 +68,7 @@ public class TestbedMain implements Runnable{
         // drone builder covers all the stuff involving building the drone, adjust parameters there
         WorldBuilder worldBuilder = new WorldBuilder();
         this.setDrone(worldBuilder.DRONE);
-        this.setWorld(worldBuilder.createWorld());//.createSimpleWorld();
+        this.setWorld(worldBuilder.createWorld());//createSimpleWorld());
         this.getDrone().addFlightRecorder(this.getFlightRecorder());
 
         // Initialize the windows
