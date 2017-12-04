@@ -5,8 +5,7 @@ public enum Settings {
 	DRONE_CHASE_CAM,
 	DRONE_TOP_DOWN_CAM,
 	DRONE_SIDE_CAM,
-	INDEPENDENT_CAM,
-	TEXT_WINDOW;
+	INDEPENDENT_CAM;
 	
 	private static Settings[] vals = values();
     public Settings next()

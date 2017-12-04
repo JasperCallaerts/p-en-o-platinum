@@ -6,7 +6,6 @@ import static org.lwjgl.glfw.GLFW.GLFW_FALSE;
 import static org.lwjgl.glfw.GLFW.GLFW_OPENGL_CORE_PROFILE;
 import static org.lwjgl.glfw.GLFW.GLFW_OPENGL_PROFILE;
 import static org.lwjgl.glfw.GLFW.GLFW_RESIZABLE;
-import static org.lwjgl.glfw.GLFW.GLFW_SAMPLES;
 import static org.lwjgl.glfw.GLFW.GLFW_VISIBLE;
 import static org.lwjgl.glfw.GLFW.glfwDefaultWindowHints;
 import static org.lwjgl.glfw.GLFW.glfwInit;
@@ -46,6 +45,10 @@ public class Graphics {
 	
 	public void addWindow(String key, Window window) {
 		windows.put(key, window);
+	}
+	
+	public void makeTextWindow() {
+		TextWindow.createAndShowWindow(this);
 	}
 	
 	public void renderWindows() {

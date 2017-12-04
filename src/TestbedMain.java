@@ -51,14 +51,9 @@ public class TestbedMain implements Runnable{
             this.setSideView(new Window(960, 510, 1f, 1f, "Side view", new Vector3f(1.0f, 1.0f, 1.0f), true));
             this.setChaseView(new Window(960, 510, 0f, 1f, "Chase view", new Vector3f(1.0f, 1.0f, 1.0f), true));
         } else {
-            this.setDroneView(new Window(960, 510, 0.f, 0.05f, "Drone view", new Vector3f(1.0f, 1.0f, 1.0f), true));
-
-//        	this.setDroneView(new Window(1920, 1080, 0.5f, 1f, "Drone view", new Vector3f(1.0f, 1.0f, 1.0f), true));
+        	this.setDroneView(new Window(1920, 1080, 0.5f, 1f, "Drone view", new Vector3f(1.0f, 1.0f, 1.0f), true));
         }
         	
-
-//		Window independentView = new Window(960, 1000, 1f, 0.4f, "Independent camera", new Vector3f(0.5f, 0.8f, 1.0f), true);
-//		Window textWindow = new Window(500, 500, 0.5f, 0.5f, "text window", new Vector3f(0.0f, 0.0f, 0.0f), true); // Not implemented yet
 
         // add the windows to graphics
         this.getGraphics().addWindow("bytestream window", droneCam);
@@ -68,9 +63,7 @@ public class TestbedMain implements Runnable{
             this.getGraphics().addWindow("Top down view", topDownView);
             this.getGraphics().addWindow("Side view", sideView);
             this.getGraphics().addWindow("Chase view", chaseView);
-        } else {
-        	
-        }
+        } 
 
 
         // drone builder covers all the stuff involving building the drone, adjust parameters there
@@ -87,9 +80,10 @@ public class TestbedMain implements Runnable{
             chaseView.initWindow(world, Settings.DRONE_CHASE_CAM);
             sideView.initWindow(world, Settings.DRONE_SIDE_CAM);
         }
-//      textWindow.initTextWindow(droneCam);
 
-
+        if (!this.getShowAllWindows())
+        	this.getGraphics().makeTextWindow();
+        
         Time.initTime();
     }
 

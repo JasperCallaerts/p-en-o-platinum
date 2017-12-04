@@ -57,8 +57,6 @@ public class Window {
 
 	private boolean terminated = false;
 
-	private Window dependableWindow = null;
-
 	private Settings setting;
 
 	/**
@@ -132,21 +130,6 @@ public class Window {
 		glfwMakeContextCurrent(NULL);
 	}
 	
-	public void initWindow(Window window) {
-		this.setting = Settings.TEXT_WINDOW;
-		this.dependableWindow = window;
-		
-		glfwMakeContextCurrent(getHandler());
-		
-		program = new ShaderProgram(false, "resources/default.vert", "resources/default.frag");	
-
-        program.init();
-        
-        input = new Input(setting);
-        
-        glfwMakeContextCurrent(NULL);
-	}
-	
 	public void initWindow(World world, Settings setting) {
 		this.setting = setting;
 		this.world = world;
@@ -191,10 +174,7 @@ public class Window {
 	}
 
 	public void render() {
-		if (setting == Settings.TEXT_WINDOW)
-			renderText();
-		else
-			renderFrame();
+		renderFrame();
 
 		// Return false if the user has attempted to close
 		// the window or has pressed the ESCAPE key.
@@ -202,10 +182,6 @@ public class Window {
 			terminate();
 		}
 //		checkError();
-	}
-	
-	private void renderText() {
-		// TODO maak een window met text ipv 3d graphics
 	}
 	
 	private void renderFrame() {
@@ -347,15 +323,13 @@ public class Window {
 		}
         return Matrix4f.perspective(FOV, ratio, NEAR, FAR);
 	}
-
-	public boolean uses3d() {
-		if (setting == Settings.TEXT_WINDOW)
-			return false;
-		return true;
-	}
 	
 	public String getTitle() {
 		return this.title;
+	}
+	
+	public void setSetting(Settings setting) {
+		this.setting = setting;
 	}
 	
 	public Settings getSetting() {
