@@ -33,16 +33,22 @@ public class AutoPilotController {
         this.currentInputs = dummyData;
     }
 
-    private void setThrustOut(ControlOutputs outputs){
+    private void setThrustOut(ControlOutputs outputs, float xPosition, float yPosition){
         //Todo implement: write the output to the outputs
         float pitch = this.getCurrentInputs().getPitch();
         float cubeSize =  this.getAssociatedAutopilot().getAPCamera().getTotalQualifiedPixels();
         int threshold = Math.round(THRESHOLD_DISTANCE);
 
         // Thrust
-        float thrust = (float) ((STANDARD_THRUST) + THRUST_FACTOR*this.getTotalMass()*GRAVITY*sin(PI - pitch));
-        //System.out.println(thrust);
+        float sigmoidFactor = 4f;
+//        float thrust = (float) ((STANDARD_THRUST)*(1-sigmoid(abs(xPosition/sigmoidFactor))) + THRUST_FACTOR*this.getTotalMass()*GRAVITY*sigmoid(yPosition/sigmoidFactor));
+          float thrust = (float) ((STANDARD_THRUST)/(5*(abs(xPosition)+0.01)) + THRUST_FACTOR*this.getTotalMass()*GRAVITY*sigmoid(yPosition/sigmoidFactor));
+          System.out.println(xPosition);
         outputs.setThrust(Math.max(Math.min(thrust, MAXTHRUST), 0));
+    }
+    
+    private float sigmoid(float x) {
+    	return (float) (1/(1+Math.exp(-x)));
     }
 
     private void startDescend(ControlOutputs outputs, float xPosCube, float yPosCube){
@@ -118,7 +124,8 @@ public class AutoPilotController {
 
         Vector center = null;
         try {
-            center = APCamera.getCenterOfNCubes(1).scalarMult(3f).vectorSum(APCamera.getCenterOfNCubes(5).scalarMult(1f)).scalarMult(3f);
+        	center = APCamera.getCenterOfNCubes(1);
+//            center = APCamera.getCenterOfNCubes(1).scalarMult(5f).vectorSum(APCamera.getCenterOfNCubes(5).scalarMult(-1f)).scalarMult(1f);
         } catch (NoCubeException e) {
             center = new Vector();
         }
@@ -139,7 +146,7 @@ public class AutoPilotController {
         //System.out.println(bias);
 
         // Thrust
-        this.setThrustOut(controlOutputs);
+        this.setThrustOut(controlOutputs, xPosition, yPosition);
 
         String controlString = "Control action ";
 
@@ -576,15 +583,15 @@ public class AutoPilotController {
     private ControlOutputs prevOutputs;
     private final static int NB_OF_PREV_INPUTS = 2;
 
-    private static final float STANDARD_INCLINATION = (float) PI/8;
+    private static final float STANDARD_INCLINATION = (float) PI/12;
     public static final float MAIN_STABLE_INCLINATION = (float) PI/12;
     private static final float MAX_HOR_STAB_INCLINATION = (float) PI/8;
-    private static final float TURNING_INCLINATION = (float) PI/8;
+    private static final float TURNING_INCLINATION = (float) PI/18;
     private static final float ERROR_INCLINATION_MARGIN = (float) (5*PI/180);
     private static final int BIAS = 0;
-    private static final float THRESHOLD_DISTANCE = 1f;
-    private static final float STANDARD_THRUST = 32.859283f*2;
-    private static final float THRUST_FACTOR = 2.0f;
+    private static final float THRESHOLD_DISTANCE = 0f;
+    private static final float STANDARD_THRUST = 32.859283f *2;
+    private static final float THRUST_FACTOR = 1.0f;
     private static final float THRESHOLD_THRUST_ANGLE = (float)(PI/20);
     private static final float STANDARD_CUBE_SIZE = 10f;
     public static final float STABILIZER_STABLE_INCLINATION = 0.0f;
