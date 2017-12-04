@@ -22,9 +22,9 @@ public class DroneBuilder {
     public final static float MAX_ANGLE_OF_ATTACK = (float) ( Math.PI/2.0 - 0.001f);
     public final static float LIFT_COEFFICIENT = 5.0f;
     public final static float LIFT_COEFFICIENT_STAB =1.0f;
-    public final static Vector LEFTWING_POS = new Vector(-4.0f, 0.0f, 0.0f);
-    public final static Vector RIGHTWING_POS = new Vector(4.0f, 0.0f, 0.0f);
-    public final static Vector STABILIZE_POS = new Vector(0.0f, 0.0f, 8.0f);
+    public final static Vector LEFTWING_POS = new Vector(-1.0f, 0.0f, 0.0f);
+    public final static Vector RIGHTWING_POS = new Vector(1.0f, 0.0f, 0.0f);
+    public final static Vector STABILIZE_POS = new Vector(0.0f, 0.0f, 2.0f);
     public final static Vector STARTPOS = new Vector();
     public final static Vector START_VEL = new Vector(0,0,-6.32f);
     public final static Vector START_ORIENTATION = new Vector();

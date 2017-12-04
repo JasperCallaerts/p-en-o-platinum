@@ -113,6 +113,8 @@ public class AutoPilotController {
         //APCamera.loadNextImage(currentInputs.getImage());
         APCamera.loadNewImage(currentInputs.getImage());
 
+        float elapsedTime = this.getCurrentInputs().getElapsedTime();
+
         Vector center = null;
         try {
             center = APCamera.getCenterOfNCubes(1).scalarMult(3f).vectorSum(APCamera.getCenterOfNCubes(5).scalarMult(1f)).scalarMult(3f);
@@ -120,8 +122,8 @@ public class AutoPilotController {
             center = new Vector();
         }
 //        Vector center = APCamera.getCenterOfNCubes(1);
-        float xPosition = center.getxValue();
-        float yPosition = -center.getyValue();
+        float xPosition = this.getxPID().getPIDOutput(-center.getxValue(), elapsedTime);
+        float yPosition = this.getyPID().getPIDOutput(center.getyValue(), elapsedTime);
 
         int cubeSize = Math.round(center.getzValue());
 
@@ -539,15 +541,25 @@ public class AutoPilotController {
         this.previousInputs = previousInputs;
     }
 
+    public PIDController getxPID() {
+        return xPID;
+    }
+
+    public PIDController getyPID() {
+        return yPID;
+    }
+
     private AutoPilot associatedAutopilot;
     private AutopilotInputs currentInputs;
     private AutopilotInputs previousInputs;
     private FlightRecorder flightRecorder;
+    private PIDController xPID = new PIDController(1.f, 0.0f, 0.0f);
+    private PIDController yPID = new PIDController(1.f, 0.0f, 0.0f);
     private final static int NB_OF_PREV_INPUTS = 2;
 
     private static final float STANDARD_INCLINATION = (float) PI/8;
     public static final float MAIN_STABLE_INCLINATION = (float) PI/12;
-    private static final float MAX_HOR_STAB_INCLINATION = (float) PI/4;
+    private static final float MAX_HOR_STAB_INCLINATION = (float) PI/8;
     private static final float TURNING_INCLINATION = (float) PI/8;
     private static final float ERROR_INCLINATION_MARGIN = (float) (5*PI/180);
     private static final int BIAS = 0;
@@ -699,6 +711,113 @@ public class AutoPilotController {
                     ", verStabInclination=" + verStabInclination +
                     '}';
         }
+    }
+
+    private class PIDController {
+        /**
+         * Constructor for a PID controller object
+         * @param gainConstant the constant for the gain of de PID controller (also denoted as Kp)
+         * @param integralConstant the constant for the integral of the PID controller (also denoted as Ki)
+         * @param derivativeConstant the constant for the derivative of the PID controller (also denoted as Kd)
+         */
+        private PIDController(float gainConstant, float integralConstant, float derivativeConstant){
+            // set the constants
+            this.gainConstant = gainConstant;
+            this.integralConstant = integralConstant;
+            this.derivativeConstant = derivativeConstant;
+        }
+
+        /**
+         * Constructs a PID controller with the gain, integral and derivative parameters set to 1.0
+         */
+        private PIDController(){
+            this(1.0f, 1.0f, 1.0f);
+        }
+
+        /**
+         * Calculates the output for the current inputs of the PID controller
+         * @param input the input signal of the controller (from the feedback loop)
+         * @param elapsedTime the elapsed time during the simulation
+         * @return the output of the PID controller for the given inputs
+         */
+        private float getPIDOutput(float input, float elapsedTime){
+
+            // variables needed for calculation
+            float setPoint = this.getSetPoint();
+            float prevError = this.getPreviousError();
+            float integral = this.getIntegral();
+            float Kp = this.getGainConstant();
+            float Ki = this.getIntegralConstant();
+            float Kd = this.getDerivativeConstant();
+            float deltaTime = elapsedTime - this.getPreviousTime();
+
+            //determine the PID control factors
+            float error = setPoint - input;
+            float derivative = (error - prevError)/deltaTime;
+            integral = integral + error*deltaTime;
+
+            // calculate the output
+            float output = Kp * error + Ki*integral + Kd*derivative;
+
+            // save the state
+            this.setIntegral(integral);
+            this.setPreviousError(error);
+            this.setPreviousTime(elapsedTime);
+
+            return output;
+        }
+
+        private float getIntegral() {
+            return integral;
+        }
+
+        private void setIntegral(float integral) {
+            this.integral = integral;
+        }
+
+        private float getPreviousError() {
+            return previousError;
+        }
+
+        private void setPreviousError(float previousError) {
+            this.previousError = previousError;
+        }
+
+        private float getSetPoint() {
+            return setPoint;
+        }
+
+        protected void setSetPoint(float setPoint) {
+            this.setPoint = setPoint;
+        }
+
+        public float getPreviousTime() {
+            return previousTime;
+        }
+
+        public void setPreviousTime(float previousTime) {
+            this.previousTime = previousTime;
+        }
+
+        private float getGainConstant() {
+            return gainConstant;
+        }
+
+        private float getIntegralConstant() {
+            return integralConstant;
+        }
+
+        public float getDerivativeConstant() {
+            return derivativeConstant;
+        }
+
+        private float integral = 0.0f;
+        private float previousError = 0.0f;
+        private float setPoint = 0.0f;
+        private float previousTime = 0.0f;
+        private float gainConstant;
+        private float integralConstant;
+        private float derivativeConstant;
     }
 
 }
