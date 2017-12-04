@@ -112,8 +112,13 @@ public class AutoPilotController {
         AutopilotInputs currentInputs = this.getCurrentInputs();
         //APCamera.loadNextImage(currentInputs.getImage());
         APCamera.loadNewImage(currentInputs.getImage());
-        
-        Vector center = APCamera.getCenterOfNCubes(1).scalarMult(3f).vectorSum(APCamera.getCenterOfNCubes(5).scalarMult(1f)).scalarMult(3f);
+
+        Vector center = null;
+        try {
+            center = APCamera.getCenterOfNCubes(1).scalarMult(3f).vectorSum(APCamera.getCenterOfNCubes(5).scalarMult(1f)).scalarMult(3f);
+        } catch (NoCubeException e) {
+            center = new Vector();
+        }
 //        Vector center = APCamera.getCenterOfNCubes(1);
         float xPosition = center.getxValue();
         float yPosition = -center.getyValue();
@@ -124,14 +129,14 @@ public class AutoPilotController {
         int threshold = Math.round(THRESHOLD_DISTANCE);
         int bias = 0;
         if (currentInputs.getPitch() > PI/20) {
-        	bias = BIAS;
+            bias = BIAS;
         }else if(currentInputs.getPitch() < -PI/20) {
-        	bias = -BIAS;
+            bias = -BIAS;
         }
         //System.out.println(bias);
 
         // Thrust
-       this.setThrustOut(controlOutputs);
+        this.setThrustOut(controlOutputs);
 
         String controlString = "Control action ";
 

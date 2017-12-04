@@ -49,35 +49,48 @@ public class AutoPilotCamera {
         CameraImage newImage = this.convertToCameraImage(imageByteArray, this.getNbRows(), this.getNbColumns());
         //System.out.println("looking for cubes");
         this.setCameraImage(newImage);
-        List<Vector> cubesInPicture = this.locateCubes();
+        List<Vector> cubesInPicture = this.getAllCubeCenters();
         //System.out.println(cubesInPicture);
         this.setCubesInPicture(cubesInPicture);
 
 
     }
 
-    /**
-     * Sets the image array variable to the
-     * @param newImageArray the byte array containing the next image
-     */
-    @Deprecated
-    public void loadNextImage(byte[] newImageArray)throws IllegalArgumentException{
-        if(!canHaveAsImageArray(newImageArray)){
-            throw new IllegalArgumentException(INCOMPATIBLE_SIZE);
-        }
-        CameraImage newImage = this.convertToCameraImage(newImageArray, this.getNbRows(), this.getNbColumns());
-        this.setCameraImage(newImage);
-        //System.out.println("cube location: " + locateRedCube());
-        Vector dataCube = this.locateRedCube();
-        //System.out.println(dataCube);
-        this.setDestination(dataCube);
-        this.setTotalQualifiedPixels(Math.round(dataCube.getzValue()));
-    }
-
-    public Vector getCenterOfNCubes(int nbOfCubes){
+    public Vector getCenterOfNCubes(int nbOfCubes) throws NoCubeException {
         List<Vector> cubesInPicture = this.getCubesInPicture();
+        System.out.println("nb of cubes in the picture: " + cubesInPicture.size());
+        System.out.println("cubes in picture: " + cubesInPicture);
         //first check if there are any cubes, if not return the center
-        if(cubesInPicture.size()==0)
+
+        if(cubesInPicture.size() == 0){
+            throw new NoCubeException();
+        }
+
+        float xOffset = this.getNbColumns()/2.0f;
+        float yOffset = this.getNbRows()/2.0f;
+
+        int cubeCounter = 0;
+        Vector centerVector = new Vector();
+        // the x value is the x pos of the cube, the y value is the y pos if the cube
+        // and the z value is the size of the cube
+        for(Vector cube: cubesInPicture) {
+            if(cubeCounter == nbOfCubes){
+                return centerVector;
+            }
+            float currentPixels = cube.getzValue();
+            float prevTotalPixels = centerVector.getzValue();
+            float newTotalPixels = currentPixels + prevTotalPixels;
+
+            float xCenter = (centerVector.getxValue() * prevTotalPixels + cube.getyValue()*currentPixels)/(newTotalPixels);
+            float yCenter = (centerVector.getyValue() * prevTotalPixels + cube.getxValue()*currentPixels)/(newTotalPixels);
+
+            centerVector = new Vector(xCenter, yCenter, newTotalPixels);
+        }
+
+        // account for the offsets
+        return new Vector(centerVector.getxValue() - xOffset, - centerVector.getyValue() + yOffset, centerVector.getzValue());
+
+        /*if(cubesInPicture.size()==0)
             return new Vector();
 
         //then try to take the mean of the specified amount of cubes (weighted mean)
@@ -88,7 +101,7 @@ public class AutoPilotCamera {
         for(Vector currentCube: cubesInPicture){
             if(counter == nbOfCubes)
                 break;
-            Coordinates currentWeightedCoord = new Coordinates(currentCube.getxValue(), currentCube.getyValue())
+            Coordinates currentWeightedCoord = new Coordinates(currentCube.getyValue(), currentCube.getxValue())
                     .scalarMult(currentCube.getzValue());
             sumCoordinates = sumCoordinates.sum(currentWeightedCoord);
             totalPixels += currentCube.getzValue();
@@ -97,7 +110,7 @@ public class AutoPilotCamera {
 
         //after the sum is completed return the weighted average
         Coordinates weightedCoord = sumCoordinates.scalarMult(1.0f/totalPixels);
-        return new Vector(weightedCoord.getXCoordinate(), weightedCoord.getYCoordinate(), totalPixels);
+        return new Vector(weightedCoord.getXCoordinate(), weightedCoord.getYCoordinate(), totalPixels);*/
     }
 
 
@@ -114,6 +127,7 @@ public class AutoPilotCamera {
         HashMap<Coordinates ,List<Coordinates>> cubeMap = new HashMap<>();
         //System.out.println("identifying different cubes");
         findColoredPixels(cubeMap);
+        //System.out.println("Sets of pixels" + cubeMap);
 
         //first two elements of the vector contain the x and the y position, the third the size of the cube
         HashMap<Coordinates, Vector> cubeCenterMap = new HashMap<>();
@@ -139,6 +153,7 @@ public class AutoPilotCamera {
                 return (int)(Math.signum(-v1.getzValue() + v2.getzValue()));
             }
         });
+        //System.out.println("Positions of the cubes: " + cubeOrderedList);
         return cubeOrderedList;
 
     }
@@ -280,7 +295,7 @@ public class AutoPilotCamera {
             if (!(o instanceof Coordinates)) return false;
 
             Coordinates that = (Coordinates) o;
-            float errorMargin = 0.01f;
+            float errorMargin = 0.1f;
             return Pixel.isEqualFloat(this.getXCoordinate(), that.getXCoordinate(), errorMargin)&&
                     Pixel.isEqualFloat(this.getYCoordinate(), that.getYCoordinate(), errorMargin);
 
@@ -293,89 +308,15 @@ public class AutoPilotCamera {
             return result;
         }
 
+        @Override
+        public String toString() {
+            return "(" +  xCoordinate +
+                    " ; "+ yCoordinate +
+                    ")";
+        }
+
         private float xCoordinate;
         private float yCoordinate;
-    }
-
-    /**
-     * Method to locate a red cube for the given image
-     * based on the HSV input values
-     * @return a vector containing the location of the cube and the total amount of red pixels
-     * format: new Vector(x_value, y_value, totalPixels)
-     */
-    private Vector locateRedCube(){
-
-        List<Integer> xRedCoordinates = new ArrayList<Integer>();
-        List<Integer> yRedCoordinates = new ArrayList<Integer>();
-
-        findRedPixels(xRedCoordinates, yRedCoordinates);
-
-        // if no cube was found, set destination to (0.0, 0.0)
-        if(xRedCoordinates.size() ==0){
-            return new Vector(0.0f, 0.0f, 0.0f);
-        }
-
-        int xMeanCoordinate = getMean(xRedCoordinates);
-        int yMeanCoordinate = getMean(yRedCoordinates);
-
-        //System.out.println(yMeanCoordinate);
-
-        float xOffset = this.getNbColumns()/2.0f;
-        float yOffset = this.getNbRows()/2.0f;
-
-        int totalRedPixels = xRedCoordinates.size();
-
-        return new Vector(xMeanCoordinate - xOffset, -yMeanCoordinate + yOffset, totalRedPixels);
-
-    }
-
-
-    /**
-     * Calculates the mean of the given list of integers
-     * @param integerList the list containing the integers
-     * @return the mean of the integer list
-     */
-    public static int getMean(List<Integer> integerList){
-        int sum = 0;
-        int lengthList = integerList.size();
-
-        for(Integer element: integerList){
-            sum += element;
-        }
-
-        return sum/lengthList;
-
-    }
-
-    /**
-     * Searches for red pixels having the right HSV value specified in the function itself.
-     * the coordinates of the pixels are stores in the provided arrays.
-     * @param redXCoordinates the list to contain the column coordinate if a match is found
-     * @param redYCoordinates the list to contain the row coordinate if a match is found
-     */
-    private void findRedPixels(List<Integer> redXCoordinates, List<Integer> redYCoordinates) {
-//        System.out.println(this.getCameraImage().getElementAtIndex(100, 100));
-//        System.out.println("hsv of middle pixel: " + new Vector(this.getCameraImage().getElementAtIndex(100, 100).convertToHSV()));
-        int nbRows = this.getNbRows();
-        int nbColumns = this.getNbColumns();
-
-        for(int rowIndex = 0; rowIndex != nbRows; rowIndex++){
-            for(int columnIndex = 0; columnIndex != nbColumns; columnIndex++){
-                //select the pixel
-                Pixel currentPixel = this.getCameraImage().getElementAtIndex(rowIndex, columnIndex);
-                //convert to HSV
-                Vector HSV = new Vector(currentPixel.convertToHSV());
-                float hValue = HSV.getxValue();
-                float sValue = HSV.getyValue();
-                float vValue = HSV.getzValue();
-                //check if the HSV value is within range, if so, add pixel coordinates to the lists
-                if(Pixel.isEqualFloat(hValue, RED_H_VALUE, EPSILON)&&Pixel.isEqualFloat(sValue, RED_S_VALUE, EPSILON)
-                        &&Pixel.isEqualFloat(vValue, Z_AXIS_V_VALUE, EPSILON)) {
-                    redXCoordinates.add(columnIndex);
-                    redYCoordinates.add(rowIndex);
-                }
-            }
-        }
     }
 
     /**
@@ -561,4 +502,74 @@ public class AutoPilotCamera {
     public final static String VIEWINGANGLE_EXCEPTION = "the viewing angle is out of range (0, PI]";
     public final static String ILLEGAL_SIZE = "The byte array cannot be converted to a 2D pixel array";
     public final static String INCOMPATIBLE_SIZE = "the sample size is not a multiple of the dimensions of the array";
+
+    public List<Vector> getAllCubeCenters(){
+        CameraImage currentImage = this.getCameraImage();
+        // first get the center coordinates
+        Map<Coordinates, Vector> cubeCenterMap = getDifferentCubeMap(currentImage);
+
+        // then get the ordered list, small to large
+        List<Vector> orderedList = new ArrayList<>(cubeCenterMap.values());
+        orderedList.sort(new Comparator<Vector>() {
+            @Override
+            public int compare(Vector o1, Vector o2) {
+                return -(int) Math.signum(o1.getzValue() - o2.getzValue());
+            }
+        });
+
+        return orderedList;
+
+    }
+
+    private Map<Coordinates, Vector> getDifferentCubeMap(CameraImage currentImage) {
+        Map<Coordinates, Vector> colorCenter =  new HashMap<>();
+
+
+        for(int i = 0; i !=this.getNbRows(); i++){
+            for(int j = 0; j!= this.getNbColumns(); j++) {
+                Pixel currentPixel = currentImage.getElementAtIndex(i, j);
+                float[] HSVPixel = currentPixel.convertToHSV();
+                float H = HSVPixel[0];
+                float S = HSVPixel[1];
+                float V = HSVPixel[2];
+
+
+                // H can be NaN
+                if (Float.isNaN(H)) {
+                    H = 0.0f;
+                }
+                //if it is a white pixel ignore it
+                if( H == 0.0f &&S == 0.0f&&V==1.0f)
+                    continue;
+
+                Coordinates HS = new Coordinates(H, S);
+
+                Vector entry = colorCenter.get(HS);
+
+                // if the HS value is not yet part of the map, add it
+                if (entry == null) {
+                    colorCenter.put(HS, new Vector(i, j, 1.0f));
+                //if it is already present, calculate the new mean value for the position
+                }else{
+                    // first load the old values for the entry
+                    float oldIMean = entry.getxValue();
+                    float oldJMean = entry.getyValue();
+                    float oldSize = entry.getzValue();
+
+                    //calculate the new mean
+                    float iNumerator = oldIMean*oldSize + i;
+                    float jNumerator = oldJMean*oldSize + j;
+
+                    float denominator = oldSize + 1;
+
+                    Vector newMean = new Vector(iNumerator/denominator, jNumerator/denominator, denominator);
+
+                    colorCenter.put(HS, newMean);
+                }
+            }
+        }
+        //System.out.println("HS value and position on screen: " + colorCenter);
+        //System.out.println("Encountered colors: " + HSVSet);
+        return colorCenter;
+    }
 }

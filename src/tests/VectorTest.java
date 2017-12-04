@@ -5,6 +5,8 @@ import org.junit.Test;
 
 import org.junit.Before;
 
+import java.util.Arrays;
+
 import static org.junit.Assert.assertEquals;
 
 
@@ -74,6 +76,14 @@ public class VectorTest {
 
 		float[] converted = HSVconverter.RGBtoHSV(1.0f, 1.0f, 0.0f);
 		System.out.println(converted[0] + ", " + converted[1] + ", " + converted[2]);
+	}
+
+	@Test
+	public final void HSVToRGBTester(){
+		float[] converted = HSVconverter.RGBtoHSV(1.0f,0,0);
+		System.out.println(Arrays.toString(converted));
+		converted = HSVconverter.HSVtoRGB2(0,1.0f,0.6f);
+		System.out.println(Arrays.toString(converted));
 	}
 
 }

@@ -1,6 +1,9 @@
 package internal;
 
 
+import static java.lang.Math.max;
+import static java.lang.Math.min;
+
 public class HSVconverter {
 	//http://www.java2s.com/Code/Java/2D-Graphics-GUI/HSVtoRGB.htm
 	public static float[] HSVtoRGB(float h, float s, float v){
@@ -65,38 +68,55 @@ public class HSVconverter {
 
 	        return rgb;
 	}
-	//https://www.cs.rit.edu/~ncs/color/t_convert.html
-	public static float[] RGBtoHSV(float r, float g, float b){
-		
-		float[] hsv = new float[3];
-        float[] rgb = new float[3];
+	//https://gist.github.com/fairlight1337/4935ae72bcbcc1ba5c72
+	//converted C++ code to java
+	/**\brief Convert RGB to HSV color space
 
-        rgb[0] = r;
-        rgb[1] = g;
-        rgb[2] = b;
-		float min = Math.min(Math.min(g, b),Math.min(r, g));
-		float max = Math.max(Math.max(g, b),Math.max(r, g));
-		hsv[2] = max;
-		float delta = max - min;
-		if(!(max == 0))
-			hsv[1] = delta/max;
-		else{
-			hsv[1] = 0;
-			return hsv;
+	  Converts a given set of RGB values `r', `g', `b' into HSV
+	  coordinates. The input RGB values are in the range [0, 1], and the
+	  output HSV values are in the ranges h = [0, 360], and s, v = [0,
+	  1], respectively.
+
+	  @param fR Red component, used as input, range: [0, 1]
+	  @param fG Green component, used as input, range: [0, 1]
+	  @param fB Blue component, used as input, range: [0, 1]
+
+	*/
+	public static float[] RGBtoHSV(float fR, float fG, float fB) {
+		float fH = 0.0f;
+		float fS = 0.0f;
+		float fV = 0.0f;
+		float fCMax = max(max(fR, fG), fB);
+		float fCMin = min(min(fR, fG), fB);
+		float fDelta = fCMax - fCMin;
+
+		if(fDelta > 0) {
+			if(fCMax == fR) {
+				fH = 60 * ((((fG - fB) / fDelta)% 6));
+			} else if(fCMax == fG) {
+				fH = 60 * (((fB - fR) / fDelta) + 2);
+			} else if(fCMax == fB) {
+				fH = 60 * (((fR - fG) / fDelta) + 4);
+			}
+
+			if(fCMax > 0) {
+				fS = fDelta / fCMax;
+			} else {
+				fS = 0;
+			}
+
+			fV = fCMax;
+		} else {
+			fH = 0;
+			fS = 0;
+			fV = fCMax;
 		}
-		if(r == max)
-			hsv[0] = ((g - b)/delta)%6;			// between yellow & magenta
-		else if(g == max)
-			hsv[0] = 2 + (b - r) / delta;    // between cyan & yellow
-		else if(delta == 0)
-			hsv[0] = 0;
-		else
-			hsv[0] = 4 + (b - r) / delta;	// between magenta & cyan
-		
-		hsv[0] *= 60;						// degrees
-		if(hsv[0]<0)
-			hsv[0] += 360;
-		return hsv;
+
+		if(fH < 0) {
+			fH = 360 + fH;
+		}
+
+		return new float[] {fH, fS, fV};
 	}
 	
 //		formula source:	http://www.rapidtables.com/convert/color/hsv-to-rgb.htm

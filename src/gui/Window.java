@@ -19,6 +19,7 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.*;
 import java.util.List;
 
@@ -394,25 +395,27 @@ public class Window {
 		buffer.get(imageByteArray);
 
 		BufferedImage image = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB);
+/*
+		step += 1;
+		String diagnosis = "";
+		int prevRow = 0;
+		if(step >= 100 && step <= 110) {
+			for (int i = 0; i < WIDTH * HEIGHT * bpp; i += 4) {
+				if (imageByteArray[i] != -1 || imageByteArray[i + 1] != -1 || imageByteArray[i + 1] != -1) {
+					if (prevRow != i / WIDTH)
+						diagnosis += "\n\n";
+					diagnosis += imageByteArray[i] + "; " + imageByteArray[i + 1] + "; " + imageByteArray[i + 2] + "   ";
+				}
 
-//		String format = "PNG";
-//		File file = new File("image.png");
-//
-//		for(int x = 0; x < WIDTH; x++)
-//		{
-//			for(int y = 0; y < HEIGHT; y++)
-//			{
-//				int i = (x + (WIDTH * y)) * bpp;
-//				int r = (imageByteArray[i])& 0xFF;
-//				int g = (imageByteArray[i + 1]) & 0xFF;
-//				int b =(imageByteArray[i+2])& 0xFF;
-//				image.setRGB(x, HEIGHT - (y + 1), (0xFF << 24) | (r << 16) | (g << 8) | b);
-//			}
-//		}
-//
-//		try {
-//			ImageIO.write(image, format, file);
-//		} catch (IOException e) { e.printStackTrace(); }
+				prevRow = i / WIDTH;
+			}
+
+			PrintWriter printerOutput = new PrintWriter("frame" + (step-100) + ".txt");
+			printerOutput.print(diagnosis);
+			printerOutput.close();
+		}
+
+		System.out.println(imageByteArray[0] + ";" + imageByteArray[1] +";" +  imageByteArray[2] + ";" + imageByteArray[3]);*/
 
 		byte[] rescaledArray = rescale(imageByteArray, WIDTH, CAMERA_WIDTH, HEIGHT, CAMERA_HEIGHT, bpp);
 
@@ -441,7 +444,7 @@ public class Window {
 				py = (float) Math.floor(i*yRatio);
 
 				for(int k = 0; k != 3; k++) {
-					temp[((i * newNbColumns) + j) * 3 + k] = convertToBiasedByte(imageArray[((int) (py * oldNbColumns + px)) * bpp+ k]);
+					temp[((i * newNbColumns) + j) * 3 + k] = (imageArray[((int) (py * oldNbColumns + px)) * bpp+ k]);
 				}
 
 			}
@@ -450,20 +453,12 @@ public class Window {
 		return temp;
 	}
 
-	public static byte convertToBiasedByte(byte glByte){
-		byte biasedByte;
-		if(glByte <= (byte)0){
-			biasedByte = (byte)(glByte - 128);
-		}else{
-			biasedByte = (byte)(glByte + 128);
-		}
 
-		return biasedByte;
-	}
 
 	private static int CAMERA_WIDTH = 200;
 	private static int CAMERA_HEIGHT = 200;
 	private static boolean firstRun = true;
+	private int step = 0;
 
 }
 
@@ -515,3 +510,22 @@ public class Window {
 //
 //
 //		return rescaledPixelArray;
+
+//		String format = "PNG";
+//		File file = new File("image.png");
+//
+//		for(int x = 0; x < WIDTH; x++)
+//		{
+//			for(int y = 0; y < HEIGHT; y++)
+//			{
+//				int i = (x + (WIDTH * y)) * bpp;
+//				int r = (imageByteArray[i])& 0xFF;
+//				int g = (imageByteArray[i + 1]) & 0xFF;
+//				int b =(imageByteArray[i+2])& 0xFF;
+//				image.setRGB(x, HEIGHT - (y + 1), (0xFF << 24) | (r << 16) | (g << 8) | b);
+//			}
+//		}
+//
+//		try {
+//			ImageIO.write(image, format, file);
+//		} catch (IOException e) { e.printStackTrace(); }

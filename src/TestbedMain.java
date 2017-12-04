@@ -51,7 +51,9 @@ public class TestbedMain implements Runnable{
             this.setSideView(new Window(960, 510, 1f, 1f, "Side view", new Vector3f(1.0f, 1.0f, 1.0f), true));
             this.setChaseView(new Window(960, 510, 0f, 1f, "Chase view", new Vector3f(1.0f, 1.0f, 1.0f), true));
         } else {
-        	this.setDroneView(new Window(1920, 1080, 0.5f, 1f, "Drone view", new Vector3f(1.0f, 1.0f, 1.0f), true));
+            this.setDroneView(new Window(960, 510, 0.f, 0.05f, "Drone view", new Vector3f(1.0f, 1.0f, 1.0f), true));
+
+//        	this.setDroneView(new Window(1920, 1080, 0.5f, 1f, "Drone view", new Vector3f(1.0f, 1.0f, 1.0f), true));
         }
         	
 

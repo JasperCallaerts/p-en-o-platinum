@@ -67,8 +67,8 @@ public class FlightRecorder {
         diagnosisString += logSize + " last Orientations: " + this.getOrientationLog() + "\n";
         diagnosisString += logSize + " last Rotations: " + this.getRotationLog() + "\n";
         diagnosisString += logSize + " last controls: " + this.getControlActionsLog() + "\n";
-        diagnosisString += "final velocity approx difference: " + this.getVelocityLog().get(this.getVelocityLog().size()-1).vectorDifference(this.getVelocityApproxLog().get(this.getVelocityApproxLog().size()-1)) + "\n";
-        diagnosisString += "final rotation approx difference: " + this.getRotationLog().get(this.getRotationLog().size()-1).vectorDifference(this.getRotationApproxLog().get(this.getRotationApproxLog().size()-1)) + "\n";
+        //diagnosisString += "final velocity approx difference: " + this.getVelocityLog().get(this.getVelocityLog().size()-1).vectorDifference(this.getVelocityApproxLog().get(this.getVelocityApproxLog().size()-1)) + "\n";
+        //diagnosisString += "final rotation approx difference: " + this.getRotationLog().get(this.getRotationLog().size()-1).vectorDifference(this.getRotationApproxLog().get(this.getRotationApproxLog().size()-1)) + "\n";
 
         System.out.println(diagnosisString);
 

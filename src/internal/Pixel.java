@@ -5,7 +5,7 @@ import javax.swing.text.Position;
 
 /**
  * a class of Immutable pixels, represented by RGB values in bytes.
- * A bias of + 128 is applied to achieve the classical range of RGB values of 0 to 255
+ * the RGB values in bytes are represented in two's complement
  * Created by Martijn on 14/10/2017.
  * @author Martijn
  */
@@ -13,9 +13,9 @@ public class Pixel {
 
     /**
      * Constructor for a pixel class object
-     * @param red the red value of the pixel
-     * @param green the green value of the pixel
-     * @param blue the blue value of the pixel
+     * @param red the red value of the pixel (two's complement)
+     * @param green the green value of the pixel (two's complement)
+     * @param blue the blue value of the pixel (two's complement)
      */
     public Pixel(byte red, byte green, byte blue){
         this.setRed(red);
@@ -23,22 +23,6 @@ public class Pixel {
         this.setBlue(blue);
     }
 
-    /**
-     * constructor for a pixel in HSV value
-     * @param H the hue value of the pixel
-     * @param S the saturation value of the pixel
-     * @param V the value value of the pixel
-     */
-    public Pixel(float H, float S, float V){
-       float[] rgb = HSVconverter.HSVtoRGB2(H, S, V);
-       byte R = (byte) (Math.round(rgb[0]*MAX) - BIAS);
-       byte G = (byte) (Math.round(rgb[1]*MAX) - BIAS);
-       byte B = (byte) (Math.round(rgb[2]*MAX) - BIAS);
-
-       this.red = R;
-       this.green = G;
-       this.blue = B;
-    }
 
     /**
      * Constructor for a pixel class object
@@ -61,20 +45,6 @@ public class Pixel {
         return byteArray.length == NB_OF_BYTES_IN_PIXEL;
     }
 
-    /**
-     * Calculates the sum of two pixels
-     * @param other the other pixel to sum
-     * @return defined like vector dum with vector1 = (red1, green1, blue1)
-     * and vector2 = (red2, green2, blue2) and the sum is defined in
-     * valueSum
-     */
-    public Pixel pixelSum(Pixel other){
-        byte red = valueSum(this.getRed(), other.getRed());
-        byte green = valueSum(this.getGreen(), other.getGreen());
-        byte blue = valueSum(this.getBlue(), this.getGreen());
-
-        return new Pixel(red, green, blue);
-    }
 
     /**
      * Converts the pixel's RGB value to HSV values
@@ -85,60 +55,6 @@ public class Pixel {
         float G = this.getGreenFloat();
         float B = this.getBlueFloat();
         return HSVconverter.RGBtoHSV(R, G, B);
-    }
-
-    /**
-     * Converts a pixel to gray scale
-     * @return the gray scale pixel based on luminosity
-     */
-    public byte convertToGrayscale(){
-        int red = this.getRed() + BIAS;
-        int green  = this.getGreen() + BIAS;
-        int blue = this.getBlue() + BIAS;
-
-        float tempFloat = 0.21f*red + 0.72f*green + 0.07f*blue;
-        int tempInt = Math.round(tempFloat);
-
-        tempInt = roundInt(tempInt);
-
-        return (byte)(tempInt - BIAS);
-    }
-
-    /**
-     * Calculates the sum of two byte values
-     * @param value1 the first value
-     * @param value2 the second value
-     * @return a byte containing the sum of the two values, if the sum was out of bounds
-     *         the result was set to either Byte.MIN_VALUE for negative overflow and
-     *         Byte.MAX_VALUE for positive overflow (range -128 to 127)
-     */
-    private static byte valueSum(byte value1, byte value2){
-        int firstInt = value1 + BIAS;
-        int secondInt = value2 + BIAS;
-
-        int result = firstInt + secondInt;
-
-        //set the calculations within bounds
-        result = roundInt(result);
-
-        return (byte)(result - BIAS);
-    }
-
-    /**
-     * round the integer to the range [0, 255]
-     * @param integer the integer to be rounded
-     * @return an integer between 0 and 255, numbers smaller than zero are set to 0
-     * and number larger than 255 are set to 255
-     */
-    private static int roundInt(int integer){
-        int result = integer;
-        if(integer > MAX)
-            result = MAX;
-        //probably redundant
-        if(integer < MIN)
-            result = MIN;
-
-        return result;
     }
 
     /**
@@ -154,26 +70,6 @@ public class Pixel {
     }
 
     /**
-     * Calculates the sum of two byte values
-     * @param value1 the first value
-     * @param value2 the second value
-     * see implementation of value sum, only difference bias is added to result to
-     * become range of 0 to 255
-     */
-    private static int valueSumInt(byte value1, byte value2){
-       return Pixel.valueSum(value1, value2) + BIAS;
-    }
-
-    /**
-     * Checker if the value is a valid RGB value for one color component
-     * @param value the desired value of the pixel
-     * @return true if and only if the value is in range (0, 255)
-     */
-    public boolean isValidColorValue(int value){
-        return value >= MIN && value <= MAX;
-    }
-
-    /**
      * Getter for the red value of the pixel
      * @return a byte value, range (-128, 127)
      */
@@ -186,7 +82,7 @@ public class Pixel {
      * @return an integer value, range (0, 255)
      */
     public int getRedInt(){
-        return this.getRed() + BIAS;
+        return this.getRed()&0xFF;
     }
 
     /**
@@ -205,18 +101,7 @@ public class Pixel {
     }
 
     /**
-     * Setter for the red value of a pixel
-     * @param red the desired red value between 0 and 255
-     */
-    public void setRed(int red){
-        if(!isValidColorValue(red))
-            throw new IllegalArgumentException(ILLEGAL_VALUE);
-
-        this.setRed((byte)(red - BIAS));
-    }
-
-    /**
-     * Getter for the green value of the pixel
+     * Getter for the green value of the pixel (two's complement)
      * @return a byte value, range (-128, 127)
      */
     public byte getGreen() {
@@ -228,7 +113,7 @@ public class Pixel {
      * @return an integer value, range (0, 255)
      */
     public int getGreenInt(){
-        return this.getGreen() + BIAS;
+        return this.getGreen()&0xFF;
     }
 
     /**
@@ -247,19 +132,9 @@ public class Pixel {
         this.green = green;
     }
 
-    /**
-     * Setter for the green value of the pixel
-     * @param green the desired green value between 0 and 255
-     */
-    public void setGreen(int green){
-        if(!isValidColorValue(green))
-            throw new IllegalArgumentException(ILLEGAL_VALUE);
-
-        this.setGreen((byte)(green - BIAS));
-    }
 
     /**
-     * Getter for the blue value of the pixel
+     * Getter for the blue value of the pixel (two's complement)
      * @return a byte value, range(-128, 127)
      */
     public byte getBlue() {
@@ -271,7 +146,7 @@ public class Pixel {
      * @return an integer value, range(0,255)
      */
     public int getBlueInt(){
-        return this.getBlue() + BIAS;
+        return this.getBlue()&0xFF;
     }
 
     /**
@@ -290,15 +165,6 @@ public class Pixel {
         this.blue = blue;
     }
 
-    /**
-     * Setter for the blue value of a pixel
-     * @param blue the desired blue value between 0 and 255
-     */
-    public void setBlue(int blue){
-        if(!isValidColorValue(blue))
-            throw new IllegalArgumentException(ILLEGAL_VALUE);
-        this.setBlue((byte)(blue - BIAS));
-    }
 
     @Override
     public String toString() {
@@ -307,6 +173,26 @@ public class Pixel {
                 ", green=" + (green) +
                 ", blue=" + (blue) +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Pixel)) return false;
+
+        Pixel pixel = (Pixel) o;
+
+        if (getRed() != pixel.getRed()) return false;
+        if (getGreen() != pixel.getGreen()) return false;
+        return getBlue() == pixel.getBlue();
+    }
+
+    @Override
+    public int hashCode() {
+        int result = (int) getRed();
+        result = 31 * result + (int) getGreen();
+        result = 31 * result + (int) getBlue();
+        return result;
     }
 
     /*
@@ -330,15 +216,11 @@ public class Pixel {
     /*
     Constants
      */
-    public final static int BIAS = 128;
-    public final static int MAX = 255;
-    public final static int MIN = 0;
     public final static int NB_OF_BYTES_IN_PIXEL = 3;
 
 
     /*
     Error Messages
      */
-    private final static String ILLEGAL_VALUE = "The supplied integer value is not between 0 and 255";
     private final static String INVALID_ARRAY_SIZE = "The supplied array is not size 3";
 }

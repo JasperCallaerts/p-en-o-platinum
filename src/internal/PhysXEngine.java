@@ -1,6 +1,7 @@
 package internal;
 
 import Autopilot.AutopilotConfig;
+import Autopilot.AutopilotInputs;
 import Autopilot.AutopilotOutputs;
 import org.lwjgl.system.CallbackI;
 import sun.font.PhysicalFont;
