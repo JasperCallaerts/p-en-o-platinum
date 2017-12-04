@@ -12,16 +12,20 @@ public class Mouse {
 	private float y;
 	private float prevX;
 	private float prevY;
+	private long window;
 	
 	public Mouse(long window) {
+		this.window = window;
 		DoubleBuffer b1 = BufferUtils.createDoubleBuffer(1);
         DoubleBuffer b2 = BufferUtils.createDoubleBuffer(1);
         glfwGetCursorPos(window, b1, b2);
         prevX = (float) b1.get(0);
         prevY = -(float) b2.get(0);
+        x = prevX;
+        y = prevY;
 	}
 	
-	public boolean update(long window) {
+	public void update() {
 		prevX = x;
 		prevY = y;
 		DoubleBuffer b1 = BufferUtils.createDoubleBuffer(1);
@@ -29,11 +33,6 @@ public class Mouse {
         glfwGetCursorPos(window, b1, b2);
         x = (float) b1.get(0);
         y = -(float) b2.get(0);
-        if (dx() == 0 && dy() == 0) {
-        	return true;
-        } else {
-        	return false;
-        }
 	}
 	
 	public float x() {

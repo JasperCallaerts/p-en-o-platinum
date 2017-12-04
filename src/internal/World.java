@@ -13,14 +13,14 @@ import java.util.function.BiPredicate;
  */
 public class World {
 	
-	public World(){
+	public World(String objective){
 		Xsize = 0;	//max groottes initialiseren
 		Ysize = 0;
 		Zsize = 0;
-		
+		this.setObjective(objective);
 	}
 	
-	private Set<WorldObject> objects;
+	private Set<WorldObject> objects = new HashSet<>();
 	
 	/**
 	 * Method that returns a set of all the objects in the world
@@ -50,7 +50,7 @@ public class World {
 	 * @author anthonyrathe
 	 */
 	public boolean canHaveAsObject(WorldObject object){
-		return object.canHaveAsWorld(this);
+		return WorldObject.canHaveAsWorld(this);
 	}
 	
 	/**
@@ -64,6 +64,22 @@ public class World {
 		}else{
 			throw new IllegalArgumentException(WORLD_OBJECT_404);
 		}
+	}
+	
+	/**
+	 * @author Anthony Rathe
+	 */
+	public void removeBlocks() {
+		for (Block block : this.getBlockSet()) {
+			removeWorldObject(block);
+		}
+	}
+	
+	public Block getRandomBlock() {
+		for (Block block : this.getBlockSet()) {
+			return block;
+		}
+		return null;
 	}
 	
 	/**
@@ -99,6 +115,17 @@ public class World {
 	}
 	
 	/**
+	 * @author Anthony Rathe
+	 * @throws IOException 
+	 */
+	public Drone getDrone() throws IOException {
+		for (Drone drone : this.getDroneSet()) {
+			return drone;
+		}
+		throw new IOException("No drone was found");
+	}
+	
+	/**
 	 * Method that returns a set containing all the blocks in the world
 	 * @author anthonyrathe
 	 */
@@ -106,15 +133,7 @@ public class World {
 		return this.getSet(Block.class);
 	}
 	
-	
-	/**
-	 * Method that evolves the world for a given amount of time
-	 *//*
-	public void evolve(float duration) throws IOException {
-		for(WorldObject object : this.getObjectSet()){
-			object.evolve(duration);
-		}
-	}*/
+
 
 	//Todo evolve the states of the world, for the given time interval, until the stop criteria is met
 
@@ -126,47 +145,123 @@ public class World {
 	 * @author Martijn Sauwens
 	 * @throws IOException 
 	 */
-	public void advanceWorldState(float timeInterval) throws IllegalArgumentException, IOException{
+	public void advanceWorldState(float timeInterval, int nbIntervals) throws IllegalArgumentException, IOException{
 
 		if(!isValidTimeInterval(timeInterval))
 			throw new IllegalArgumentException(INVALID_TIME_INTERVAL);
 
-		boolean goalReached = false;
 		Set<Block> blockSet = this.getBlockSet();
 		Set<Drone> droneSet = this.getDroneSet();
 		Set<WorldObject> worldObjectSet = this.getObjectSet();
-		while(!goalReached){
-			//first see if the goal is satisfied
 
-			for(Block block: blockSet){
+		//System.out.println("nb Intervals: " + nbIntervals);
 
-				for(Drone drone: droneSet){
-					goalReached = this.goalReached(block, drone);
+		for(int index = 0; index != nbIntervals; index++) {
 
-					if(goalReached){
-						drone.getAutopilot().simulationEnded();
+			// first check if the goal is reached
+			for (Block block : blockSet) {
+				for (Drone drone : droneSet) {
+					//if the goal is reached, exit the loop by throwing throwing an exception
+					if (this.goalReached(block, drone)) {
+						//don't forget to notify the autopilot first
+						throw new SimulationEndedException();
 					}
 				}
 			}
-
-			//only advance if the goal has not yet been reached
-			if(!goalReached){
-				for(WorldObject worldObject: worldObjectSet){
-					worldObject.toNextState(timeInterval);
-				}
+			// if the goal was not reached, set the new state
+			for (WorldObject worldObject : worldObjectSet) {
+				worldObject.toNextState(timeInterval);
 			}
+		}
+
+	}
+
+
+	/**
+	 * Checks if the current objective is completed
+	 * @param block the selected block
+	 * @param drone the selected drone
+	 * @return true if and only if the specified goal is reached
+	 * @author Martijn Sauwens
+	 */
+	private boolean goalReached(Block block, Drone drone){
+		boolean withinFourMeters = block.getPosition().distanceBetween(drone.getPosition()) <=4.0f;
+		switch (this.getObjective()){
+			case REACH_CUBE_OBJECTIVE:
+				return withinFourMeters;
+			case VISIT_ALL_OBJECTIVE:
+				//first check if the current cube has been reached, if not we cannot have visited them all
+				if(!withinFourMeters)
+					return false;
+
+				block.setVisited();
+
+
+				System.out.print("Visited blocks: ");
+				for(Block block1: this.getBlockSet()){
+					if(block1.isVisited()) {
+						this.removeWorldObject(block1);
+						this.getBlockSet().remove(block);
+						System.out.print(block1 + ", ");
+					}
+				}
+
+				System.out.println(" ");
+
+				//check if all the cubes are visited
+				for(Block currentBlock: this.getBlockSet()){
+					// if not return false
+					if(!currentBlock.isVisited())
+						return false;
+				}
+				//only if all the cubes are visited the for loop will terminate
+				return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Getter for the currenr objective
+	 * @return a string with the current objective
+	 * @author Martijn Sauwens
+	 */
+	private String getObjective() {
+		return objective;
+	}
+
+	/**
+	 * Setter for the current objective
+	 * @param objective the current objective
+	 * @author Martijn Sauwens
+	 */
+	private void setObjective(String objective) {
+		if(!canHaveAsObjective(objective))
+			throw new IllegalArgumentException(INVALID_OBJECTIVE);
+		this.objective = objective;
+	}
+
+	/**
+	 * Checker if the provided objective is valid
+	 * @param objective the objective to check
+	 * @author Martijn Sauwens
+	 */
+	public static boolean canHaveAsObjective(String objective){
+		switch(objective){
+			case REACH_CUBE_OBJECTIVE:
+				return true;
+			case VISIT_ALL_OBJECTIVE:
+				return true;
+			default:
+				return false;
 		}
 	}
 
 	/**
-	 * Checks if the the provided drone and block are within 4meter radius
-	 * @param block the block to be checked
-	 * @param drone the drone to be checked
-	 * @return true if and only if the block and the drone are within 4m radius
+	 * @return an array containing all the possible objectives
 	 * @author Martijn Sauwens
 	 */
-	public boolean goalReached(Block block, Drone drone){
-		return block.getPosition().distanceBetween(drone.getPosition()) <=4.0f;
+	public String[] getAllPossibleObjectives(){
+		return new String[]{VISIT_ALL_OBJECTIVE, REACH_CUBE_OBJECTIVE};
 	}
 
 	/**
@@ -178,11 +273,16 @@ public class World {
 	public boolean isValidTimeInterval(float timeInterval){
 		return timeInterval > 0.0f;
 	}
-	
+
 	private final int Xsize;
 	private final int Ysize;
 	private final int Zsize;
-	
+
+	/**
+	 * Variable containing the current objective (atm only vist all cubes and reach cube)
+	 */
+	private String objective;
+
 	public int getXsize(){
 		return Xsize;
 	}
@@ -197,6 +297,14 @@ public class World {
 	private final static String ADD_WORLD_OBJECT_ERROR = "The object couldn't be added to the world";
 	private final static String WORLD_OBJECT_404 = "The object couldn't be found";
 	private final static String INVALID_TIME_INTERVAL = "The time interval is <= 0, please provide a strictly positive number";
+	private final static String INVALID_OBJECTIVE = "The specified objective is not possible";
+
+	/**
+	 * Objectives
+	 */
+	public final static String REACH_CUBE_OBJECTIVE = "reach cube";
+	public final static String VISIT_ALL_OBJECTIVE = "visit all the cubes";
+
 
 
 }

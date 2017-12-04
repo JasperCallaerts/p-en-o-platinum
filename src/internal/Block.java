@@ -1,189 +1,86 @@
 package internal;
 
-/**
- * 
- * @author Anthony Rathé & Jonathan Craessaerts &..
- *
- */
-public class Block extends WorldObject{
-	/**
-	 * Constructor for a block
-	 * @param InitialX the X-Position of the block
-	 * @param InitialY the Y-Position of the block
-	 * @param InitialZ the Z-Position of the block
-	 * @param H the hue of a block
-	 * @param S the saturation of a block
-	 * @param V the value of a block
-	 */
-	public Block(float InitialX, float InitialY, float InitialZ,
-			float H, float S, float V){
-		if (!isValidHue(H)){
-			throw new IllegalArgumentException();
-		}
-		if (!isValidValue(V)){
-			throw new IllegalArgumentException();
-		}
-		if (!isValidSaturation(S)){
-			throw new IllegalArgumentException();
-		}
-		this.PositionX = InitialX;
-		this.PositionY = InitialY;
-		this.PositionZ = InitialZ;
-		this.Hue = H;
-		this.Saturation = S;
-		this.Value = V;
-	}
+import java.io.IOException;
+
+import gui.Cube;
+import math.Vector3f;
+
+public class Block implements WorldObject {
 	
-	public void addVertices() {
-		float[] newVertices = new float[]{
-				// VO
-	            -0.5f,  0.5f,  0.5f,
-	            // V1
-	            -0.5f, -0.5f,  0.5f,
-	            // V2
-	             0.5f, -0.5f,  0.5f,
-	            // V3
-	             0.5f,  0.5f,  0.5f,
-	            // V4
-	            -0.5f,  0.5f, -0.5f,
-	            // V5
-	             0.5f,  0.5f, -0.5f,
-	            // V6
-	            -0.5f, -0.5f, -0.5f,
-	            // V7
-	             0.5f, -0.5f, -0.5f,
-		};
-		//vertices = (getVertices(), newVertices);
-	}
-	
-	public void addColours() {
-		
-	}
-	
-	public void addIndices() {
-		
+	public Block(Vector position) {
+		this.position = position;
 	}
 
 	@Override
-	public void toNextState(float deltaTime){
-		//do nothing, cube cannot change state
+	public void toNextState(float deltaTime) throws IOException {
+		// do nothing
 	}
 
+	@Override
+	public Vector getPosition() {
+		return this.position;
+	}
+
+	@Override
+	public Cube getAssociatedCube(){
+		return this.blockCube;
+	}
 
 	/**
-	 * returns the position of the cube in vector format
+	 * Sets the associated cube of the block
+	 * @param cube the cube to be associated
 	 */
-	public Vector getPosition(){
-		return new Vector(this.getPositionX(), this.getPositionY(), this.getPositionZ());
+	public void setAssocatedCube(Cube cube){
+		if(!canHaveAsCube(cube))
+			throw new IllegalArgumentException(INVALID_CUBE);
+		this.blockCube = cube;
 	}
-	
-	/**
-	 * Returns the X-Position of a cube in the world
-	 */
-	public float getPositionX(){
-		return this.PositionX;
-	}
-	
-	/**
-	 * Returns the Y-Position of a cube in the world
-	 */
-	public float getPositionY(){
-		return this.PositionY;
-	}
-	
-	/**
-	 * Returns the Z-Position of a cube in the world
-	 */
-	public float getPositionZ(){
-		return this.PositionZ;
-	}
-	
-	/**
-	 * Returns the Hue of a block
-	 */
-	public float getHue(){
-		return this.Hue;
-	}
-	
-	/**
-	 * Returns the Saturation of a block
-	 */
-	public float getSaturation(){
 
-		return (float)this.Saturation;
+	/**
+	 * checks if the provided cube can be associated
+	 * @param cube the cube to be associated
+	 * @return true if and only if cube is not initialized and the position of the cube and the block are the same
+	 */
+	private boolean canHaveAsCube(Cube cube){
+		return this.getAssociatedCube() == null && cube.getPosition().rangeEquals(this.getPosition(), maxPosDifference);
+	}
 
-	}
-	
 	/**
-	 * Returns the Value of a block
+	 * getter for the is visited flag
+	 * @return
 	 */
-	public float getValue(){
+	public boolean isVisited(){
+		return this.isVisited;
+	}
 
-		return (float)this.Value;
+	/**
+	 * set the is visited flag to true
+	 */
+	public void setVisited(){
+		this.isVisited = true;
+	}
 
+	@Override
+	public String toString() {
+		return "Block{" +
+				"position=" + position +
+				", isVisited=" + isVisited +
+				'}';
 	}
-	
+
+	private Vector position;
+
+	private Cube blockCube;
+
 	/**
-	 * Checks if the given hue is valid (360 >= hue >= 0)
+	 * Flag that stores if the block was visited by the drone.
 	 */
-	public boolean isValidHue(float hue){
-		return ((0 <= hue) && (hue <= 360));
-	}
-	
+	private boolean isVisited = false;
+
 	/**
-	 * Checks if the given saturation is valid (1 >= S >= 0)
+	 * variable used for the max allowed error on the position between de block and the cube
 	 */
-	public boolean isValidSaturation(float sat){
-		return ((0 <= sat) && (sat <= 1));
-	}
-	
-	/**
-	 * Checks if the given value is valid (1 >= S >= 0)
-	 */
-	public boolean isValidValue(float val){
-		return ((0 <= val) && (val <= 1));
-	}
-	
-	public static float[] getVertices() {
-		return vertices;
-	}
-	
-	public static float[] getColours() {
-		return colours;
-	}
-	
-	public static int[] getIndices() {
-		return indices;
-	}
-	
-	/**
-	 * Implementation of inherited method
-	 * @param duration
-	 * @author anthonyrathe
-	 */
-	public void evolve(float duration){
-		
-	}
-	
-	/**
-	 * Variables for the position of a block
-	 */
-	private final float PositionX;
-	private final float PositionY;
-	private final float PositionZ;
-	
-	/**
-	 * Variables for the HSV (colour) of a block
-	 */
-	private float Hue;
-	private float Saturation;
-	private float Value;
-	
-	/**
-	 * Data from all blocks.
-	 * Will be given to the GUI.
-	 */
-	static float[] vertices;
-	static float[] colours;
-	static int[] indices;
+	private final static float maxPosDifference = 1E-6f;
+
+	private final static String INVALID_CUBE = "the provided cube does not have the same position as the block";
 }

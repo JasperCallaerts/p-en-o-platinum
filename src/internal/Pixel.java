@@ -1,5 +1,6 @@
 package internal;
 
+
 import javax.swing.text.Position;
 
 /**
@@ -20,6 +21,23 @@ public class Pixel {
         this.setRed(red);
         this.setGreen(green);
         this.setBlue(blue);
+    }
+
+    /**
+     * constructor for a pixel in HSV value
+     * @param H the hue value of the pixel
+     * @param S the saturation value of the pixel
+     * @param V the value value of the pixel
+     */
+    public Pixel(float H, float S, float V){
+       float[] rgb = HSVconverter.HSVtoRGB2(H, S, V);
+       byte R = (byte) (Math.round(rgb[0]*MAX) - BIAS);
+       byte G = (byte) (Math.round(rgb[1]*MAX) - BIAS);
+       byte B = (byte) (Math.round(rgb[2]*MAX) - BIAS);
+
+       this.red = R;
+       this.green = G;
+       this.blue = B;
     }
 
     /**
@@ -63,9 +81,9 @@ public class Pixel {
      * @return an array Containing the (H, S, V);
      */
     public float[] convertToHSV(){
-        int R = this.getRedInt();
-        int G = this.getGreenInt();
-        int B = this.getBlueInt();
+        float R = this.getRedFloat();
+        float G = this.getGreenFloat();
+        float B = this.getBlueFloat();
         return HSVconverter.RGBtoHSV(R, G, B);
     }
 
@@ -172,6 +190,13 @@ public class Pixel {
     }
 
     /**
+     * getter for the red value of the pixel in float value
+     * @return an floating point value, range (0.0f, 1.0f)
+     */
+    public float getRedFloat(){
+        return this.getRedInt()/255.0f;
+    }
+    /**
      * Setter for the red value of the pixel
      * @param red the desired red value between -128 and 127
      */
@@ -204,6 +229,14 @@ public class Pixel {
      */
     public int getGreenInt(){
         return this.getGreen() + BIAS;
+    }
+
+    /**
+     * Getter for the green floating point value of the pixel
+     * @return an floating point value, range (0.0f, 1.0f)
+     */
+    public float getGreenFloat(){
+        return this.getGreenInt()/255.0f;
     }
 
     /**
@@ -242,6 +275,14 @@ public class Pixel {
     }
 
     /**
+     * Getter for the blue value of he pixel in floating point
+     * @return a floating point value, range (0.0f, 1.0f)
+     */
+    public float getBlueFloat(){
+        return this.getBlueInt()/255.0f;
+    }
+
+    /**
      * Setter for the blue value of the pixel
      * @param blue the desired blue value between -128 and 127
      */
@@ -257,6 +298,15 @@ public class Pixel {
         if(!isValidColorValue(blue))
             throw new IllegalArgumentException(ILLEGAL_VALUE);
         this.setBlue((byte)(blue - BIAS));
+    }
+
+    @Override
+    public String toString() {
+        return "Pixel{" +
+                "red=" + (red) +
+                ", green=" + (green) +
+                ", blue=" + (blue) +
+                '}';
     }
 
     /*
@@ -284,6 +334,7 @@ public class Pixel {
     public final static int MAX = 255;
     public final static int MIN = 0;
     public final static int NB_OF_BYTES_IN_PIXEL = 3;
+
 
     /*
     Error Messages

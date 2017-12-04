@@ -18,7 +18,8 @@ public class Array2D<T> {
      * @throws IllegalArgumentException
      */
     public Array2D(T[] inputArray, int nbRows, int nbColumns) throws IllegalArgumentException{
-        if(!isValid2DArray(inputArray, nbRows, nbColumns))
+        
+    	if(!isValid2DArray(inputArray, nbRows, nbColumns))
             throw new IllegalArgumentException(INVALID_SIZE);
 
         this.array2DArray = inputArray;
@@ -34,18 +35,19 @@ public class Array2D<T> {
      * @param endColumn the end of the 2D array column (exclusive)
      * @return a new 2D array containing a 2D slice of the provided 2D array
      */
-    public Array2D getSlice(int startRow, int endRow, int startColumn, int endColumn){
+    public Array2D<T> getSlice(int startRow, int endRow, int startColumn, int endColumn){
         ArrayList<T> tempArray = new ArrayList<>();
         for(int rowIndex = startRow; rowIndex != endRow; rowIndex++){
             T[] row = this.getRow(rowIndex);
             ArrayList<T> tempRow = new ArrayList<>(Arrays.asList(row));
-            ArrayList<T> columnSlice = (ArrayList<T>) tempRow.subList(startColumn, endColumn);
+            ArrayList<T> columnSlice = new ArrayList<>(tempRow.subList(startColumn, endColumn));
             tempArray.addAll(columnSlice);
         }
 
         T[] elemArray = (T[]) tempArray.toArray();
-        return new Array2D(elemArray, endRow-startRow,endColumn-startColumn );
+        return new Array2D<T>(elemArray, endRow-startRow,endColumn-startColumn );
     }
+
 
     /**
      * Selects a row from the 2D array
@@ -143,6 +145,15 @@ public class Array2D<T> {
         return length == nbColumns*nbRows;
     }
 
+    @Override
+    public String toString() {
+        return "Array2D{" +
+                "nbRows=" + nbRows +
+                ", nbColumns=" + nbColumns +
+                ", array2DArray=" + Arrays.toString(array2DArray) +
+                '}';
+    }
+
     /**
      * gets a list version of the array containing the 2D array list
      * @return  a list containing the 1D array containing the 2D array elements
@@ -150,6 +161,7 @@ public class Array2D<T> {
     public List<T> getArray2DList(){
         return Arrays.asList(this.getArray2DArray());
     }
+    
 
     /*
     Instance Variables

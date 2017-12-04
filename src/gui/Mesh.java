@@ -24,10 +24,11 @@ import java.nio.IntBuffer;
 import org.lwjgl.system.MemoryUtil;
 
 public class Mesh {
+	
 	private int vao;
 	private int posvbo;
 	private int colvbo;
-	private int indvbo;
+	private int indebo;
 	private int vertexCount;
 
 	public void init(float[] positions, float[] colours, int[] indices) { 
@@ -56,11 +57,11 @@ public class Mesh {
         glBufferData(GL_ARRAY_BUFFER, colourBuffer, GL_STATIC_DRAW);
         glVertexAttribPointer(1, 3, GL_FLOAT, false, 0, 0);
 
-        // Index VBO
-        indvbo = glGenBuffers();
+        // Index EBO
+        indebo = glGenBuffers();
         indicesBuffer = MemoryUtil.memAllocInt(indices.length);
         indicesBuffer.put(indices).flip();
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indvbo);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indebo);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesBuffer, GL_STATIC_DRAW);
         
         glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -82,13 +83,11 @@ public class Mesh {
 	}
 
 	public void delete() {
-		glDisableVertexAttribArray(0);
-
         // Delete the VBOs
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glDeleteBuffers(posvbo);
         glDeleteBuffers(colvbo);
-        glDeleteBuffers(indvbo);
+        glDeleteBuffers(indebo);
 
         // Delete the VAO
         glBindVertexArray(0);
