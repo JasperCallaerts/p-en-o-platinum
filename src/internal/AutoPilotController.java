@@ -108,9 +108,10 @@ public class AutoPilotController {
     public AutopilotOutputs getControlActions(){
 
         ControlOutputs controlOutputs = new ControlOutputs();
-        AutoPilotCamera APCamera = this.getAssociatedAutopilot().getAPCamera();
         AutopilotInputs currentInputs = this.getCurrentInputs();
+
         //APCamera.loadNextImage(currentInputs.getImage());
+        AutoPilotCamera APCamera = this.getAssociatedAutopilot().getAPCamera();
         APCamera.loadNewImage(currentInputs.getImage());
 
         float elapsedTime = this.getCurrentInputs().getElapsedTime();
@@ -130,9 +131,9 @@ public class AutoPilotController {
         //int threshold = Math.max(Math.round(THRESHOLD_PIXELS*NORMAL_CUBE_SIZE/cubeSize),1);
         int threshold = Math.round(THRESHOLD_DISTANCE);
         int bias = 0;
-        if (currentInputs.getPitch() > PI/20) {
+        if (currentInputs.getPitch() > PI / 20) {
             bias = BIAS;
-        }else if(currentInputs.getPitch() < -PI/20) {
+        } else if (currentInputs.getPitch() < -PI / 20) {
             bias = -BIAS;
         }
         //System.out.println(bias);
@@ -143,41 +144,43 @@ public class AutoPilotController {
         String controlString = "Control action ";
 
         // Roll
-        if(xPosition > threshold){
+        if (xPosition > threshold) {
             // Turn right
             //System.out.println("This is your captain speaking: the red cube is located at our right-hand-side");
             this.startTurnRight(controlOutputs, xPosition, yPosition);
             controlString += "Turning Right: \n";
-        }else if(xPosition >= -threshold && xPosition <= threshold){
+        } else if (xPosition >= -threshold && xPosition <= threshold) {
             // Stop turning
             this.stopTurn(controlOutputs, xPosition, yPosition);
 
             // Start Ascending/Descending
             // Ascend/Descend
-            if(yPosition < -threshold - bias && (xPosition >= -threshold && xPosition <= threshold)){
+            if (yPosition < -threshold - bias && (xPosition >= -threshold && xPosition <= threshold)) {
                 // Descend
                 //System.out.println("This is your captain speaking: the red cube is located underneath us");
                 this.startDescend(controlOutputs, xPosition, yPosition);
                 controlString += "Start Descend: \n";
 
-            }else if((yPosition >= -threshold - bias && yPosition <= threshold - bias) && (xPosition >= -threshold && xPosition <= threshold)){
+            } else if ((yPosition >= -threshold - bias && yPosition <= threshold - bias) && (xPosition >= -threshold && xPosition <= threshold)) {
                 // Stop descending/ascending
                 this.stopAscendDescend(controlOutputs, xPosition, yPosition);
                 controlString += "Stop Ascending: \n";
 
-            }else if(yPosition > threshold - bias && (xPosition >= -threshold && xPosition <= threshold)){
+            } else if (yPosition > threshold - bias && (xPosition >= -threshold && xPosition <= threshold)) {
                 // Ascend
                 //System.out.println("This is your captain speaking: the red cube is located above us");
                 this.startAscend(controlOutputs, xPosition, yPosition);
                 controlString += "Start Ascending: \n";
 
             }
-        }else if(xPosition < -threshold){
+        } else if (xPosition < -threshold) {
             // Turn left
             //System.out.println("This is your captain speaking: the red cube is located at our left-hand-side");
             this.startTurnLeft(controlOutputs, xPosition, yPosition);
             controlString += "Start Turn left: \n";
         }
+
+
 
         this.rollControl(controlOutputs);
 
@@ -212,6 +215,13 @@ public class AutoPilotController {
      * @param controlOutputs the control outputs to be checked
      */
     private void angleOfAttackControl(ControlOutputs controlOutputs){
+
+        //first check if the current and the previous steps are initialized, if not so delete all control actions
+        //and set to standard value
+        if(this.getCurrentInputs() == null || this.getPreviousInputs() == null){
+            controlOutputs.reset();
+            return;
+        }
         //first prepare all the variables
         PhysXEngine.PhysXOptimisations optimisations = this.getAssociatedAutopilot().getPhysXOptimisations();
         AutopilotInputs inputs = this.getCurrentInputs();
@@ -549,12 +559,21 @@ public class AutoPilotController {
         return yPID;
     }
 
+    public ControlOutputs getPrevOutputs() {
+        return prevOutputs;
+    }
+
+    public void setPrevOutputs(ControlOutputs prevOutputs) {
+        this.prevOutputs = prevOutputs;
+    }
+
     private AutoPilot associatedAutopilot;
     private AutopilotInputs currentInputs;
     private AutopilotInputs previousInputs;
     private FlightRecorder flightRecorder;
-    private PIDController xPID = new PIDController(1.f, 0.0f, 0.0f);
-    private PIDController yPID = new PIDController(1.f, 0.0f, 0.0f);
+    private PIDController xPID = new PIDController(1.f, 0.2f, 0.2f);
+    private PIDController yPID = new PIDController(1.f, 0.2f, 0.2f);
+    private ControlOutputs prevOutputs;
     private final static int NB_OF_PREV_INPUTS = 2;
 
     private static final float STANDARD_INCLINATION = (float) PI/8;
@@ -563,7 +582,7 @@ public class AutoPilotController {
     private static final float TURNING_INCLINATION = (float) PI/8;
     private static final float ERROR_INCLINATION_MARGIN = (float) (5*PI/180);
     private static final int BIAS = 0;
-    private static final float THRESHOLD_DISTANCE = 3f;
+    private static final float THRESHOLD_DISTANCE = 1f;
     private static final float STANDARD_THRUST = 32.859283f*2;
     private static final float THRUST_FACTOR = 2.0f;
     private static final float THRESHOLD_THRUST_ANGLE = (float)(PI/20);
@@ -573,6 +592,7 @@ public class AutoPilotController {
     private static final float ROLL_THESHOLD = (float) (PI * 3.0f/180.0f);
     private static final float MAXTHRUST = 250.0f;
     private static final float RAD2DEGREE = (float) (180f/ PI);
+    private static final float CHECK_INTERVAL = 1/20.f;
 
     /*
     Error messages
@@ -625,8 +645,17 @@ public class AutoPilotController {
 
     private class ControlOutputs implements AutopilotOutputs{
 
-        public ControlOutputs(){
+        private ControlOutputs(){
             //do nothing, everything stays initialized on zero
+        }
+
+        private void reset(){
+
+            this.setRightWingInclination(MAIN_STABLE_INCLINATION);
+            this.setLeftWingInclination(MAIN_STABLE_INCLINATION);
+            this.setHorStabInclination(STABILIZER_STABLE_INCLINATION);
+            this.setVerStabInclination(STABILIZER_STABLE_INCLINATION);
+
         }
 
         @Override

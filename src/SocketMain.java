@@ -1,7 +1,4 @@
-import internal.AngleOfAttackException;
-import internal.AutoPilot;
-import internal.FlightRecorder;
-import internal.SimulationEndedException;
+import internal.*;
 
 import java.io.*;
 
@@ -49,8 +46,15 @@ public class SocketMain {
                     }
                     return;
 
+
                 default:
+                    try {
+                        FLIGHT_RECORDER.saveDiagnosisWingIssues(20, "diagnosis.txt");
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    }
                     ex.printStackTrace();
+                    return;
             }
         }
     };
@@ -59,7 +63,7 @@ public class SocketMain {
     public final static int CONNECTION_PORT = 21212;
     public final static FlightRecorder FLIGHT_RECORDER = new FlightRecorder(20, true);
     //Todo add the recorder to the autopilot and the testbed: used for diagnis during flight;
-    private static TestbedMain MAIN_TESTBED = new TestbedMain(CONNECTION_NAME, CONNECTION_PORT, true);
+    private static TestbedMain MAIN_TESTBED = new TestbedMain(CONNECTION_NAME, CONNECTION_PORT, false);
     private static AutopilotMain MAIN_AUTOPILOT = new AutopilotMain(CONNECTION_NAME, CONNECTION_PORT, new AutoPilot());
 
 }

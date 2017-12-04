@@ -456,7 +456,7 @@ public class Drone implements WorldObject {
 
 	private final static String THRUST_OUT_OF_RANGE = "The thrust is out of range: [0, this.maxThrust]";
 	private final static String INCLINATION_OUT_OF_RANGE = "The inclination is out of range: [0, 2.PI[";
-	private final static String VELOCITY_ERROR = "The velocity exceeds the upper limit";
+	public final static String VELOCITY_ERROR = "The velocity exceeds the upper limit";
 	private final static String WING_EXCEPTION = "the wings are null references or the drone has already wings" +
 			"attached to it";
 	private final static String UNINITIALIZED_ENGINEMASS = "The mass of the engine is uninitialized";
