@@ -3,9 +3,7 @@ package gui;
 import internal.HSVconverter;
 import internal.Vector;
 import math.Matrix3f;
-import math.Matrix4f;
 import math.Vector3f;
-import math.Vector4f;
 
 import java.util.Arrays;
 
