@@ -1,6 +1,9 @@
 package tests;
 
 import internal.*;
+
+import java.io.IOException;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -45,7 +48,7 @@ public class StateTest {
     }
 
     @Test
-    public void testNextState(){
+    public void testNextState() throws IOException{
         System.out.println("VerticalStab: " + verticalStabilizer.getLift());
         System.out.println("HorizontalStab: " + horizontalStabilizer.getLift());
         System.out.println("RightMain: " + rightMain.getLift());
