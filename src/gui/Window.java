@@ -238,23 +238,23 @@ public class Window {
 	
 	public void updateMatrices() {
 		if (Input.isKeyPressed(GLFW_KEY_R))
-			this.setting = Settings.DRONE_CAM;
+			setSetting(Settings.DRONE_CAM);
 		else if (Input.isKeyPressed(GLFW_KEY_T))
-			this.setting = Settings.DRONE_TOP_DOWN_CAM;
+			setSetting(Settings.DRONE_TOP_DOWN_CAM);
 		else if (Input.isKeyPressed(GLFW_KEY_Y))
-			this.setting = Settings.DRONE_SIDE_CAM;
+			setSetting(Settings.DRONE_SIDE_CAM);
 		else if (Input.isKeyPressed(GLFW_KEY_U))
-			this.setting = Settings.DRONE_CHASE_CAM;
+			setSetting(Settings.DRONE_CHASE_CAM);
 		else if (Input.isKeyPressed(GLFW_KEY_I))
-			this.setting = Settings.INDEPENDENT_CAM;
+			setSetting(Settings.INDEPENDENT_CAM);
 		else if (Input.isKeyPressed(GLFW_KEY_TAB))
-			this.setting = getSetting().next();
+			setSetting(getSetting().next());
 		
 		if (getSetting() == Settings.INDEPENDENT_CAM)
-			input.processInput();
-		updateViewMatrix(setting);
+			this.input.processInput();
 		
-		projectionMatrix = getProjectionMatrix();
+		updateViewMatrix(getSetting());
+		updateProjectionMatrix();
 	}
 	
 	public Matrix4f getModelMatrix(Vector3f position, Vector3f size) {
@@ -265,35 +265,25 @@ public class Window {
 		return Matrix4f.translate(position).multiply(Matrix4f.rotate(orientation)).multiply(Matrix4f.scale(size));
 	}
 	
-	public void updateViewMatrix() {
-		switch (getSetting()) {
-		case DRONE_CAM: 
-			this.viewMatrix = getView(new Vector3f(1f, 1f, 1f), new Vector3f(1f, 1f, 1f).scale(3f));
-			break;
-		case DRONE_CHASE_CAM: 
-			this.viewMatrix = getView(new Vector3f(1f, 0f, 0f), new Vector3f(-1f, 0f, -1f).scale(10f));
-			break;
-		default: 
-			this.viewMatrix = input.getViewMatrix(getSetting());
-			break;
-		}
-	}
-	
 	public void updateViewMatrix(Settings setting) {
 		switch (setting) {
 		case DRONE_CAM: 
-			this.viewMatrix = getView(new Vector3f(1f, 1f, 1f), new Vector3f(1f, 1f, 1f).scale(3f));
+			setView(new Vector3f(1f, 1f, 1f), new Vector3f(1f, 1f, 1f).scale(3f));
 			break;
 		case DRONE_CHASE_CAM: 
-			this.viewMatrix = getView(new Vector3f(1f, 0f, 0f), new Vector3f(-1f, 0f, -1f).scale(20f));
+			setView(new Vector3f(1f, 0f, 0f), new Vector3f(-1f, 0f, -1f).scale(20f));
 			break;
 		default: 
-			this.viewMatrix = input.getViewMatrix(setting);
+			setView();
 			break;
 		}
 	}
 	
-	public Matrix4f getView(Vector3f camOrientation, Vector3f camPosition) {   
+	private void setView() {
+		this.viewMatrix = this.input.getViewMatrix(setting);
+	}
+	
+	private void setView(Vector3f camOrientation, Vector3f camPosition) {   
 		Vector3f orientation = new Vector3f();
 		Vector3f dronePosition = new Vector3f();
         for (Drone drone: world.getDroneSet()) {
@@ -309,10 +299,10 @@ public class Window {
         
         Vector3f position = dronePosition.add(look.scale(camPosition));
 
-		return Matrix4f.viewMatrix(right, up, look, position);
+		this.viewMatrix = Matrix4f.viewMatrix(right, up, look, position);
 	}
 	
-	public Matrix4f getProjectionMatrix() {
+	private void updateProjectionMatrix() {
         float ratio;
 		try (MemoryStack stack = MemoryStack.stackPush()) {
 			long window = GLFW.glfwGetCurrentContext();
@@ -321,7 +311,7 @@ public class Window {
 			GLFW.glfwGetFramebufferSize(window, width, height);
 			ratio = (float) width.get() / (float) height.get();
 		}
-        return Matrix4f.perspective(FOV, ratio, NEAR, FAR);
+        this.projectionMatrix = Matrix4f.perspective(FOV, ratio, NEAR, FAR);
 	}
 	
 	public String getTitle() {
