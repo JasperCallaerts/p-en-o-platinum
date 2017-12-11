@@ -271,7 +271,7 @@ public class Window {
 			setView(new Vector3f(1f, 1f, 1f), new Vector3f(1f, 1f, 1f).scale(3f));
 			break;
 		case DRONE_CHASE_CAM: 
-			setView(new Vector3f(1f, 0f, 0f), new Vector3f(-1f, 0f, -1f).scale(20f));
+			setView(new Vector3f(1f, 0f, 0f), new Vector3f(-1f, 0f, -1f).scale(13f));
 			break;
 		default: 
 			setView();
