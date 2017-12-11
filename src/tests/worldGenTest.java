@@ -1,28 +1,65 @@
 //package tests;
 //
+//import java.io.BufferedWriter;
 //import java.io.File;
 //import java.io.FileOutputStream;
+//import java.io.FileWriter;
+//import java.io.IOException;
+//import java.nio.charset.Charset;
+//import java.nio.file.Files;
+//import java.nio.file.Path;
+//import java.nio.file.Paths;
 //import java.util.ArrayList;
+//import java.util.Arrays;
+//import java.util.Collections;
 //import java.util.Map;
 //import java.util.Set;
 //import java.util.TreeMap;
-//
+//import java.awt.BasicStroke;
+//import java.awt.Color;
+//import java.awt.Dimension;
+//import java.awt.FontMetrics;
+//import java.awt.Graphics;
+//import java.awt.Graphics2D;
+//import java.awt.Point;
+//import java.awt.RenderingHints;
+//import java.awt.Stroke;
+//import java.util.ArrayList;
+//import java.util.List;
+//import java.util.Random;
+//import javax.swing.JFrame;
+//import javax.swing.JPanel;
+//import javax.swing.SwingUtilities;
 //
 //import internal.Vector;
 //import internal.WorldGenerator;
 //
-//public class worldGenTest {
+//public class worldGenTest{
 //
-//	private static int nbOfBlocks = 100000;
+//	private static int nbOfBlocks = 1000;
 //	private static WorldGenerator wg = new WorldGenerator(nbOfBlocks);
 //	
 //	
-//	public static void main(String[] args) {
+//	public static void main(String[] args) throws IOException {
 //		ArrayList<Vector> poss = generatePositions(nbOfBlocks);
-//		
 //		for (int i = 1; i <= 3; i++){
 //			ArrayList<ArrayList<Float>> xx = checkPositions(poss, nbOfBlocks,i);
 //		}
+//		FileWriter f = new FileWriter("gaus2.txt", false);
+//		BufferedWriter out = new BufferedWriter(f);
+//		
+//		ArrayList<Float> a = new ArrayList<>();
+//		for (int j=0; j < poss.size(); j++){
+//			a.add(poss.get(j).getzValue());
+//		}
+//		
+//		Collections.sort(a);
+//		
+//		for (int j=0; j < a.size(); j++){
+//			out.write(String.valueOf(a.get(j)) + "\r\n");
+//		}
+//		out.close();
+//		f.close();
 //	}
 //
 //	
@@ -114,5 +151,14 @@
 //		return res;
 //	}
 //	
-// 
+//
 //}
+//
+//   
+//   
+//
+//
+//	
+//	
+//	
+//
