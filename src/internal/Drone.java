@@ -51,7 +51,7 @@ public class Drone implements WorldObject {
 
 		// the cube associated with the drone
 		try {
-			float scale = 4f;
+			float scale = 1/4f;
 			
 			Cube droneCube1 = new Cube(position.convertToVector3f(), new Vector3f(240f, 100f, 100f));
 			droneCube1.setSize(new Vector3f(8f, 0.5f, 2f).scale(scale));
