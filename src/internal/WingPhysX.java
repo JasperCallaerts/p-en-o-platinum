@@ -75,11 +75,11 @@ public abstract class WingPhysX {
         float liftSlope = this.getLiftSlope();
         //System.out.println("angle of attack: " + angleOfAttack);
         
-        if(Math.abs(angleOfAttack) >= this.getMaximumAngleOfAttack()){
+       /* if(Math.abs(angleOfAttack) >= this.getMaximumAngleOfAttack()){
             System.out.println("AO<WA: " + angleOfAttack*RAD2DEGREE);
             System.out.println("CauseWing: " + this);
             throw new AngleOfAttackException(this);
-        }
+        }*/
 
 
         // calculate s^2

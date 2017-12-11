@@ -23,11 +23,21 @@ import Autopilot.*;
  */
 public class AutoPilot implements Autopilot {
 
+	public AutoPilot(String controllerConfig){
+		switch(controllerConfig){
+			case ALPHA_CONTROLLER:
+				this.setController(new AlphaController(this));
+				return;
+			case BETA_CONTROLLER:
+				this.setController(new BetaController(this));
+		}
+	}
+
     public AutoPilot() {
 
     	// set the controller of the autopilot
 		//Todo uncomment when normal controller works again
-    	this.setController(new AutoPilotController(this));
+    	this(BETA_CONTROLLER);
     	//this.attackController = new AutoPilotControllerNoAttack(this);
 
     }
@@ -242,6 +252,9 @@ public class AutoPilot implements Autopilot {
 	private static final float NODE_REACHED_DISTANCE = 4f;
 	private static final float STANDARD_THRUST = 32.859283f;
 	private static final float CUBE_LOCATION_DELTA_THRESHOLD = 0.5f;
+	private static final String ALPHA_CONTROLLER = "ALPHA_CONTROLLER";
+	private static final String BETA_CONTROLLER = "BETA_CONTROLLER";
+
 
 
     /*

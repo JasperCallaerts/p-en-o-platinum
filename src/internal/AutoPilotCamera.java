@@ -58,8 +58,8 @@ public class AutoPilotCamera {
 
     public Vector getCenterOfNCubes(int nbOfCubes) throws NoCubeException {
         List<Vector> cubesInPicture = this.getCubesInPicture();
-        System.out.println("nb of cubes in the picture: " + cubesInPicture.size());
-        System.out.println("cubes in picture: " + cubesInPicture);
+//        System.out.println("nb of cubes in the picture: " + cubesInPicture.size());
+//        System.out.println("cubes in picture: " + cubesInPicture);
         //first check if there are any cubes, if not return the center
 
         if(cubesInPicture.size() == 0){

@@ -957,11 +957,11 @@ public class PhysXEngine {
         }
 
 
-        public Vector[] balanceDrone(Vector orientation){
-            PhysXEngine.this.getMainLeft().setWingInclination(AutoPilotController.MAIN_STABLE_INCLINATION);
-            PhysXEngine.this.getMainRight().setWingInclination(AutoPilotController.MAIN_STABLE_INCLINATION);
-            PhysXEngine.this.getHorizontalStabilizer().setWingInclination(AutoPilotController.STABILIZER_STABLE_INCLINATION);
-            PhysXEngine.this.getVerticalStabilizer().setWingInclination(AutoPilotController.STABILIZER_STABLE_INCLINATION);
+        public Vector[] balanceDrone(Vector orientation, float mainWingStable, float stabWingStable){
+            PhysXEngine.this.getMainLeft().setWingInclination(mainWingStable);
+            PhysXEngine.this.getMainRight().setWingInclination(mainWingStable);
+            PhysXEngine.this.getHorizontalStabilizer().setWingInclination(stabWingStable);
+            PhysXEngine.this.getVerticalStabilizer().setWingInclination(stabWingStable);
             // use interval reduction to find the zero point for the lift, and initialize the thrust to
             // be equal to the "drag" experienced by the aircraft.
             float stepsize = 1.0f;

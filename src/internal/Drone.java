@@ -11,6 +11,8 @@ import Autopilot.AutopilotOutputs;
 import gui.Cube;
 import math.Vector3f;
 
+import static java.lang.Math.PI;
+
 /**
  * @author Anthony Rathé & MartijnSauwens & Bart
  * Immutable variables: maxThrust, engineMass, enginePosition, leftWing, rightWing,
@@ -46,7 +48,7 @@ public class Drone implements WorldObject {
 		this.setRotationVector(rotationVector);
 
 		PhysXEngine.PhysXOptimisations optimisations = this.getPhysXEngine().createPhysXOptimisations();
-		this.setVelocity(optimisations.balanceDrone(this.getOrientation())[1]);
+		this.setVelocity(optimisations.balanceDrone(this.getOrientation(), (float) (7*PI/180), 0.0f)[1]);
 
 
 		// the cube associated with the drone
@@ -117,7 +119,7 @@ public class Drone implements WorldObject {
 	public void toNextState(float deltaTime) throws IOException {
 		if (!WorldObject.isValidTimeStep(deltaTime))
 			throw new IllegalArgumentException(INVALID_TIMESTEP);
-		float INSIGNIFICANCE = 0.01f;
+		float INSIGNIFICANCE = 0.0001f;
 
 		//engage autopilot
 		AutopilotOutputs autopilotOutputs = this.getAutopilotOutputs();

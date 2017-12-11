@@ -13,18 +13,18 @@ public class DroneBuilder {
      * Constants used to create the drone & configure the autopilot
      */
 
-    public final static float ENGINE_MASS = 5.0f;
-    public final static float MAX_THRUST = 250.0f;
-    public final static float MAIN_WING_MASS = 2.5f;
-    public final static float STABILIZER_MASS = 1.25f;
+    public final static float ENGINE_MASS = .250f;
+    public final static float MAX_THRUST = 5.0f;
+    public final static float MAIN_WING_MASS = .25f;
+    public final static float STABILIZER_MASS = 0.125f;
     public final static float MAINWING_START_INCL = (float) Math.PI/12.0f;
     public final static float STABS_START_INCL = 0.0f;
     public final static float MAX_ANGLE_OF_ATTACK = (float) ( Math.PI/2.0 - 0.001f);
-    public final static float LIFT_COEFFICIENT = 5.0f;
-    public final static float LIFT_COEFFICIENT_STAB =1.0f;
-    public final static Vector LEFTWING_POS = new Vector(-1.0f, 0.0f, 0.0f);
-    public final static Vector RIGHTWING_POS = new Vector(1.0f, 0.0f, 0.0f);
-    public final static Vector STABILIZE_POS = new Vector(0.0f, 0.0f, 2.0f);
+    public final static float LIFT_COEFFICIENT = .3f;
+    public final static float LIFT_COEFFICIENT_STAB =.15f;
+    public final static Vector LEFTWING_POS = new Vector(-.5f, 0.0f, 0.0f);
+    public final static Vector RIGHTWING_POS = new Vector(.5f, 0.0f, 0.0f);
+    public final static Vector STABILIZE_POS = new Vector(0.0f, 0.0f, .5f);
     public final static Vector STARTPOS = new Vector();
     public final static Vector START_VEL = new Vector(0,0,-6.32f);
     public final static Vector START_ORIENTATION = new Vector();
@@ -152,7 +152,7 @@ public class DroneBuilder {
              */
             @Override
             public float getMaxAOA() {
-                return (float) (40*Math.PI/180f);
+                return (float) (30*Math.PI/180f);
             }
 
             /**
