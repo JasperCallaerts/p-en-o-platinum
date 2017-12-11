@@ -50,7 +50,7 @@ public class Main {
         WorldBuilder worldBuilder = new WorldBuilder();
         Drone drone = worldBuilder.DRONE;
         AutoPilot autopilot = new AutoPilot();
-        World world = worldBuilder.createWorld();
+        World world = worldBuilder.createWorld(PhysXEngine.ALPHA_MODE);
         
         List<Block> blocks = new ArrayList<Block>();
 
@@ -128,7 +128,7 @@ public class Main {
                     byte[] cameraImage = droneCam.getCameraView();
                     MainAutopilotInputs autopilotInputs =  new MainAutopilotInputs(drone, cameraImage, (float) Time.getTimePassed()); // elapsedTime vervangen door getTimePassed()
                     if(!configuredAutopilot){
-                         autopilotOutputs= autopilot.simulationStarted(new DroneBuilder(true).createConfig(), autopilotInputs);
+                         autopilotOutputs= autopilot.simulationStarted(new DroneBuilder(true).createConfig(PhysXEngine.ALPHA_MODE), autopilotInputs);
                         configuredAutopilot = true;
                     }else{
                         autopilotOutputs = autopilot.timePassed(autopilotInputs);

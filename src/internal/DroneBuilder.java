@@ -3,6 +3,8 @@ package internal;
 
 import Autopilot.AutopilotConfig;
 
+import static java.lang.Math.PI;
+
 /**
  * Created by Martijn on 23/10/2017.
  * @author Martijn Sauwens
@@ -13,18 +15,36 @@ public class DroneBuilder {
      * Constants used to create the drone & configure the autopilot
      */
 
-    public final static float ENGINE_MASS = .250f;
-    public final static float MAX_THRUST = 5.0f;
-    public final static float MAIN_WING_MASS = .25f;
-    public final static float STABILIZER_MASS = 0.125f;
-    public final static float MAINWING_START_INCL = (float) Math.PI/12.0f;
+    public final static float  BETA_ENGINE_MASS = .250f;
+    public final static float  BETA_MAX_THRUST = 5.0f;
+    public final static float  BETA_MAIN_WING_MASS = .25f;
+    public final static float  BETA_STABILIZER_MASS = 0.125f;
+    public final static float  BETA_MAINWING_START_INCL = (float) PI/12.0f;
+    public final static float  BETA_STABS_START_INCL = 0.0f;
+    public final static float  BETA_MAX_ANGLE_OF_ATTACK = (float) ( PI/2.0 - 0.001f);
+    public final static float  BETA_LIFT_COEFFICIENT = .3f;
+    public final static float  BETA_LIFT_COEFFICIENT_STAB =.15f;
+    public final static Vector BETA_LEFTWING_POS = new Vector(-.5f, 0.0f, 0.0f);
+    public final static Vector BETA_RIGHTWING_POS = new Vector(.5f, 0.0f, 0.0f);
+    public final static Vector BETA_STABILIZE_POS = new Vector(0.0f, 0.0f, .5f);
+    public final static Vector BETA_STARTPOS = new Vector();
+    public final static Vector BETA_START_VEL = new Vector(0,0,-6.32f);
+    public final static Vector BETA_START_ORIENTATION = new Vector();
+    public final static Vector BETA_START_ROTATION = new Vector();
+
+
+    public final static float ENGINE_MASS = 5.0f;
+    public final static float MAX_THRUST = 250.0f;
+    public final static float MAIN_WING_MASS = 2.5f;
+    public final static float STABILIZER_MASS = 1.25f;
+    public final static float MAINWING_START_INCL = (float) PI/12.0f;
     public final static float STABS_START_INCL = 0.0f;
-    public final static float MAX_ANGLE_OF_ATTACK = (float) ( Math.PI/2.0 - 0.001f);
-    public final static float LIFT_COEFFICIENT = .3f;
-    public final static float LIFT_COEFFICIENT_STAB =.15f;
-    public final static Vector LEFTWING_POS = new Vector(-.5f, 0.0f, 0.0f);
-    public final static Vector RIGHTWING_POS = new Vector(.5f, 0.0f, 0.0f);
-    public final static Vector STABILIZE_POS = new Vector(0.0f, 0.0f, .5f);
+    public final static float MAX_ANGLE_OF_ATTACK = (float) ( PI/2.0 - 0.001f);
+    public final static float LIFT_COEFFICIENT = 5.0f;
+    public final static float LIFT_COEFFICIENT_STAB =1.0f;
+    public final static Vector LEFTWING_POS = new Vector(-1.0f, 0.0f, 0.0f);
+    public final static Vector RIGHTWING_POS = new Vector(1.0f, 0.0f, 0.0f);
+    public final static Vector STABILIZE_POS = new Vector(0.0f, 0.0f, 2.0f);
     public final static Vector STARTPOS = new Vector();
     public final static Vector START_VEL = new Vector(0,0,-6.32f);
     public final static Vector START_ORIENTATION = new Vector();
@@ -36,7 +56,11 @@ public class DroneBuilder {
     }
 
 
-    public Drone createDrone() {
+    public Drone createDrone(){
+        return createDrone(ALPHA_CONFIG);
+    }
+
+    public Drone createDrone(String configMode) {
         HorizontalWingPhysX rightMain, leftMain, horizontalStabilizer;
         VerticalWingPhysX verticalStabilizer;
         Drone drone;
@@ -46,7 +70,7 @@ public class DroneBuilder {
         horizontalStabilizer = new HorizontalWingPhysX(STABILIZE_POS, LIFT_COEFFICIENT_STAB, STABILIZER_MASS, MAX_ANGLE_OF_ATTACK, STABS_START_INCL);
         verticalStabilizer = new VerticalWingPhysX(STABILIZE_POS, LIFT_COEFFICIENT_STAB, STABILIZER_MASS, MAX_ANGLE_OF_ATTACK, STABS_START_INCL);
 
-        drone = new Drone(STARTPOS, START_VEL, START_ORIENTATION, START_ROTATION, createConfig());
+        drone = new Drone(STARTPOS, START_VEL, START_ORIENTATION, START_ROTATION, createConfig(configMode));
 
         // if the drone needs to be balanced, do so (balancing is the act of setting the vertical force to 0
         // and the Z value to 0
@@ -63,8 +87,8 @@ public class DroneBuilder {
     /**
      * Constants to create the autopilotConfig & Autopilot
      */
-    private final static float HORIZONTALVIEW = (float) (120.0f*Math.PI/180.0f);
-    private final static float VERTICALVIEW = (float) (120.0f*Math.PI/180.0f);
+    private final static float HORIZONTALVIEW = (float) (120.0f* PI/180.0f);
+    private final static float VERTICALVIEW = (float) (120.0f* PI/180.0f);
     private final static int NB_ROWS = 200;
     private final static int NB_COLS= 200;
 
@@ -80,129 +104,167 @@ public class DroneBuilder {
      * Pseudo constructor for a configuration of an autopilotConfig
      * @return an Autopilot config
      */
-    public AutopilotConfig createConfig(){
-        return new AutopilotConfig(){
+    public AutopilotConfig createConfig(String configMode) {
+        switch (configMode) {
+            case PhysXEngine.ALPHA_MODE:
+                return new AutopilotConfig() {
 
-            /**
-             * not used
-             * @return 0.0f
-             */
-            @Override
-            public float getGravity() {
-                return 9.81f;
-            }
+                    @Override
+                    public float getGravity() {
+                        return 9.81f;
+                    }
 
-            /**
-             * not used
-             * @return
-             */
-            @Override
-            public float getWingX() {
-                return RIGHTWING_POS.getxValue();
-            }
+                    @Override
+                    public float getWingX() {
+                        return RIGHTWING_POS.getxValue();
+                    }
 
-            /**
-             * not used
-             * @return
-             */
-            @Override
-            public float getTailSize() {
-                return STABILIZE_POS.getzValue();
-            }
+                    @Override
+                    public float getTailSize() {
+                        return STABILIZE_POS.getzValue();
+                    }
 
-            /**
-             * not used
-             * @return
-             */
-            @Override
-            public float getEngineMass() {
-                return ENGINE_MASS;
-            }
+                    @Override
+                    public float getEngineMass() {
+                        return ENGINE_MASS;
+                    }
 
-            /**
-             * not used
-             * @return
-             */
-            @Override
-            public float getWingMass() {
-                return MAIN_WING_MASS;
-            }
+                    @Override
+                    public float getWingMass() {
+                        return MAIN_WING_MASS;
+                    }
 
-            /**
-             * not used
-             * @return
-             */
-            @Override
-            public float getTailMass() {
-                return STABILIZER_MASS;
-            }
+                    @Override
+                    public float getTailMass() {
+                        return STABILIZER_MASS;
+                    }
 
-            /**
-             * returns the maximum thrust of the drone
-             * @return
-             */
-            @Override
-            public float getMaxThrust() {
-                return MAX_THRUST;
-            }
+                    @Override
+                    public float getMaxThrust() {
+                        return MAX_THRUST;
+                    }
 
-            /**
-             * not used
-             * @return 0.0f
-             */
-            @Override
-            public float getMaxAOA() {
-                return (float) (30*Math.PI/180f);
-            }
+                    @Override
+                    public float getMaxAOA() {
+                        return (float) (40 * PI / 180f);
+                    }
 
-            /**
-             * not used
-             * @return 0.0f
-             */
-            @Override
-            public float getWingLiftSlope() {
-                return LIFT_COEFFICIENT;
-            }
+                    @Override
+                    public float getWingLiftSlope() {
+                        return LIFT_COEFFICIENT;
+                    }
 
-            /**
-             * not used
-             * @return 0.0f
-             */
-            @Override
-            public float getHorStabLiftSlope() {
-                return LIFT_COEFFICIENT;
-            }
+                    @Override
+                    public float getHorStabLiftSlope() {
+                        return LIFT_COEFFICIENT;
+                    }
 
-            /**
-             * not used
-             * @return 0.0f
-             */
-            @Override
-            public float getVerStabLiftSlope() {
-                return LIFT_COEFFICIENT;
-            }
+                    @Override
+                    public float getVerStabLiftSlope() {
+                        return LIFT_COEFFICIENT;
+                    }
 
+                    @Override
+                    public float getHorizontalAngleOfView() {
+                        return HORIZONTALVIEW;
+                    }
 
-            @Override
-            public float getHorizontalAngleOfView() {
-                return HORIZONTALVIEW;
-            }
+                    @Override
+                    public float getVerticalAngleOfView() {
+                        return VERTICALVIEW;
+                    }
 
-            @Override
-            public float getVerticalAngleOfView() {
-                return VERTICALVIEW;
-            }
+                    @Override
+                    public int getNbColumns() {
+                        return NB_COLS;
+                    }
 
-            @Override
-            public int getNbColumns() {
-                return NB_COLS;
-            }
+                    @Override
+                    public int getNbRows() {
+                        return NB_ROWS;
+                    }
+                };
 
-            @Override
-            public int getNbRows() {
-                return NB_ROWS;
-            }
-        };
+            case PhysXEngine.BETA_MODE:
+                return new AutopilotConfig(){
+                    @Override
+                    public float getGravity() {
+                        return 9.81f;
+                    }
+
+                    @Override
+                    public float getWingX() {
+                        return  BETA_RIGHTWING_POS.getxValue();
+                    }
+
+                    @Override
+                    public float getTailSize() {
+                        return BETA_STABILIZE_POS.getzValue();
+                    }
+
+                    @Override
+                    public float getEngineMass() {
+                        return BETA_ENGINE_MASS;
+                    }
+
+                    @Override
+                    public float getWingMass() {
+                        return BETA_MAIN_WING_MASS;
+                    }
+
+                    @Override
+                    public float getTailMass() {
+                        return BETA_STABILIZER_MASS;
+                    }
+
+                    @Override
+                    public float getMaxThrust() {
+                        return BETA_MAX_THRUST;
+                    }
+
+                    @Override
+                    public float getMaxAOA() {
+                        return (float) (40*PI/180f);
+                    }
+
+                    @Override
+                    public float getWingLiftSlope() {
+                        return BETA_LIFT_COEFFICIENT;
+                    }
+
+                    @Override
+                    public float getHorStabLiftSlope() {
+                        return BETA_LIFT_COEFFICIENT_STAB;
+                    }
+
+                    @Override
+                    public float getVerStabLiftSlope() {
+                        return BETA_LIFT_COEFFICIENT_STAB;
+                    }
+
+                    @Override
+                    public float getHorizontalAngleOfView() {
+                        return HORIZONTALVIEW;
+                    }
+
+                    @Override
+                    public float getVerticalAngleOfView() {
+                        return VERTICALVIEW;
+                    }
+
+                    @Override
+                    public int getNbColumns() {
+                        return NB_COLS;
+                    }
+
+                    @Override
+                    public int getNbRows() {
+                        return NB_ROWS;
+                    }
+                };
+            default:
+                throw new IllegalArgumentException("wrong config mode");
+        }
 
     }
 
@@ -218,6 +280,8 @@ public class DroneBuilder {
      */
     private boolean balanced;
 
+    private final static String ALPHA_CONFIG = "ALPHA_CONFIG";
+    private final static String BETA_CONFIG = "BETA_CONFIG";
 
 
 }

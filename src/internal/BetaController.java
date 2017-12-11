@@ -40,13 +40,13 @@ public class BetaController extends AutoPilotController{
         int nbColumns = APCamera.getNbColumns();
         int nbRows = APCamera.getNbRows();
         float cubeCoeff = (float) min(MAX_CUBE_COEFF, sqrt(nbRows*nbColumns)/center.getzValue());
-        System.out.println("PID positions x= " + xPosition + " ; y= " + yPosition);
+        //System.out.println("PID positions x= " + xPosition + " ; y= " + yPosition);
         //System.out.println("Cube coefficients: " + cubeCoeff);
         xControlActions(outputs, xPosition,cubeCoeff);
         yControlActions(outputs, yPosition, cubeCoeff, currentInputs.getPitch());
         setThrustOut(outputs, cubeCoeff);
 
-        System.out.println("Outputs Horizontal: " + outputs.getHorStabInclination()*RAD2DEGREE + "; Vertical: " + outputs.getVerStabInclination()*RAD2DEGREE );
+        //System.out.println("Outputs Horizontal: " + outputs.getHorStabInclination()*RAD2DEGREE + "; Vertical: " + outputs.getVerStabInclination()*RAD2DEGREE );
 
         rollControl(outputs);
         angleOfAttackControl(outputs);
@@ -97,7 +97,7 @@ public class BetaController extends AutoPilotController{
 
         // Thrust
         float thrust = (float) ((maxThrust/4) + THRUST_FACTOR*this.getTotalMass()*gravity*cubeCoeff);
-        System.out.println("thrust: " + thrust);
+        //System.out.println("thrust: " + thrust);
         outputs.setThrust(Math.max(Math.min(thrust, maxThrust), 0));
     }
 
@@ -133,8 +133,8 @@ public class BetaController extends AutoPilotController{
         return yPID;
     }
 
-    private PIDController xPID = new PIDController(1.f, 0.15f, 0.3f);
-    private PIDController yPID = new PIDController(1.f, 0.1f, 0.3f);
+    private PIDController xPID = new PIDController(1.f, 0.0f, 0.1f);
+    private PIDController yPID = new PIDController(1.f, 0.0f, 0.3f);
     private PIDController rollPID = new PIDController(1f, 0.0f, 0.0f);
 
 
@@ -155,7 +155,7 @@ public class BetaController extends AutoPilotController{
     private static final float MAX_CUBE_COEFF = 3f;
     public  static final float STABILIZER_STABLE_INCLINATION = 0.0f;
     private static final float GRAVITY = 9.81f;
-    private static final float ROLL_THRESHOLD = (float) (PI * 10.0f/180.0f);
+    private static final float ROLL_THRESHOLD = (float) (PI * 35.0f/180.0f);
     private static final float RAD2DEGREE = (float) (180f/ PI);
     private static final float CHECK_INTERVAL = 1/20.f;
     private static final float X_THRESHOLD = 0f;

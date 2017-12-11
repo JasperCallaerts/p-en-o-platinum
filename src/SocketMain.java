@@ -48,6 +48,8 @@ public class SocketMain {
 
 
                 default:
+                    System.out.println("GENERIC ERROR");
+                    ex.printStackTrace();
                     try {
                         FLIGHT_RECORDER.saveDiagnosisWingIssues(20, "diagnosis.txt");
                     } catch (FileNotFoundException e) {
@@ -62,8 +64,11 @@ public class SocketMain {
     public final static String CONNECTION_NAME = "localhost";
     public final static int CONNECTION_PORT = 21212;
     public final static FlightRecorder FLIGHT_RECORDER = new FlightRecorder(20, true);
+    public final static String MODE = PhysXEngine.BETA_MODE;
     //Todo add the recorder to the autopilot and the testbed: used for diagnis during flight;
-    private static TestbedMain MAIN_TESTBED = new TestbedMain(CONNECTION_NAME, CONNECTION_PORT, true);
-    private static AutopilotMain MAIN_AUTOPILOT = new AutopilotMain(CONNECTION_NAME, CONNECTION_PORT, new AutoPilot());
+    private static TestbedMain MAIN_TESTBED = new TestbedMain(CONNECTION_NAME, CONNECTION_PORT, true, MODE);
+    private static AutopilotMain MAIN_AUTOPILOT = new AutopilotMain(CONNECTION_NAME, CONNECTION_PORT, new AutoPilot(MODE));
+
+
 
 }

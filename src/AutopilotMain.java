@@ -14,7 +14,7 @@ import java.net.Socket;
  */
 public class AutopilotMain implements Runnable {
 
-    public AutopilotMain(String connectionName, int connectionPort, Autopilot autopilot) {
+    public AutopilotMain(String connectionName, int connectionPort, AutoPilot autopilot) {
         this.setAutoPilot(autopilot);
         this.setConnectionName(connectionName);
         this.setConnectionPort(connectionPort);
@@ -32,16 +32,15 @@ public class AutopilotMain implements Runnable {
 
     private void autopilotMainLoop() throws IOException, InterruptedException {
 
-        if(this.getAutoPilot() instanceof  AutoPilot){
-            ((AutoPilot) this.getAutoPilot()).setFlightRecorder(this.getFlightRecorder());
-        }
-
+        //set the flight recorder
+        this.getAutoPilot().setFlightRecorder(this.getFlightRecorder());
+        
         Socket autopilotClientSocket = null;
         DataInputStream inputStream = null;
         DataOutputStream outputStream = null;
         boolean firstRun = true;
-        int connectionTrys = 0;
-        int maxConnectionTrys = 1000;
+        int connectionTries = 0;
+        int maxConnectionTries = 1000;
         //first configure the autopilot
         while(firstRun){
             try{
@@ -61,9 +60,9 @@ public class AutopilotMain implements Runnable {
             }*/catch(java.net.ConnectException e){
                 Thread.sleep(200);
                //if we tried to much, throw exception
-                if(connectionTrys == maxConnectionTrys)
+                if(connectionTries == maxConnectionTries)
                     throw new java.net.ConnectException(e.getMessage());
-                connectionTrys +=1;
+                connectionTries +=1;
             }
         }
 
@@ -90,11 +89,11 @@ public class AutopilotMain implements Runnable {
         }
     }
 
-    private Autopilot getAutoPilot() {
+    private AutoPilot getAutoPilot() {
         return autoPilot;
     }
 
-    private void setAutoPilot(Autopilot autoPilot) {
+    private void setAutoPilot(AutoPilot autoPilot) {
         this.autoPilot = autoPilot;
     }
 
@@ -122,7 +121,7 @@ public class AutopilotMain implements Runnable {
         this.flightRecorder = flightRecorder;
     }
 
-    private Autopilot autoPilot;
+    private AutoPilot autoPilot;
     private FlightRecorder flightRecorder;
     private String connectionName;
     private int connectionPort;

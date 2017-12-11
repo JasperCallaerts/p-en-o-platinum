@@ -13,13 +13,13 @@ import math.Vector3f;
  */
 public class WorldBuilder {
 
-    public Drone DRONE = new DroneBuilder(true).createDrone();
+    public Drone DRONE; //new DroneBuilder(true).createDrone();
 
     // Deprecated: all blocks are generated in main loop
     public final static Vector BLOCKPOS = new Vector(0.0f, 0.489f, -6.9098f);
     public final static Vector COLOR = new Vector(0.0f, 1.0f, 70.0f);
     public final static boolean LOAD_COORDINATES = false;
-    private static int numberOfBlocks = 7;
+    public static int numberOfBlocks = 5;
     public final static WorldGenerator wg = new WorldGenerator(numberOfBlocks);
     public final BlockCoordinatesParser parser = new BlockCoordinatesParser("src/internal/blockCoordinates.txt");
 
@@ -28,7 +28,7 @@ public class WorldBuilder {
         //do nothing
     }
 
-    public World createWorld() throws IOException{
+    public World createWorld(String config) throws IOException{
         //Block block1 = new Block(BLOCKPOS);
         //Cube cube1 = new Cube(BLOCKPOS.convertToVector3f(), COLOR.convertToVector3f());
         //block1.setAssocatedCube(cube1);
@@ -52,6 +52,7 @@ public class WorldBuilder {
     	}
         
         //world.addWorldObject(block1);
+        DRONE = new DroneBuilder(true).createDrone(config);
         world.addWorldObject(DRONE);
 
         return world;

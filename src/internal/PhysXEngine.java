@@ -942,6 +942,10 @@ public class PhysXEngine {
     private final static String INVALID_CONFIG = "The physics engine is already configured";
 
 
+    public final static String ALPHA_MODE = "ALPHA_MODE";
+    public final static String BETA_MODE = "BETA_MODE";
+
+
     public PhysXOptimisations createPhysXOptimisations(){
         return new PhysXOptimisations();
     }

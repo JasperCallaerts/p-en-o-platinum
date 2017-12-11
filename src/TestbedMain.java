@@ -23,10 +23,12 @@ public class TestbedMain implements Runnable{
      * Initialize the main method for the testbed
      * see old mainloop for more info
      */
-    public TestbedMain(String connectionName, int connectionPort, boolean showAllWidows) {
+    public TestbedMain(String connectionName, int connectionPort, boolean showAllWidows, String demoMode) {
         this.setConnectionName(connectionName);
         this.setConnectionPort(connectionPort);
         this.showAllWindows = showAllWidows;
+        this.setDemoMode(demoMode);
+
         //this.setQueue(queue);
     }
 
@@ -57,29 +59,30 @@ public class TestbedMain implements Runnable{
         	
 
         // add the windows to graphics
-        this.getGraphics().addWindow("bytestream window", droneCam);
-        this.getGraphics().addWindow("Drone view", droneView);
+        this.getGraphics().addWindow("bytestream window", this.getDroneCam());
+        this.getGraphics().addWindow("Drone view", this.getDroneView());
         //only needed for demo
         if(this.getShowAllWindows()) {
-            this.getGraphics().addWindow("Top down view", topDownView);
-            this.getGraphics().addWindow("Side view", sideView);
-            this.getGraphics().addWindow("Chase view", chaseView);
+            this.getGraphics().addWindow("Top down view", this.getTopDownView());
+            this.getGraphics().addWindow("Side view", this.getSideView());
+            this.getGraphics().addWindow("Chase view", this.getChaseView());
         } 
 
 
         // drone builder covers all the stuff involving building the drone, adjust parameters there
         WorldBuilder worldBuilder = new WorldBuilder();
+
+        this.setWorld(worldBuilder.createWorld(demoMode));//.createSimpleWorld();
         this.setDrone(worldBuilder.DRONE);
-        this.setWorld(worldBuilder.createWorld());//.createSimpleWorld();
         this.getDrone().addFlightRecorder(this.getFlightRecorder());
 
         // Initialize the windows
-        droneCam.initWindow(world, Settings.DRONE_CAM);
-        droneView.initWindow(world, Settings.DRONE_CAM);
+        this.getDroneCam().initWindow(this.getWorld(), Settings.DRONE_CAM);
+        this.getDroneView().initWindow(this.getWorld(), Settings.DRONE_CAM);
         if(this.getShowAllWindows()) {
-            topDownView.initWindow(world, Settings.DRONE_TOP_DOWN_CAM);
-            chaseView.initWindow(world, Settings.DRONE_CHASE_CAM);
-            sideView.initWindow(world, Settings.DRONE_SIDE_CAM);
+            this.getTopDownView().initWindow(this.getWorld(), Settings.DRONE_TOP_DOWN_CAM);
+            this.getChaseView().initWindow(this.getWorld(), Settings.DRONE_CHASE_CAM);
+            this.getSideView().initWindow(this.getWorld(), Settings.DRONE_SIDE_CAM);
         }
 
         if (!this.getShowAllWindows())
@@ -195,7 +198,7 @@ public class TestbedMain implements Runnable{
 
             this.getGraphics().renderWindows();
             byte[] cameraImage = droneCam.getCameraView();
-            autopilotInputs = new MainAutopilotInputs(drone, cameraImage, (float) step*TIME_STEP * STEPS_PER_ITERATION);
+            autopilotInputs = new MainAutopilotInputs(this.getDrone(), cameraImage, (float) step*TIME_STEP * STEPS_PER_ITERATION);
         }
 
         long timeLeft = (long) (FRAME_MILLIS - Time.timeSinceLastUpdate());
@@ -389,6 +392,14 @@ public class TestbedMain implements Runnable{
         this.flightRecorder = flightRecorder;
     }
 
+    public String getDemoMode() {
+        return demoMode;
+    }
+
+    public void setDemoMode(String demoMode) {
+        this.demoMode = demoMode;
+    }
+
     /*  private boolean isGoalNotReached() {
         return goalNotReached;
     }
@@ -403,12 +414,6 @@ public class TestbedMain implements Runnable{
     private Graphics graphics;
     private Drone drone;
 
-    private Block block0;
-    private Block block1;
-    private Block block2;
-    private Block block3;
-    private Block block4;
-
     private Window droneCam;
     private Window droneView;
     private Window personView;
@@ -420,6 +425,7 @@ public class TestbedMain implements Runnable{
     private int connectionPort;
     private boolean showAllWindows;
     private FlightRecorder flightRecorder;
+    private String demoMode;
 //	Window textWindow = new Window(500, 500, 0.5f, 0.5f, "text window", new Vector3f(0.0f, 0.0f, 0.0f), true, droneCam); // Not implemented yet
 
 

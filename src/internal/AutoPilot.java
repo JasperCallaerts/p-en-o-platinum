@@ -25,10 +25,10 @@ public class AutoPilot implements Autopilot {
 
 	public AutoPilot(String controllerConfig){
 		switch(controllerConfig){
-			case ALPHA_CONTROLLER:
+			case PhysXEngine.ALPHA_MODE:
 				this.setController(new AlphaController(this));
 				return;
-			case BETA_CONTROLLER:
+			case PhysXEngine.BETA_MODE:
 				this.setController(new BetaController(this));
 		}
 	}
@@ -37,7 +37,7 @@ public class AutoPilot implements Autopilot {
 
     	// set the controller of the autopilot
 		//Todo uncomment when normal controller works again
-    	this(BETA_CONTROLLER);
+    	this(PhysXEngine.ALPHA_MODE);
     	//this.attackController = new AutoPilotControllerNoAttack(this);
 
     }

@@ -23,13 +23,15 @@ public class AlphaController extends AutoPilotController {
         float pitch = this.getCurrentInputs().getPitch();
         float cubeSize =  this.getAssociatedAutopilot().getAPCamera().getTotalQualifiedPixels();
         int threshold = Math.round(THRESHOLD_DISTANCE);
+        float standardThrust = this.getAssociatedAutopilot().getConfig().getMaxThrust()/4;
+        float maxThrust = this.getAssociatedAutopilot().getConfig().getMaxThrust();
 
         // Thrust
         float sigmoidFactor = 4f;
 //        float thrust = (float) ((STANDARD_THRUST)*(1-sigmoid(abs(xPosition/sigmoidFactor))) + THRUST_FACTOR*this.getTotalMass()*GRAVITY*sigmoid(yPosition/sigmoidFactor));
-        float thrust = (float) ((STANDARD_THRUST)/(5*(abs(xPosition)+0.01)) + THRUST_FACTOR*this.getTotalMass()*GRAVITY*sigmoid(yPosition/sigmoidFactor));
-        System.out.println(xPosition);
-        outputs.setThrust(Math.max(Math.min(thrust, MAXTHRUST), 0));
+        float thrust = (float) ((standardThrust)/(5*(abs(xPosition)+0.01)) + THRUST_FACTOR*this.getTotalMass()*GRAVITY*sigmoid(yPosition/sigmoidFactor));
+        //System.out.println(xPosition);
+        outputs.setThrust(Math.max(Math.min(thrust, maxThrust), 0));
     }
 
     private float sigmoid(float x) {
