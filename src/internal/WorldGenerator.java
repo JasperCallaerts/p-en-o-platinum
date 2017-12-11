@@ -128,13 +128,14 @@ public class WorldGenerator {
 	}
 	
 	
+	
 	/**
 	 * Generates a position in the following range: [-10,10] following a Gaussian distribution
 	 * with 0 as mean and 99% of the values laying in [-9,9]
 	 */
 	public float xPosGen(){
 		Random r = new Random();	
-		float val = (float) r.nextGaussian() * 3;
+		float val = (float) r.nextGaussian() * stdDevX + meanX;
 		return val;
 	}
 	
@@ -144,7 +145,7 @@ public class WorldGenerator {
 	 */
 	public float yPosGen(){
 		Random r = new Random();	
-		float val = (float) r.nextGaussian() * 1.5f + 5f;
+		float val = (float) r.nextGaussian() * stdDevY + meanY;
 		return val;
 	}
 	
@@ -154,16 +155,7 @@ public class WorldGenerator {
 	 */
 	public float zPosGen(){
 		Random r = new Random();	
-		float val = (float) r.nextGaussian() * 14 - 55;
-		return val;
-	}
-
-	/**
-	 * Generates a radius in the following range: [0,10] following a uniform distribution
-	 */
-	public float radiusGen(){
-		Random r = new Random();
-		float val = r.nextFloat() * 10;
+		float val = (float) r.nextGaussian() * stdDevZ + meanZ;
 		return val;
 	}
 
@@ -182,32 +174,28 @@ public class WorldGenerator {
 	 * When an x or y or z value is lower or higher than the boundary of the interval defined in those functions, 
 	 * the x or y or z (respectively) value is set to lowest or highest (respectively) value allowed 
 	 */
-	public Vector positionGenerator(){;
-
-		float r =  radiusGen();
-		float a = angleGen();
-
-		float x = (float) Math.cos(a) * r;
-		float y = (float) Math.sin(a) * r;
-		float z = -40f;
+	public Vector positionGenerator(){
+		float x = xPosGen();
+		float y = yPosGen();
+		float z = zPosGen();
 		
-		if (x > 10){
-			x = 10f;
+		if (x > maxX){
+			x = maxX;
 		}
-		if (x < -10){
-			x = -10f;
+		if (x < minX){
+			x = minX;
 		}
-		if (y > 10){
-			y = 10f;
+		if (y > maxY){
+			y = maxY;
 		}
-		if (y < 0){
-			y = 0f;
+		if (y < minY){
+			y = minY;
 		}
-		if (z > -10){ 
-			z = -10f;
+		if (z > maxZ){ 
+			z = maxZ;
 		}
-		if (z < -100){
-			z = -100f;
+		if (z < minZ){
+			z = minZ;
 		}
 		
 		Vector position = new Vector(x,y,z);
@@ -287,6 +275,54 @@ public class WorldGenerator {
 	 * Variable for the amount of cubes in the world
 	 */
 	private int nbOfCubes;
+	
+
+	/**
+	 * max and min difference in coordinates between two cubes
+	 */
+	private float maxX = 10;
+	private float minX = -10;
+	private float maxY = 10;
+	private float minY = 0;
+	private float maxZ = -10;
+	private float minZ = -100;
+	
+	/**
+	 * the means and standard deviations
+	 */
+	private float meanX = 0;
+	private float stdDevX = 3;
+	private float meanY = 5;
+	private float stdDevY = 1.5f;
+	private float meanZ = -55;
+	private float stdDevZ = 13;
+
+	/**
+	 * getters for the means and standard deviations
+	 */	
+	public float getXMean(){
+		return meanX;
+	}
+
+	public float getYMean(){
+		return meanY;
+	}
+	
+	public float getZMean(){
+		return meanZ;
+	}
+	
+	public float getStdDevX(){
+		return stdDevX;
+	}
+	
+	public float getStdDevY(){
+		return stdDevY;
+	}
+	
+	public float getStdDevZ(){
+		return stdDevZ;
+	}
 	
 	
 	
