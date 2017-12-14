@@ -53,43 +53,44 @@ public class Drone implements WorldObject {
 
 		// the cube associated with the drone
 		try {
+			
 			Cube droneCube1 = new Cube(position.convertToVector3f(), new Vector3f(240f, 100f, 100f));
-			droneCube1.setSize(new Vector3f(8f, 0.5f, 2f));
+			droneCube1.setSize(new Vector3f(8f, 0.5f, 2f).scale(scalingFactor));
 			this.setAssociatedCube(droneCube1);
 			
-			Vector3f position2 = new Vector3f(0f, 0f, 1f);
+			Vector3f position2 = new Vector3f(0f, 0f, 1f).scale(scalingFactor);
 			Cube droneCube2 = new Cube(position2, new Vector3f(240f, 1f, 1f), droneCube1);
-			droneCube2.setSize(new Vector3f(1f, 1f, 4f));
+			droneCube2.setSize(new Vector3f(1f, 1f, 4f).scale(scalingFactor));
 			this.setAssociatedCube(droneCube2);
 			
-			Vector3f position3 = new Vector3f(0f, 0.5f, 5f);
+			Vector3f position3 = new Vector3f(0f, 0.5f, 5f).scale(scalingFactor);
 			Cube droneCube3 = new Cube(position3, new Vector3f(240f, 1f, 1f), droneCube1);
-			droneCube3.setSize(new Vector3f(0.2f, 1f, 1f));
+			droneCube3.setSize(new Vector3f(0.2f, 1f, 1f).scale(scalingFactor));
 			this.setAssociatedCube(droneCube3);
 			
-			Vector3f position4 = new Vector3f(0f, 0f, 5f);
+			Vector3f position4 = new Vector3f(0f, 0f, 5f).scale(scalingFactor);
 			Cube droneCube4 = new Cube(position4, new Vector3f(240f, 1f, 1f), droneCube1);
-			droneCube4.setSize(new Vector3f(3f, 0.2f, 1f));
+			droneCube4.setSize(new Vector3f(3f, 0.2f, 1f).scale(scalingFactor));
 			this.setAssociatedCube(droneCube4);
 			
-			Vector3f position5 = new Vector3f(0f, 0f, 4f);
+			Vector3f position5 = new Vector3f(0f, 0f, 4f).scale(scalingFactor);
 			Cube droneCube5 = new Cube(position5, new Vector3f(240f, 1f, 1f), droneCube1);
-			droneCube5.setSize(new Vector3f(0.7f, 0.5f, 2f));
+			droneCube5.setSize(new Vector3f(0.7f, 0.5f, 2f).scale(scalingFactor));
 			this.setAssociatedCube(droneCube5);
 			
-			Vector3f position6 = new Vector3f(0f, 0.2f, 0f);
+			Vector3f position6 = new Vector3f(0f, 0.2f, 0f).scale(scalingFactor);
 			Cube droneCube6 = new Cube(position6, new Vector3f(240f, 1f, 1f), droneCube1);
-			droneCube6.setSize(new Vector3f(1.5f, 1f, 3f));
+			droneCube6.setSize(new Vector3f(1.5f, 1f, 3f).scale(scalingFactor));
 			this.setAssociatedCube(droneCube6);
 			
-			Vector3f position7 = new Vector3f(0f, 0.7f, 0f);
+			Vector3f position7 = new Vector3f(0f, 0.7f, 0f).scale(scalingFactor);
 			Cube droneCube7 = new Cube(position7, new Vector3f(240f, 1f, 1f), droneCube1);
-			droneCube7.setSize(new Vector3f(0.7f, 0.5f, 2f));
+			droneCube7.setSize(new Vector3f(0.7f, 0.5f, 2f).scale(scalingFactor));
 			this.setAssociatedCube(droneCube7);
 			
-			Vector3f position8 = new Vector3f(0f, 0f, -1f);
+			Vector3f position8 = new Vector3f(0f, 0f, -1f).scale(scalingFactor);
 			Cube droneCube8 = new Cube(position8, new Vector3f(240f, 1f, 1f), droneCube1);
-			droneCube8.setSize(new Vector3f(1f, 1f, 2f));
+			droneCube8.setSize(new Vector3f(1f, 1f, 2f).scale(scalingFactor));
 			this.setAssociatedCube(droneCube8);
 			
 //			Cube droneCube = new Cube(position.convertToVector3f(), new Vector3f(240f, 1f, 1f));
@@ -450,7 +451,10 @@ public class Drone implements WorldObject {
 	 */
 	private final static float maxPosDifference = 1E-6f;
 
-
+	/**
+	 * variable used for the size of the drone.
+	 */
+	private static final float scalingFactor = 1/4f;
 	    
 	/*
 	 * Error Messages:
