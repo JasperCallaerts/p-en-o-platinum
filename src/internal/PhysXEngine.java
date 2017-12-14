@@ -64,8 +64,11 @@ public class PhysXEngine {
         }
 
         //check if the thrust is valid
-        if(!canHaveAsThrust(inputs.getThrust()))
-            throw new IllegalArgumentException(THRUST_OUT_OF_RANGE);
+        if(!canHaveAsThrust(inputs.getThrust())) {
+        	System.out.println(inputs.getThrust());
+        	throw new IllegalArgumentException(THRUST_OUT_OF_RANGE);
+        }
+            
         Vector thrustVector = new Vector(0.f, 0.f, -inputs.getThrust());
 
         // calculate the next position & velocity

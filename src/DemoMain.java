@@ -12,7 +12,7 @@ public class DemoMain {
     private final static int CONNECTION_PORT = 21212;
     private final static String MODE = PhysXEngine.ALPHA_MODE;
     private final static int timeout = 60;
-    private final static String[] testDirectories = {"src/blockDemoEasy.txt","src/blockDemoHard.txt","src/blockCoordinates.txt"};
+    private final static String[] testDirectories = {"src/internal/blockData.txt","src/blockDemoEasy.txt","src/blockDemoHard.txt","src/blockCoordinates.txt"};
 
 
     public static void main(String args[]) {
