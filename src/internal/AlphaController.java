@@ -189,31 +189,27 @@ public class AlphaController extends AutoPilotController {
     Getters and setters
      */
 
-    @Override
     protected float getMainStableInclination() {
         return MAIN_STABLE_INCLINATION;
     }
 
-    @Override
     protected float getStabilizerStableInclination() {
         return STABILIZER_STABLE_INCLINATION;
     }
 
-    @Override
     protected float getRollThreshold() {
         return ROLL_THESHOLD;
     }
 
-    @Override
     protected float getInclinationAOAMargin() {
         return ERROR_INCLINATION_MARGIN;
     }
 
-    private PIDController getxPID() {
+    public PIDController getxPID() {
         return xPID;
     }
 
-    private PIDController getyPID() {
+    public PIDController getyPID() {
         return yPID;
     }
 

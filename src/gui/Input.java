@@ -118,7 +118,7 @@ public Matrix4f getViewMatrix(Settings setting) {
 		
 		switch (setting) {
 		case DRONE_TOP_DOWN_CAM: 
-			position = new Vector3f(0f, 110f, -100f);
+			position = new Vector3f(0f, 120f, -100f);
 			yaw = (float) Math.PI/2;
 			pitch = (float) -Math.PI/2;
 			break;
