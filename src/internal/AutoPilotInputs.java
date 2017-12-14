@@ -1,7 +1,7 @@
 package internal;
 
 /**
- * 
+ * Class for creating AutoPilotInputs objects, through which the inputs to the Autopilot will be passed
  * @author Anthony Rathe
  *
  */
@@ -17,34 +17,58 @@ public class AutoPilotInputs implements Autopilot.AutopilotInputs{
 		this.elapsedTime = elapsedTime;
 	}
 	
+	/**
+	 * Returns the image as a byte array.
+	 */
 	public byte[] getImage() {
 		return this.image;
 	}
 	
+	/**
+	 * Returns the x-coördinate of the drone
+	 */
 	public float getX() {
 		return this.xPostion;
 	}
 	
+	/**
+	 * Returns the y-coördinate of the drone
+	 */
 	public float getY() {
 		return this.yPosition;
 	}
 	
+	/**
+	 * Returns the z-coördinate of the drone
+	 */
 	public float getZ() {
 		return this.zPosition;
 	}
 	
+	/**
+	 * Returns the heading of the drone
+	 */
 	public float getHeading() {
 		return this.heading;
 	}
 	
+	/**
+	 * Returns the pitch of the drone
+	 */
 	public float getPitch() {
 		return this.pitch;
 	}
 	
+	/**
+	 * Returns the roll of the drone
+	 */
 	public float getRoll() {
 		return this.roll;
 	}
 	
+	/**
+	 * Returns the elapsed time
+	 */
 	public float getElapsedTime() {
 		return this.elapsedTime;
 	}

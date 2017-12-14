@@ -1,6 +1,14 @@
 package internal;
 
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.*;
+
+import javax.imageio.ImageIO;
+
 
 /**
  * Created by Martijn on 14/10/2017.
@@ -44,6 +52,38 @@ public class AutoPilotCamera {
      * @param imageByteArray the byte array containing the information for the cubes
      */
     public void loadNewImage(byte[] imageByteArray){
+    	//FOR DEBUGGING
+    	//save an image
+    	//FileUtils.writeByteArrayToFile(new File("pathname"), myByteArray)
+    	/*String format = "PNG";
+    	File file = new File("testImage.png");
+    	int WIDTH = this.getNbColumns();
+    	int HEIGHT = this.getNbRows();
+    	int bpp = 3;
+    	BufferedImage image = new BufferedImage(WIDTH, HEIGHT, 1);
+    	//System.out.println(imageByteArray[]);
+		for(int x = 0; x < WIDTH; x++)
+		{
+			for(int y = 0; y < HEIGHT; y++)
+			{
+				//System.out.println(x+" : "+y);
+				int i = (x + (WIDTH * y)) * bpp;
+				//System.out.println("byte: "+imageByteArray[i]);
+				int r = (imageByteArray[i])& 0xFF;
+				int g = (imageByteArray[i + 1]) & 0xFF;
+				int b =(imageByteArray[i+2])& 0xFF;
+				
+				image.setRGB(x, HEIGHT - (y + 1), (0xFF << 24) | (r << 16) | (g << 8) | b);
+			}
+		}
+		try {
+			ImageIO.write(image, format, file);
+		} catch (IOException e) { e.printStackTrace(); }
+		*/
+    	//END FOR DEBUGGING
+    	
+    	
+    	
         if(!canHaveAsImageArray(imageByteArray))
             throw new IllegalArgumentException(INCOMPATIBLE_SIZE);
         CameraImage newImage = this.convertToCameraImage(imageByteArray, this.getNbRows(), this.getNbColumns());
