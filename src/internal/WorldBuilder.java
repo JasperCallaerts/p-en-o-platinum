@@ -27,7 +27,7 @@ public class WorldBuilder {
     		//List<Vector> positions = parser.getCoordinates();
     		//List<Vector> colors = this.getWorldGenerator().colorGenerator(positions.size());
             List<Vector> data = parser.getBlockData();
-            for (int i = 0 ; i < data.size(); i += 2) {
+            for (int i = 0 ; i < data.size()/2; i += 2) {
                 Vector position = data.get(i);
                 Vector color = data.get(i+1);
                 Block block = new Block(position);
