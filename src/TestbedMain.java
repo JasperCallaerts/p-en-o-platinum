@@ -10,7 +10,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.concurrent.BlockingQueue;
 
 
 /**
@@ -45,114 +44,6 @@ public class TestbedMain implements Runnable{
     }
 
     /**
-     * Initialize the testbed
-     * Testbed is not initialized in the constructor because graphics need to be created
-     * within one thread of control
-     */
-    private void initTestbed() throws IOException {
-
-        // initialize graphics capabilities
-        this.setGraphics(new Graphics());
-
-        // Cube needs graphics to be able to initialize cubes
-        Cube.setGraphics(this.getGraphics());
-
-        this.setDroneCam(new Window(200, 200, 0.5f, 0.4f, "bytestream window", new Vector3f(1.0f, 1.0f, 1.0f), false));
-        
-        if(this.getShowAllWindows()) {
-        	this.setDroneView(new Window(960, 510, 0.0f, 0.05f, "Drone view", new Vector3f(1.0f, 1.0f, 1.0f), true));
-            this.setTopDownView(new Window(960, 510, 1f, 0.05f, "Top down view", new Vector3f(1.0f, 1.0f, 1.0f), true));
-            this.setSideView(new Window(960, 510, 1f, 1f, "Side view", new Vector3f(1.0f, 1.0f, 1.0f), true));
-            this.setChaseView(new Window(960, 510, 0f, 1f, "Chase view", new Vector3f(1.0f, 1.0f, 1.0f), true));
-        } else {
-        	this.setDroneView(new Window(960, 510, 0.0f, 0.05f, "Drone view", new Vector3f(1.0f, 1.0f, 1.0f), true));
-
-        }
-        	
-
-        // add the windows to graphics
-        this.getGraphics().addWindow("bytestream window", this.getDroneCam());
-        this.getGraphics().addWindow("Drone view", this.getDroneView());
-        //only needed for demo
-        if(this.getShowAllWindows()) {
-            this.getGraphics().addWindow("Top down view", this.getTopDownView());
-            this.getGraphics().addWindow("Side view", this.getSideView());
-            this.getGraphics().addWindow("Chase view", this.getChaseView());
-        } 
-
-
-        // drone builder covers all the stuff involving building the drone, adjust parameters there
-        WorldBuilder worldBuilder = new WorldBuilder();
-
-        if(this.isPredefMode()){
-            worldBuilder.setPredefWorld(true);
-            worldBuilder.setPredefDirectory(this.getPredefWorldDirect());
-        }
-
-        this.setWorld(worldBuilder.createWorld(demoMode));//.createSimpleWorld();
-        this.setDrone(worldBuilder.getDrone());
-        this.getDrone().addFlightRecorder(this.getFlightRecorder());
-
-        // Initialize the windows
-        this.getDroneCam().initWindow(this.getWorld(), Settings.DRONE_CAM);
-        this.getDroneView().initWindow(this.getWorld(), Settings.DRONE_CAM);
-        if(this.getShowAllWindows()) {
-            this.getTopDownView().initWindow(this.getWorld(), Settings.DRONE_TOP_DOWN_CAM);
-            this.getChaseView().initWindow(this.getWorld(), Settings.DRONE_CHASE_CAM);
-            this.getSideView().initWindow(this.getWorld(), Settings.DRONE_SIDE_CAM);
-        }
-
-        if (!this.getShowAllWindows())
-        	this.getGraphics().makeTextWindow();
-        
-        Time.initTime();
-    }
-
-
-    //Todo configure the autopilot in the autopilot main
-    //open seperate threads for both mainloops, where the first one waits for the other one.
-    public void testbedMainLoop() throws IOException, InterruptedException {
-
-        this.initTestbed();
-        int step = 1;
-        ServerSocket testbedServer = new ServerSocket(this.getConnectionPort());
-        Socket testbedClientSocket = testbedServer.accept();
-        DataInputStream inputStream = new DataInputStream(testbedClientSocket.getInputStream());
-        DataOutputStream outputStream = new DataOutputStream(testbedClientSocket.getOutputStream());
-        //write the configuration to the autopilot
-        configAutopilot(outputStream, step);
-
-        while(true) {
-            //wait until the input is not null and advance if possible
-            try {
-                step ++;
-                AutopilotOutputs output = AutopilotOutputsReader.read(inputStream);
-                AutopilotInputsWriter.write(outputStream, this.testbedStep(output, step));
-            } catch (NullPointerException e) {
-                //let the null pointer fly
-                System.out.println("Catching Exception: waiting for autopilot output");
-            } catch(java.io.EOFException | SimulationEndedException ex ){
-                //this exception means that the client socket has closed, close own sockets
-                System.out.println("Closing down Testbed Server");
-                inputStream.close();
-                outputStream.close();
-                testbedClientSocket.close();
-                testbedServer.close();
-                break;
-
-            } catch(AngleOfAttackException ex){
-                //angle of attack exception has occurred close down the server
-                System.out.println("Closing down Testbed Server");
-                inputStream.close();
-                outputStream.close();
-                testbedClientSocket.close();
-                testbedServer.close();
-                throw new AngleOfAttackException(ex.getCauseWing());
-            }
-        }
-    }
-
-    /**
      * Run method used for multiThreading purposes
      */
     @Override
@@ -165,16 +56,117 @@ public class TestbedMain implements Runnable{
     }
 
     /**
+     * Initialize the testbed
+     * Testbed is not initialized in the constructor because graphics need to be created
+     * within one thread of control
+     */
+    private void initTestbed() throws IOException {
+
+        // first generate the graphics
+        this.generateGraphics();
+
+        // then initialize the world
+        this.initWorld();
+
+        // the settings of the world influence the way the windows are rendered so
+        // we may only initialize them after the world config is known
+        this.initWindows();
+
+        // set the timer for real time sync
+        Time.initTime();
+    }
+
+
+    //Todo configure the autopilot in the autopilot main
+    //open separate threads for both main loops, where the first one waits for the other one.
+    public void testbedMainLoop() throws IOException, InterruptedException {
+
+        // first initialize the testbed itself
+        this.initTestbed();
+        // then initialize the connectivity of the testbed
+        this.initTestbedServer();
+        
+        //write the configuration to the autopilot
+        configAutopilot(this.getOutputStream());
+
+        while(true) {
+            //wait until the input is not null and advance if possible
+            try {
+                //set the timer for real frame rate
+                Time.update();
+
+                AutopilotOutputs output = AutopilotOutputsReader.read(this.getInputStream());
+                AutopilotInputsWriter.write(this.getOutputStream(), this.testbedCycle(output));
+                //wait until frame is passed
+                framerateControl();
+
+            } catch(java.io.EOFException | SimulationEndedException ex ){
+                //this exception means that the client socket has closed, close own sockets
+                System.out.println("Closing down Testbed Server");
+                terminateTestbedServer();
+                break;
+
+            } catch(AngleOfAttackException ex){
+                //angle of attack exception has occurred close down the server
+                System.out.println("Closing down Testbed Server");
+                terminateTestbedServer();
+                throw new AngleOfAttackException(ex.getCauseWing());
+            }
+        }
+    }
+
+    /**
+     * Call this method to properly initialize the testbed server size
+     * @throws IOException
+     */
+    private void initTestbedServer() throws IOException {
+        ServerSocket testbedServer = new ServerSocket(this.getConnectionPort());
+        Socket testbedClientSocket = testbedServer.accept();
+        DataInputStream inputStream = new DataInputStream(testbedClientSocket.getInputStream());
+        DataOutputStream outputStream = new DataOutputStream(testbedClientSocket.getOutputStream());
+        
+        this.setTestbedServerSocket(testbedServer);
+        this.setTestbedClientSocket(testbedClientSocket);
+        
+        this.setInputStream(inputStream);
+        this.setOutputStream(outputStream);
+        
+    }
+
+    /**
+     * Call this termination method to properly close down the server side of the system
+     * @throws IOException
+     */
+    private void terminateTestbedServer() throws IOException {
+        this.getInputStream().close();
+        this.getOutputStream().close();
+        this.getTestbedClientSocket().close();
+        this.getTestbedServerSocket().close();
+    }
+
+
+    /**
      * Write the configuration data to the autopilot
      * @param outputStream the stream containing the config and the input for the autopilot
      * @throws IOException
      * @throws InterruptedException
      */
-    private void configAutopilot(DataOutputStream outputStream, int step) throws IOException, InterruptedException {
+    private void configAutopilot(DataOutputStream outputStream) throws IOException, InterruptedException {
         AutopilotConfigWriter.write(outputStream, this.getConfig());
-        //instert a null pointer, will be ignored on the first step of the testbedstep method
-        AutopilotInputs autopilotInputs = this.testbedStep(null, step);
+        //instert a null pointer, will be ignored on the first step of the testbed step method
+        AutopilotInputs autopilotInputs = this.firstCycle();
         AutopilotInputsWriter.write(outputStream, autopilotInputs);
+    }
+
+    /**
+     * Handles the simulation output for the first simulation cycle (no time update, just render the image
+     * @return the autopilot inputs for the first Cycle
+     * @throws IOException
+     */
+    private AutopilotInputs firstCycle() throws IOException {
+        byte[] image = this.generateImage();
+        this.updateSimulationTime();
+        return new MainAutopilotInputs(this.getDrone(), image, this.getSimulationTime());
     }
 
 
@@ -182,45 +174,137 @@ public class TestbedMain implements Runnable{
      * Simulates one step of the testbed
      *
      * @param autopilotOutputs the outputs of the autopilot
-     * @param step  the n th step in the simulation
      * @return the inputs for the next step of the autopilot
      * @throws InterruptedException
      * @throws IOException
      */
-    public AutopilotInputs testbedStep(AutopilotOutputs autopilotOutputs, int step) throws InterruptedException, IOException {
-        AutopilotInputs autopilotInputs = null;
+    public AutopilotInputs testbedCycle(AutopilotOutputs autopilotOutputs) throws InterruptedException, IOException {
+        AutopilotInputs autopilotInputs;
         // update time
-        Time.update();
 
-        // warning: assure every iteration terminates with a non null autopilotInputs, the
-        // writer and handler can't handle it
-        if (goalNotReached && !this.getDroneCam().isTerminated()) {
-            //pass the outputs to the drone
-            //try if the world can be advanced to the next state
-            try {
-                // elapsedTime replace by getTimePassed()
-                // it is the first run, just skip the output (frame is not yet rendered)
-                if (!isFirstRun()) {
-                    this.getDrone().setAutopilotOutputs(autopilotOutputs);
-                    this.getWorld().advanceWorldState(TIME_STEP, STEPS_PER_ITERATION);
-                } else {
-                    this.setFirstRun(false);
-                }
 
-            } catch (IOException e) {
-                System.out.println("IO exception");
-            }
+        //pass the outputs to the drone
+        //try if the world can be advanced to the next state
+        // it is the first run, just skip the output (frame is not yet rendered)
+        this.getDrone().setAutopilotOutputs(autopilotOutputs);
+        this.getWorld().advanceWorldState(TIME_STEP, STEPS_PER_CYCLE);
 
-            this.getGraphics().renderWindows();
-            byte[] cameraImage = droneCam.getCameraView();
-            autopilotInputs = new MainAutopilotInputs(this.getDrone(), cameraImage, (float) step*TIME_STEP * STEPS_PER_ITERATION);
-        }
+        //update the simulation time for the outputs (elapsed time)
+        updateSimulationTime();
+        //generate the image for the autopilot
+        byte[] cameraImage = generateImage();
 
+        //create the output object
+        autopilotInputs = new MainAutopilotInputs(this.getDrone(), cameraImage, this.getSimulationTime());
+
+        return autopilotInputs;
+    }
+
+
+    /**
+     * generates an image represented by a 200x200x3 1D byte array (the 3 represents the RGB value)
+     * based on the current camera view
+     * @return an array containing the current camera input
+     * @throws IOException
+     */
+    private byte[] generateImage() throws IOException {
+        this.getGraphics().renderWindows();
+        return droneCam.getCameraView();
+    }
+
+    /**
+     * Updates the simulation time with the time added needed for one cycle in the simulation
+     */
+    private void updateSimulationTime() {
+        float prevTime = this.getSimulationTime();
+        float newTime = prevTime + TIME_STEP * STEPS_PER_CYCLE;
+        this.setSimulationTime(newTime);
+    }
+
+    /**
+     * Lets the thread sleep for as long as needed to give true frame rate
+     * @throws InterruptedException
+     */
+    private void framerateControl() throws InterruptedException {
         long timeLeft = (long) (FRAME_MILLIS - Time.timeSinceLastUpdate());
         if (timeLeft > 0)
             Thread.sleep(timeLeft);
-        //System.out.println(timeLeft);
-        return autopilotInputs;
+    }
+
+    /**
+     * Initializes the world according to the parameters set in the constructor
+     * @throws IOException just java things
+     */
+    private void initWorld() throws IOException {
+        // drone builder covers all the stuff involving building the drone, adjust parameters there
+        WorldBuilder worldBuilder = new WorldBuilder();
+
+        // if the simulation is run in predefined mode
+        // generate the predefined world instead of the random one
+        if(this.isPredefMode()){
+            worldBuilder.setPredefWorld(true);
+            worldBuilder.setPredefDirectory(this.getPredefWorldDirect());
+        }
+
+        // configure the world note that the drone object is part of the world instance (and not a static as before)
+        this.setWorld(worldBuilder.createWorld(this.getDemoMode()));
+        this.setDrone(worldBuilder.getDrone());
+        // only in use for diagnostics
+        this.getDrone().addFlightRecorder(this.getFlightRecorder());
+    }
+
+    /**
+     * Generates the graphics of the drone and adds all the windows to the graphics object
+     */
+    private void generateGraphics(){
+        // initialize graphics capabilities
+        this.setGraphics(new Graphics());
+
+        // Cube needs graphics to be able to initialize cubes
+        Cube.setGraphics(this.getGraphics());
+
+        this.setDroneCam(new Window(200, 200, 0.5f, 0.4f, "bytestream window", new Vector3f(1.0f, 1.0f, 1.0f), false));
+
+        // if we only want to show part of the windows, this flag is set in the main loop
+        if(this.getShowAllWindows()) {
+            this.setDroneView(new Window(960, 510, 0.0f, 0.05f, "Drone view", new Vector3f(1.0f, 1.0f, 1.0f), true));
+            this.setTopDownView(new Window(960, 510, 1f, 0.05f, "Top down view", new Vector3f(1.0f, 1.0f, 1.0f), true));
+            this.setSideView(new Window(960, 510, 1f, 1f, "Side view", new Vector3f(1.0f, 1.0f, 1.0f), true));
+            this.setChaseView(new Window(960, 510, 0f, 1f, "Chase view", new Vector3f(1.0f, 1.0f, 1.0f), true));
+        } else {
+            this.setDroneView(new Window(960, 510, 0.0f, 0.05f, "Drone view", new Vector3f(1.0f, 1.0f, 1.0f), true));
+
+        }
+
+
+        // add the windows to graphics
+        this.getGraphics().addWindow("bytestream window", this.getDroneCam());
+        this.getGraphics().addWindow("Drone view", this.getDroneView());
+        //only needed for demo
+        if(this.getShowAllWindows()) {
+            this.getGraphics().addWindow("Top down view", this.getTopDownView());
+            this.getGraphics().addWindow("Side view", this.getSideView());
+            this.getGraphics().addWindow("Chase view", this.getChaseView());
+        }
+    }
+
+    /**
+     * Initialize the windows used in the simulation
+     */
+    private void initWindows(){
+        // Initialize the windows
+        this.getDroneCam().initWindow(this.getWorld(), Settings.DRONE_CAM);
+        this.getDroneView().initWindow(this.getWorld(), Settings.DRONE_CAM);
+
+        if(this.getShowAllWindows()) {
+            this.getTopDownView().initWindow(this.getWorld(), Settings.DRONE_TOP_DOWN_CAM);
+            this.getChaseView().initWindow(this.getWorld(), Settings.DRONE_CHASE_CAM);
+            this.getSideView().initWindow(this.getWorld(), Settings.DRONE_SIDE_CAM);
+        }
+
+        // create the switch when in single window mode
+        if (!this.getShowAllWindows())
+            this.getGraphics().makeTextWindow();
     }
 
 
@@ -229,13 +313,6 @@ public class TestbedMain implements Runnable{
         return drone.getAutopilotConfig();
     }
 
-    public boolean isFirstRun() {
-        return firstRun;
-    }
-
-    private void setFirstRun(boolean firstRun){
-        this.firstRun = firstRun;
-    }
 
     /**
      * Class that contains the autopilotInputs implemented separately for cleaner code
@@ -366,77 +443,107 @@ public class TestbedMain implements Runnable{
         this.personView = personView;
     }
 
-    public Window getTopDownView() {
+    private Window getTopDownView() {
         return topDownView;
     }
 
-    public void setTopDownView(Window topDownView) {
+    private void setTopDownView(Window topDownView) {
         this.topDownView = topDownView;
     }
 
-    public Window getChaseView() {
+    private Window getChaseView() {
         return chaseView;
     }
 
-    public void setChaseView(Window chaseView) {
+    private void setChaseView(Window chaseView) {
         this.chaseView = chaseView;
     }
 
-    public Window getSideView() {
+    private Window getSideView() {
         return sideView;
     }
 
-    public void setSideView(Window sideView) {
+    private void setSideView(Window sideView) {
         this.sideView = sideView;
     }
 
-    public boolean getShowAllWindows() {
+    private boolean getShowAllWindows() {
         return showAllWindows;
     }
 
-    public FlightRecorder getFlightRecorder() {
+    private FlightRecorder getFlightRecorder() {
         return flightRecorder;
     }
 
-    public void setFlightRecorder(FlightRecorder flightRecorder) {
+    private void setFlightRecorder(FlightRecorder flightRecorder) {
         if(this.getFlightRecorder() != null)
             throw new IllegalStateException(ALREADY_RECORDING);
         this.flightRecorder = flightRecorder;
     }
 
-    public String getDemoMode() {
+    private String getDemoMode() {
         return demoMode;
     }
 
-    public void setDemoMode(String demoMode) {
+    private void setDemoMode(String demoMode) {
         this.demoMode = demoMode;
     }
 
-    public boolean isPredefMode() {
+    private boolean isPredefMode() {
         return predefMode;
     }
 
-    public void setPredefMode(boolean predefMode) {
+    private void setPredefMode(boolean predefMode) {
         this.predefMode = predefMode;
     }
 
-    public String getPredefWorldDirect() {
+    private String getPredefWorldDirect() {
         return predefWorldDirect;
     }
 
-    public void setPredefWorldDirect(String predefWorldDirect) {
+    private void setPredefWorldDirect(String predefWorldDirect) {
         this.predefWorldDirect = predefWorldDirect;
     }
 
-    /*  private boolean isGoalNotReached() {
-        return goalNotReached;
+    private float getSimulationTime() {
+        return simulationTime;
     }
 
-    private void setGoalNotReached(boolean goalNotReached) {
-        this.goalNotReached = goalNotReached;
-    }*/
+    private void setSimulationTime(float simulationTime) {
+        this.simulationTime = simulationTime;
+    }
 
+    private ServerSocket getTestbedServerSocket() {
+        return testbedServerSocket;
+    }
 
+    private void setTestbedServerSocket(ServerSocket testbedServerSocket) {
+        this.testbedServerSocket = testbedServerSocket;
+    }
+
+    private Socket getTestbedClientSocket() {
+        return testbedClientSocket;
+    }
+
+    private void setTestbedClientSocket(Socket testbedClientSocket) {
+        this.testbedClientSocket = testbedClientSocket;
+    }
+
+    private DataInputStream getInputStream() {
+        return inputStream;
+    }
+
+    private void setInputStream(DataInputStream inputStream) {
+        this.inputStream = inputStream;
+    }
+
+    private DataOutputStream getOutputStream() {
+        return outputStream;
+    }
+
+    private void setOutputStream(DataOutputStream outputStream) {
+        this.outputStream = outputStream;
+    }
 
     private World world;
     private Graphics graphics;
@@ -457,16 +564,17 @@ public class TestbedMain implements Runnable{
     private boolean predefMode;
     private String predefWorldDirect;
 
-    /*
-    flags
-     */
-    private boolean goalNotReached = true;
-    private boolean firstRun = true;
+    private float simulationTime = 0.0f;
+    private ServerSocket testbedServerSocket;
+    private Socket testbedClientSocket;
+    private DataInputStream inputStream;
+    private DataOutputStream outputStream;
+
 
     // configuration for 20 fps
     private final static float TIME_STEP = 0.001f;
     private final static float FRAMERATE = 20.0f;
-    private final static int STEPS_PER_ITERATION = Math.round((1 / FRAMERATE) / TIME_STEP);
+    private final static int STEPS_PER_CYCLE = Math.round((1 / FRAMERATE) / TIME_STEP);
     private final static long FRAME_MILLIS = 50;
 
     /*

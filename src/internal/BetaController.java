@@ -104,19 +104,19 @@ public class BetaController extends AutoPilotController{
     /*
     Getters and setters
      */
-
+    @Override
     protected float getMainStableInclination() {
         return MAIN_STABLE_INCLINATION;
     }
-
+    @Override
     protected float getStabilizerStableInclination() {
         return STABILIZER_STABLE_INCLINATION;
     }
-
+    @Override
     protected float getRollThreshold() {
         return ROLL_THRESHOLD;
     }
-
+    @Override
     protected float getInclinationAOAMargin() {
         return ERROR_INCLINATION_MARGIN;
     }
@@ -129,8 +129,8 @@ public class BetaController extends AutoPilotController{
         return yPID;
     }
 
-    private PIDController xPID = new PIDController(1.f, 0.1f, 0.1f);
-    private PIDController yPID = new PIDController(1.f, 0.1f, 0.3f);
+    private PIDController xPID = new PIDController(1.f, 0.f, 0.1f);
+    private PIDController yPID = new PIDController(1.f, 0.0f, 0.3f);
     private PIDController rollPID = new PIDController(1f, 0.0f, 0.0f);
 
 

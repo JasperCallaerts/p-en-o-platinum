@@ -21,7 +21,7 @@ import static java.lang.Math.*;
  * Appended and edited by Anthony Rath� on 6/11/2017
  * A class of Autopilot Controllers
  */
-public class AutoPilotController {
+public abstract class AutoPilotController {
 
     private List<Vector> nbCubes;
 
@@ -35,170 +35,11 @@ public class AutoPilotController {
         this.currentInputs = dummyData;
     }
 
-    private void setThrustOut(ControlOutputs outputs, float xPosition, float yPosition){
-        //Todo implement: write the output to the outputs
-        float pitch = this.getCurrentInputs().getPitch();
-        float cubeSize =  this.getAssociatedAutopilot().getAPCamera().getTotalQualifiedPixels();
-        int threshold = Math.round(THRESHOLD_DISTANCE);
-
-        // Thrust
-        float sigmoidFactor = 4f;
-//        float thrust = (float) ((STANDARD_THRUST)*(1-sigmoid(abs(xPosition/sigmoidFactor))) + THRUST_FACTOR*this.getTotalMass()*GRAVITY*sigmoid(yPosition/sigmoidFactor));
-          float thrust = (float) ((STANDARD_THRUST)/(5*(abs(xPosition)+0.01)) + THRUST_FACTOR*this.getTotalMass()*GRAVITY*sigmoid(yPosition/sigmoidFactor));
-          System.out.println(xPosition);
-        outputs.setThrust(Math.max(Math.min(thrust, MAXTHRUST), 0));
-    }
-    
-    private float sigmoid(float x) {
-    	return (float) (1/(1+Math.exp(-x)));
-    }
-
-    private void startDescend(ControlOutputs outputs, float xPosCube, float yPosCube){
-        outputs.setHorStabInclination(Math.min(STANDARD_INCLINATION*Math.abs(yPosCube)/20f,MAX_HOR_STAB_INCLINATION));
-    }
-
-    private void startAscend(ControlOutputs outputs,  float xPosCube, float yPosCube){
-        outputs.setHorStabInclination(-Math.min(STANDARD_INCLINATION*Math.abs(yPosCube)/20f,MAX_HOR_STAB_INCLINATION));
-    }
-
-    private void startTurnDescend(ControlOutputs outputs, float xPosCube, float yPosCube){
-        outputs.setHorStabInclination(Math.min(STANDARD_INCLINATION*Math.abs(yPosCube)/30f,MAX_HOR_STAB_INCLINATION));
-    }
-
-    private void startTurnAscend(ControlOutputs outputs,  float xPosCube, float yPosCube){
-        outputs.setHorStabInclination(-Math.min(STANDARD_INCLINATION*Math.abs(yPosCube)/30f,MAX_HOR_STAB_INCLINATION));
-
-    }
-
-    private void stopAscendDescend(ControlOutputs outputs,  float xPosCube, float yPosCube){
-        outputs.setHorStabInclination(STABILIZER_STABLE_INCLINATION);
-    }
-
-    private void startTurnRight(ControlOutputs outputs,  float xPosCube, float yPosCube){
-        if (yPosCube >= 0) {
-            startTurnAscend(outputs, xPosCube, yPosCube);
-
-        }else {
-            startTurnDescend(outputs, xPosCube, yPosCube);
-
-        }
-
-        outputs.setRightWingInclination(TURNING_INCLINATION + MAIN_STABLE_INCLINATION);
-        outputs.setLeftWingInclination(-TURNING_INCLINATION + MAIN_STABLE_INCLINATION);
-
-    }
-
-    private void startTurnLeft(ControlOutputs outputs, float xPosCube, float yPosCube){
-        ///outputs.setVerStabInclination(-STANDARD_INCLINATION);
-        if (yPosCube >= 0) {
-            startTurnAscend(outputs, xPosCube, yPosCube);
-
-        }else {
-            startTurnDescend(outputs, xPosCube, yPosCube);
-
-        }
-
-        outputs.setRightWingInclination(-TURNING_INCLINATION + MAIN_STABLE_INCLINATION);
-        outputs.setLeftWingInclination(TURNING_INCLINATION + MAIN_STABLE_INCLINATION);
-
-    }
-
-    private void stopTurn(ControlOutputs outputs, float xPosCube, float yPosCube){
-        outputs.setVerStabInclination(STABILIZER_STABLE_INCLINATION);
-        outputs.setRightWingInclination(MAIN_STABLE_INCLINATION);
-        outputs.setLeftWingInclination(MAIN_STABLE_INCLINATION);
-    }
-
     /**
      * Generates the appropriate control actions for the drone
      * @return the outputs for the autopilot
      */
-    public AutopilotOutputs getControlActions(){
-
-        ControlOutputs controlOutputs = new ControlOutputs();
-        AutopilotInputs currentInputs = this.getCurrentInputs();
-
-        //APCamera.loadNextImage(currentInputs.getImage());
-        AutoPilotCamera APCamera = this.getAssociatedAutopilot().getAPCamera();
-        APCamera.loadNewImage(currentInputs.getImage());
-
-        float elapsedTime = this.getCurrentInputs().getElapsedTime();
-
-        Vector center = null;
-        try {
-        	center = APCamera.getCenterOfNCubes(1);
-//            center = APCamera.getCenterOfNCubes(1).scalarMult(5f).vectorSum(APCamera.getCenterOfNCubes(5).scalarMult(-1f)).scalarMult(1f);
-        } catch (NoCubeException e) {
-            center = new Vector();
-        }
-//        Vector center = APCamera.getCenterOfNCubes(1);
-        float xPosition = this.getxPID().getPIDOutput(-center.getxValue(), elapsedTime);
-        float yPosition = this.getyPID().getPIDOutput(center.getyValue(), elapsedTime);
-
-        int cubeSize = Math.round(center.getzValue());
-
-        //int threshold = Math.max(Math.round(THRESHOLD_PIXELS*NORMAL_CUBE_SIZE/cubeSize),1);
-        int threshold = Math.round(THRESHOLD_DISTANCE);
-        int bias = 0;
-        if (currentInputs.getPitch() > PI / 20) {
-            bias = BIAS;
-        } else if (currentInputs.getPitch() < -PI / 20) {
-            bias = -BIAS;
-        }
-        //System.out.println(bias);
-
-        // Thrust
-        this.setThrustOut(controlOutputs, xPosition, yPosition);
-
-        String controlString = "Control action ";
-
-        // Roll
-        if (xPosition > threshold) {
-            // Turn right
-            //System.out.println("This is your captain speaking: the red cube is located at our right-hand-side");
-            this.startTurnRight(controlOutputs, xPosition, yPosition);
-            controlString += "Turning Right: \n";
-        } else if (xPosition >= -threshold && xPosition <= threshold) {
-            // Stop turning
-            this.stopTurn(controlOutputs, xPosition, yPosition);
-
-            // Start Ascending/Descending
-            // Ascend/Descend
-            if (yPosition < -threshold - bias && (xPosition >= -threshold && xPosition <= threshold)) {
-                // Descend
-                //System.out.println("This is your captain speaking: the red cube is located underneath us");
-                this.startDescend(controlOutputs, xPosition, yPosition);
-                controlString += "Start Descend: \n";
-
-            } else if ((yPosition >= -threshold - bias && yPosition <= threshold - bias) && (xPosition >= -threshold && xPosition <= threshold)) {
-                // Stop descending/ascending
-                this.stopAscendDescend(controlOutputs, xPosition, yPosition);
-                controlString += "Stop Ascending: \n";
-
-            } else if (yPosition > threshold - bias && (xPosition >= -threshold && xPosition <= threshold)) {
-                // Ascend
-                //System.out.println("This is your captain speaking: the red cube is located above us");
-                this.startAscend(controlOutputs, xPosition, yPosition);
-                controlString += "Start Ascending: \n";
-
-            }
-        } else if (xPosition < -threshold) {
-            // Turn left
-            //System.out.println("This is your captain speaking: the red cube is located at our left-hand-side");
-            this.startTurnLeft(controlOutputs, xPosition, yPosition);
-            controlString += "Start Turn left: \n";
-        }
-
-
-
-        this.rollControl(controlOutputs);
-
-        this.angleOfAttackControl(controlOutputs);
-        //System.out.println("Controls delivered");
-        //System.out.println(controlOutputs);
-
-        return controlOutputs;
-    }
+    public abstract AutopilotOutputs getControlActions();
 
 
     /*
@@ -208,11 +49,11 @@ public class AutoPilotController {
         AutopilotInputs input = this.getCurrentInputs();
         float roll = input.getRoll();
 
-        if(roll >= ROLL_THESHOLD){
-            outputs.setRightWingInclination(-MAIN_STABLE_INCLINATION);
+        if(roll >= this.getRollThreshold()){
+            outputs.setRightWingInclination(-this.getMainStableInclination());
         }
-        else if(roll <= - ROLL_THESHOLD){
-            outputs.setLeftWingInclination(-MAIN_STABLE_INCLINATION);
+        else if(roll <= - this.getRollThreshold()){
+            outputs.setLeftWingInclination(-this.getMainStableInclination());
         }else{
             // change nothing
         }
@@ -264,7 +105,7 @@ public class AutoPilotController {
 
         float desiredInclination = controlOutputs.getLeftWingInclination();
 
-        float realisableInclination = setBetween(desiredInclination, inclinationBorder1, inclinationBorder2, ERROR_INCLINATION_MARGIN);
+        float realisableInclination = setBetween(desiredInclination, inclinationBorder1, inclinationBorder2, this.getInclinationAOAMargin());
 
         controlOutputs.setLeftWingInclination(realisableInclination);
 
@@ -289,7 +130,7 @@ public class AutoPilotController {
 
         float desiredInclination = controlOutputs.getRightWingInclination();
 
-        float realisableInclination = setBetween(desiredInclination, inclinationBorder1, inclinationBorder2, ERROR_INCLINATION_MARGIN);
+        float realisableInclination = setBetween(desiredInclination, inclinationBorder1, inclinationBorder2, this.getInclinationAOAMargin());
 
         controlOutputs.setRightWingInclination(realisableInclination);
 
@@ -315,7 +156,7 @@ public class AutoPilotController {
 
         float desiredInclination = controlOutputs.getHorStabInclination();
 
-        float realisableInclination = setBetween(desiredInclination, inclinationBorder1, inclinationBorder2, ERROR_INCLINATION_MARGIN);
+        float realisableInclination = setBetween(desiredInclination, inclinationBorder1, inclinationBorder2, this.getInclinationAOAMargin());
 
         controlOutputs.setHorStabInclination(realisableInclination);
 
@@ -341,7 +182,7 @@ public class AutoPilotController {
 
         float desiredInclination = controlOutputs.getVerStabInclination();
 
-        float realisableInclination = setBetween(desiredInclination, inclinationBorder1, inclinationBorder2, ERROR_INCLINATION_MARGIN);
+        float realisableInclination = setBetween(desiredInclination, inclinationBorder1, inclinationBorder2, this.getInclinationAOAMargin());
 
         controlOutputs.setVerStabInclination(realisableInclination);
 
@@ -424,14 +265,20 @@ public class AutoPilotController {
         return posDiff.scalarMult(1/timeDiff);
     }
 
+    /**
+     * Approximats the current rotation of the drone based on the old rotations
+     * @return
+     */
     private Vector getRotationApprox(){
         AutopilotInputs prevInputs = this.getPreviousInputs();
         //get the inputs at moment k
         AutopilotInputs currentInputs = this.getCurrentInputs();
 
+        //get the passed time interval
         float prevTime = prevInputs.getElapsedTime();
         float currentTime = currentInputs.getElapsedTime();
 
+        //extract the orientations from the inputs
         Vector prevOrient = extractOrientation(prevInputs);
         Vector currentOrient = extractOrientation(currentInputs);
 
@@ -520,14 +367,26 @@ public class AutoPilotController {
         return associatedAutopilot;
     }
 
+    /**
+     * Getter for the current inputs (the autopilot inputs object)
+     * @return the current outputs
+     */
     public AutopilotInputs getCurrentInputs() {
         return currentInputs;
     }
 
+    /**
+     * get the flight recorder of the drone
+     * @return
+     */
     public FlightRecorder getFlightRecorder() {
         return flightRecorder;
     }
 
+    /**
+     * Setter for the flight recorder
+     * @param flightRecorder
+     */
     public void setFlightRecorder(FlightRecorder flightRecorder) {
         this.flightRecorder = flightRecorder;
     }
@@ -560,20 +419,31 @@ public class AutoPilotController {
         this.previousInputs = previousInputs;
     }
 
+    /*
+    Getters and setters
+     */
+    protected abstract float getMainStableInclination();
+
+    protected abstract float getStabilizerStableInclination();
+
+    protected abstract float getRollThreshold();
+
+    protected abstract float getInclinationAOAMargin();
+
+    /**
+     * Get the PID used for the corrections on the x-coordinate inputs
+     * @return the pid controller
+     */
     public PIDController getxPID() {
         return xPID;
     }
 
+    /**
+     * Get the PID used for the corrections on the y-coordinate inputs
+     * @return
+     */
     public PIDController getyPID() {
         return yPID;
-    }
-
-    public ControlOutputs getPrevOutputs() {
-        return prevOutputs;
-    }
-
-    public void setPrevOutputs(ControlOutputs prevOutputs) {
-        this.prevOutputs = prevOutputs;
     }
 
     private AutoPilot associatedAutopilot;
@@ -582,33 +452,15 @@ public class AutoPilotController {
     private FlightRecorder flightRecorder;
     private PIDController xPID = new PIDController(1.f, 0.2f, 0.2f);
     private PIDController yPID = new PIDController(1.f, 0.2f, 0.2f);
-    private ControlOutputs prevOutputs;
-    private final static int NB_OF_PREV_INPUTS = 2;
 
-    private static final float STANDARD_INCLINATION = (float) PI/12;
-    public static final float MAIN_STABLE_INCLINATION = (float) PI/12;
-    private static final float MAX_HOR_STAB_INCLINATION = (float) PI/8;
-    private static final float TURNING_INCLINATION = (float) PI/18;
-    private static final float ERROR_INCLINATION_MARGIN = (float) (5*PI/180);
-    private static final int BIAS = 0;
-    private static final float THRESHOLD_DISTANCE = 0f;
+
     private static final float STANDARD_THRUST = 32.859283f *2;
-    private static final float THRUST_FACTOR = 1.0f;
-    private static final float THRESHOLD_THRUST_ANGLE = (float)(PI/20);
-    private static final float STANDARD_CUBE_SIZE = 10f;
-    public static final float STABILIZER_STABLE_INCLINATION = 0.0f;
-    private static final float GRAVITY = 9.81f;
-    private static final float ROLL_THESHOLD = (float) (PI * 3.0f/180.0f);
-    private static final float MAXTHRUST = 250.0f;
     private static final float RAD2DEGREE = (float) (180f/ PI);
-    private static final float CHECK_INTERVAL = 1/20.f;
 
-    /*
-    Error messages
+
+    /**
+     * dummy data used for the initialization of the drone
      */
-    private final static String NO_POS_MAX = "No positive maximum found";
-    private final static String NO_NEG_MIN = "No negative minimum found";
-
     private  static AutopilotInputs dummyData = new AutopilotInputs() {
         @Override
         public byte[] getImage() {
@@ -651,19 +503,26 @@ public class AutoPilotController {
         }
     };
 
-
+    /**
+     * An implementation of AutopilotOutputs used in the controller for cascading control (passes trough the basic
+     * controller, roll control and AOA controll)
+     */
     class ControlOutputs implements AutopilotOutputs{
 
         ControlOutputs(){
             //do nothing, everything stays initialized on zero
         }
 
+        /**
+         * Set to default values
+         * used to reset the outputs if the controller is not fully initialized
+         */
         private void reset(){
 
-            this.setRightWingInclination(MAIN_STABLE_INCLINATION);
-            this.setLeftWingInclination(MAIN_STABLE_INCLINATION);
-            this.setHorStabInclination(STABILIZER_STABLE_INCLINATION);
-            this.setVerStabInclination(STABILIZER_STABLE_INCLINATION);
+            this.setRightWingInclination(getMainStableInclination());
+            this.setLeftWingInclination(getMainStableInclination());
+            this.setHorStabInclination(getStabilizerStableInclination());
+            this.setVerStabInclination(getStabilizerStableInclination());
 
         }
 
@@ -734,10 +593,10 @@ public class AutoPilotController {
 
         //initialize the writes to the stable state of the drone
         private float thrust = STANDARD_THRUST;
-        private float leftWingInclination = MAIN_STABLE_INCLINATION;
-        private float rightWingInclination = MAIN_STABLE_INCLINATION;
-        private float horStabInclination = STABILIZER_STABLE_INCLINATION;
-        private float verStabInclination = STABILIZER_STABLE_INCLINATION;
+        private float leftWingInclination = getMainStableInclination();
+        private float rightWingInclination = getMainStableInclination();
+        private float horStabInclination = getStabilizerStableInclination();
+        private float verStabInclination = getStabilizerStableInclination();
 
         @Override
         public String toString() {
@@ -751,6 +610,9 @@ public class AutoPilotController {
         }
     }
 
+    /**
+     * A class of PID controllers
+     */
     class PIDController {
         /**
          * Constructor for a PID controller object
@@ -777,9 +639,13 @@ public class AutoPilotController {
          * @param input the input signal of the controller (from the feedback loop)
          * @param elapsedTime the elapsed time during the simulation
          * @return the output of the PID controller for the given inputs
+         * note: algorithm comes from https://en.wikipedia.org/wiki/PID_controller
          */
         float getPIDOutput(float input, float elapsedTime){
 
+            // P part is proportional (set to 1)
+            // I part reduces overall error
+            // D part reduces the oscillation of the path
             // variables needed for calculation
             float setPoint = this.getSetPoint();
             float prevError = this.getPreviousError();
@@ -805,46 +671,94 @@ public class AutoPilotController {
             return output;
         }
 
+        /*
+        Getters and setters
+         */
+
+        /**
+         * get the integral part (saved over the course of the algorithm)
+         * @return the integral part of the PID
+         */
         private float getIntegral() {
             return integral;
         }
 
+        /**
+         * set the integral part of the PID (saved over the course of the algorithm)
+         * @param integral
+         */
         private void setIntegral(float integral) {
             this.integral = integral;
         }
 
+        /**
+         * get the error of the previous iteration
+         * @return the previous error
+         */
         private float getPreviousError() {
             return previousError;
         }
 
+        /**
+         * Set the previous error (used when the new values for the error are loaded)
+         * @param previousError
+         */
         private void setPreviousError(float previousError) {
             this.previousError = previousError;
         }
 
+        /**
+         * The set point is the desired value used for reference, in our case it is 0.0
+         * @return
+         */
         private float getSetPoint() {
             return setPoint;
         }
 
+        /**
+         * Set the set point of the PID
+         * @param setPoint
+         */
         protected void setSetPoint(float setPoint) {
             this.setPoint = setPoint;
         }
 
+        /**
+         * Get the previous time of the simulation (used for the diff part of the PID)
+         * @return
+         */
         public float getPreviousTime() {
             return previousTime;
         }
 
+        /**
+         * Set the previous time of the simulation (used when setting the new values of the drone)
+         * @param previousTime
+         */
         public void setPreviousTime(float previousTime) {
             this.previousTime = previousTime;
         }
 
+        /**
+         * Constant used for the gain (proportional) part of the PID
+         * @return
+         */
         private float getGainConstant() {
             return gainConstant;
         }
 
+        /**
+         * Constant used for the integral part of the PID
+         * @return
+         */
         private float getIntegralConstant() {
             return integralConstant;
         }
 
+        /**
+         * Constant used for the derivative part of the PID
+         * @return
+         */
         public float getDerivativeConstant() {
             return derivativeConstant;
         }

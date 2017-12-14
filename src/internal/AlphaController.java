@@ -98,6 +98,7 @@ public class AlphaController extends AutoPilotController {
      * Generates the appropriate control actions for the drone
      * @return the outputs for the autopilot
      */
+    @Override
     public AutopilotOutputs getControlActions(){
 
         ControlOutputs controlOutputs = new ControlOutputs();
@@ -189,18 +190,19 @@ public class AlphaController extends AutoPilotController {
     Getters and setters
      */
 
+    @Override
     protected float getMainStableInclination() {
         return MAIN_STABLE_INCLINATION;
     }
-
+    @Override
     protected float getStabilizerStableInclination() {
         return STABILIZER_STABLE_INCLINATION;
     }
-
+    @Override
     protected float getRollThreshold() {
         return ROLL_THESHOLD;
     }
-
+    @Override
     protected float getInclinationAOAMargin() {
         return ERROR_INCLINATION_MARGIN;
     }
@@ -223,14 +225,9 @@ public class AlphaController extends AutoPilotController {
     private static final float ERROR_INCLINATION_MARGIN = (float) (5*PI/180);
     private static final int   BIAS = 0;
     private static final float THRESHOLD_DISTANCE = 0f;
-    private static final float STANDARD_THRUST = 32.859283f *2;
     private static final float THRUST_FACTOR = 1.0f;
-    private static final float THRESHOLD_THRUST_ANGLE = (float)(PI/20);
-    private static final float STANDARD_CUBE_SIZE = 10f;
     public static final float  STABILIZER_STABLE_INCLINATION = 0.0f;
     private static final float GRAVITY = 9.81f;
     private static final float ROLL_THESHOLD = (float) (PI * 3.0f/180.0f);
-    private static final float MAXTHRUST = 250.0f;
-    private static final float RAD2DEGREE = (float) (180f/ PI);
-    private static final float CHECK_INTERVAL = 1/20.f;
+
 }
