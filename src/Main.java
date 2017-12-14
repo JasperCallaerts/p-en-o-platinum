@@ -48,7 +48,7 @@ public class Main {
 		
         // drone builder covers all the stuff involving building the drone, adjust parameters there		
         WorldBuilder worldBuilder = new WorldBuilder();
-        Drone drone = worldBuilder.DRONE;
+        Drone drone = worldBuilder.getDrone();
         AutoPilot autopilot = new AutoPilot();
         World world = worldBuilder.createWorld(PhysXEngine.ALPHA_MODE);
         

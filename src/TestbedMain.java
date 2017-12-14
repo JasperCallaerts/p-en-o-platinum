@@ -22,14 +22,26 @@ public class TestbedMain implements Runnable{
     /**
      * Initialize the main method for the testbed
      * see old mainloop for more info
+     * predefMode is only used for demos (may be ignored later on)
      */
-    public TestbedMain(String connectionName, int connectionPort, boolean showAllWidows, String demoMode) {
+    public TestbedMain(String connectionName, int connectionPort, boolean showAllWidows, String demoMode, boolean predefMode, String predefWorldDirect) {
         this.setConnectionName(connectionName);
         this.setConnectionPort(connectionPort);
         this.showAllWindows = showAllWidows;
         this.setDemoMode(demoMode);
+        this.setPredefMode(predefMode);
+        this.setPredefWorldDirect(predefWorldDirect);
+    }
 
-        //this.setQueue(queue);
+    /**
+     * Constructor for the testbed main, sets the configuration needed for a standard flight
+     * @param connectionName
+     * @param connectionPort
+     * @param showAllWindows
+     * @param demoMode
+     */
+    public TestbedMain(String connectionName, int connectionPort, boolean showAllWindows, String demoMode){
+        this(connectionName, connectionPort, showAllWindows, demoMode, false, "");
     }
 
     /**
@@ -72,8 +84,13 @@ public class TestbedMain implements Runnable{
         // drone builder covers all the stuff involving building the drone, adjust parameters there
         WorldBuilder worldBuilder = new WorldBuilder();
 
+        if(this.isPredefMode()){
+            worldBuilder.setPredefWorld(true);
+            worldBuilder.setPredefDirectory(this.getPredefWorldDirect());
+        }
+
         this.setWorld(worldBuilder.createWorld(demoMode));//.createSimpleWorld();
-        this.setDrone(worldBuilder.DRONE);
+        this.setDrone(worldBuilder.getDrone());
         this.getDrone().addFlightRecorder(this.getFlightRecorder());
 
         // Initialize the windows
@@ -179,18 +196,16 @@ public class TestbedMain implements Runnable{
         // writer and handler can't handle it
         if (goalNotReached && !this.getDroneCam().isTerminated()) {
             //pass the outputs to the drone
-            byte[] oldImage = this.getDroneCam().getCameraView();
             //try if the world can be advanced to the next state
             try {
                 // elapsedTime replace by getTimePassed()
+                // it is the first run, just skip the output (frame is not yet rendered)
                 if (!isFirstRun()) {
-                    drone.setAutopilotOutputs(autopilotOutputs);
+                    this.getDrone().setAutopilotOutputs(autopilotOutputs);
                     this.getWorld().advanceWorldState(TIME_STEP, STEPS_PER_ITERATION);
                 } else {
-                    firstRun = false;
+                    this.setFirstRun(false);
                 }
-                // render the windows and terminate graphics if all windows are closed
-                //possibly set this part apart from the try-catch
 
             } catch (IOException e) {
                 System.out.println("IO exception");
@@ -218,12 +233,9 @@ public class TestbedMain implements Runnable{
         return firstRun;
     }
 
-
-    // configuration for 20 fps
-    private final static float TIME_STEP = 0.001f;
-    private final static float FRAMERATE = 20.0f;
-    private final static int STEPS_PER_ITERATION = Math.round((1 / FRAMERATE) / TIME_STEP);
-    private final static long FRAME_MILLIS = 50;
+    private void setFirstRun(boolean firstRun){
+        this.firstRun = firstRun;
+    }
 
     /**
      * Class that contains the autopilotInputs implemented separately for cleaner code
@@ -400,6 +412,22 @@ public class TestbedMain implements Runnable{
         this.demoMode = demoMode;
     }
 
+    public boolean isPredefMode() {
+        return predefMode;
+    }
+
+    public void setPredefMode(boolean predefMode) {
+        this.predefMode = predefMode;
+    }
+
+    public String getPredefWorldDirect() {
+        return predefWorldDirect;
+    }
+
+    public void setPredefWorldDirect(String predefWorldDirect) {
+        this.predefWorldDirect = predefWorldDirect;
+    }
+
     /*  private boolean isGoalNotReached() {
         return goalNotReached;
     }
@@ -426,14 +454,20 @@ public class TestbedMain implements Runnable{
     private boolean showAllWindows;
     private FlightRecorder flightRecorder;
     private String demoMode;
-//	Window textWindow = new Window(500, 500, 0.5f, 0.5f, "text window", new Vector3f(0.0f, 0.0f, 0.0f), true, droneCam); // Not implemented yet
-
+    private boolean predefMode;
+    private String predefWorldDirect;
 
     /*
     flags
      */
     private boolean goalNotReached = true;
     private boolean firstRun = true;
+
+    // configuration for 20 fps
+    private final static float TIME_STEP = 0.001f;
+    private final static float FRAMERATE = 20.0f;
+    private final static int STEPS_PER_ITERATION = Math.round((1 / FRAMERATE) / TIME_STEP);
+    private final static long FRAME_MILLIS = 50;
 
     /*
     Error Messages

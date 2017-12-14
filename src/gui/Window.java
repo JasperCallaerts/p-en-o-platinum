@@ -369,27 +369,6 @@ public class Window {
 		buffer.get(imageByteArray);
 
 		BufferedImage image = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB);
-/*
-		step += 1;
-		String diagnosis = "";
-		int prevRow = 0;
-		if(step >= 100 && step <= 110) {
-			for (int i = 0; i < WIDTH * HEIGHT * bpp; i += 4) {
-				if (imageByteArray[i] != -1 || imageByteArray[i + 1] != -1 || imageByteArray[i + 1] != -1) {
-					if (prevRow != i / WIDTH)
-						diagnosis += "\n\n";
-					diagnosis += imageByteArray[i] + "; " + imageByteArray[i + 1] + "; " + imageByteArray[i + 2] + "   ";
-				}
-
-				prevRow = i / WIDTH;
-			}
-
-			PrintWriter printerOutput = new PrintWriter("frame" + (step-100) + ".txt");
-			printerOutput.print(diagnosis);
-			printerOutput.close();
-		}
-
-		System.out.println(imageByteArray[0] + ";" + imageByteArray[1] +";" +  imageByteArray[2] + ";" + imageByteArray[3]);*/
 
 		byte[] rescaledArray = rescale(imageByteArray, WIDTH, CAMERA_WIDTH, HEIGHT, CAMERA_HEIGHT, bpp);
 
@@ -435,6 +414,28 @@ public class Window {
 	private int step = 0;
 
 }
+
+/*
+		step += 1;
+		String diagnosis = "";
+		int prevRow = 0;
+		if(step >= 100 && step <= 110) {
+			for (int i = 0; i < WIDTH * HEIGHT * bpp; i += 4) {
+				if (imageByteArray[i] != -1 || imageByteArray[i + 1] != -1 || imageByteArray[i + 1] != -1) {
+					if (prevRow != i / WIDTH)
+						diagnosis += "\n\n";
+					diagnosis += imageByteArray[i] + "; " + imageByteArray[i + 1] + "; " + imageByteArray[i + 2] + "   ";
+				}
+
+				prevRow = i / WIDTH;
+			}
+
+			PrintWriter printerOutput = new PrintWriter("frame" + (step-100) + ".txt");
+			printerOutput.print(diagnosis);
+			printerOutput.close();
+		}
+
+		System.out.println(imageByteArray[0] + ";" + imageByteArray[1] +";" +  imageByteArray[2] + ";" + imageByteArray[3]);*/
 
 //		ByteBuffer buffer = BufferUtils.createByteBuffer(HEIGHT *WIDTH*4);
 //		//the array used for storing the pixels

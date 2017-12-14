@@ -13,33 +13,19 @@ import math.Vector3f;
  */
 public class WorldBuilder {
 
-    public Drone DRONE; //new DroneBuilder(true).createDrone();
-
-    // Deprecated: all blocks are generated in main loop
-    public final static Vector BLOCKPOS = new Vector(0.0f, 0.489f, -6.9098f);
-    public final static Vector COLOR = new Vector(0.0f, 1.0f, 70.0f);
-    public final static boolean LOAD_COORDINATES = false;
-    public static int numberOfBlocks = 5;
-    public final static WorldGenerator wg = new WorldGenerator(numberOfBlocks);
-    public final BlockCoordinatesParser parser = new BlockCoordinatesParser("src/internal/blockCoordinates.txt");
-
-
     public WorldBuilder() {
         //do nothing
     }
 
     public World createWorld(String config) throws IOException{
-        //Block block1 = new Block(BLOCKPOS);
-        //Cube cube1 = new Cube(BLOCKPOS.convertToVector3f(), COLOR.convertToVector3f());
-        //block1.setAssocatedCube(cube1);
-
         World world = new World(World.VISIT_ALL_OBJECTIVE);
-    	if (!LOAD_COORDINATES) {
-    		world = wg.createWorld();
+    	if (!isPredefWorld()) {
+    		world = this.getWorldGenerator().createWorld();
     	}
     	else {
+    	    BlockCoordinatesParser parser = new BlockCoordinatesParser(this.getPredefDirectory());
     		List<Vector> positions = parser.getCoordinates();
-    		List<Vector> colors = wg.colorGenerator(positions.size());
+    		List<Vector> colors = this.getWorldGenerator().colorGenerator(positions.size());
     		for (int i = 0 ; i < positions.size(); i++) {
     			Vector position = positions.get(i);
     			Vector color = colors.get(i);
@@ -52,25 +38,46 @@ public class WorldBuilder {
     	}
         
         //world.addWorldObject(block1);
-        DRONE = new DroneBuilder(true).createDrone(config);
-        world.addWorldObject(DRONE);
+        this.setDrone(new DroneBuilder(true).createDrone(config));
+        world.addWorldObject(this.getDrone());
 
         return world;
     }
 
-    /**
-     * Creates an empty world only containing the drone, made for testing purposes only
-     * @return a world only containing the drone
-     */
-    public World createSimpleworld(){
-        World world = new World(World.REACH_CUBE_OBJECTIVE);
-        world.addWorldObject(DRONE);
-        Block block1 = new Block(BLOCKPOS);
-        Cube cube1 = new Cube(BLOCKPOS.convertToVector3f(), COLOR.convertToVector3f());
-        block1.setAssocatedCube(cube1);
-        world.addWorldObject(block1);
 
-        return world;
+    public boolean isPredefWorld() {
+        return predefWorld;
     }
+
+    public void setPredefWorld(boolean predefWorld) {
+        this.predefWorld = predefWorld;
+    }
+
+    public String getPredefDirectory() {
+        return predefDirectory;
+    }
+
+    public void setPredefDirectory(String predefDirectory) {
+        this.predefDirectory = predefDirectory;
+    }
+
+    public Drone getDrone() {
+        return drone;
+    }
+
+    public void setDrone(Drone DRONE) {
+        this.drone = DRONE;
+    }
+
+    public WorldGenerator getWorldGenerator() {
+        return worldGenerator;
+    }
+
+    private final static int numberOfBlocks = 5;
+    private boolean predefWorld = false;
+    private String predefDirectory = "src/internal/blockCoordinates.txt";
+    private final WorldGenerator worldGenerator = new WorldGenerator(numberOfBlocks);
+    private Drone drone;
+
 
 }
