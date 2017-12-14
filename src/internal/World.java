@@ -7,9 +7,8 @@ import java.util.Set;
 import java.util.function.BiPredicate;
 
 /**
- * 
- * @author anthonyrathe
- *
+ * Class for creating a World object.
+ * @author anthonyrathe & ...
  */
 public class World {
 	
@@ -67,6 +66,7 @@ public class World {
 	}
 	
 	/**
+	 * Method that removes all blocks from the world
 	 * @author Anthony Rathe
 	 */
 	public void removeBlocks() {
@@ -75,6 +75,10 @@ public class World {
 		}
 	}
 	
+	/**
+	 * Method that returns a block from the world
+	 * @return
+	 */
 	public Block getRandomBlock() {
 		for (Block block : this.getBlockSet()) {
 			return block;
@@ -115,6 +119,7 @@ public class World {
 	}
 	
 	/**
+	 * Method that returns the drone in the world
 	 * @author Anthony Rathe
 	 * @throws IOException 
 	 */

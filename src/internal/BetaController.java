@@ -35,6 +35,11 @@ public class BetaController extends AutoPilotController{
         }catch(NoCubeException e){
             center = new Vector(-10, 0, 4);
         }
+        
+        //FOR DEBUGGING
+        //System.out.println(center);
+        //END FOR DEBUGGING
+        
         float xPosition = xPIDController.getPIDOutput(-center.getxValue(), elapsedTime);
         float yPosition = yPIDController.getPIDOutput(center.getyValue(), elapsedTime);
         int nbColumns = APCamera.getNbColumns();

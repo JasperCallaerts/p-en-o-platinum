@@ -36,12 +36,12 @@ public class Input {
     Input(Settings setting) {
     	switch (setting) {
     	case DRONE_TOP_DOWN_CAM: 
-    		position = new Vector3f(0f, 150f, -160f);
+    		position = new Vector3f(0f, 150f, -0f);
     		yaw = (float) Math.PI/2;
     		pitch = (float) -Math.PI/2;
     		break;
     	case DRONE_SIDE_CAM: 
-    		position = new Vector3f(150f, 0f, -160f);
+    		position = new Vector3f(150f, 0f, -0f);
     		yaw = (float) Math.PI/2;
     		pitch = 0;
     		break;
@@ -118,12 +118,12 @@ public Matrix4f getViewMatrix(Settings setting) {
 		
 		switch (setting) {
 		case DRONE_TOP_DOWN_CAM: 
-			position = new Vector3f(0f, 120f, -100f);
+			position = new Vector3f(0f, 130f, -120f);
 			yaw = (float) Math.PI/2;
 			pitch = (float) -Math.PI/2;
 			break;
 		case DRONE_SIDE_CAM: 
-			position = new Vector3f(110f, 0f, -100f);
+			position = new Vector3f(130f, 0f, -120f);
 			yaw = (float) Math.PI/2;	
 			pitch = 0;
 			break;

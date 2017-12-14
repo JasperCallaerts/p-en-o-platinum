@@ -11,22 +11,34 @@ import java.util.List;
 import java.util.stream.Stream;
 
 /**
- * 
+ * Parser class, used for reading block-coördinates in order to pass them to the worldBuilder
  * @author Anthony Rathe
- *
  */
 public class Parser {
 	
+	/**
+	 * Initialize a Parser and link it to a given file.
+	 * @param path The path to the file containing the coördinates
+	 */
 	public Parser(String path) {
-		
+	
 		this.path = Paths.get(path);
 		
 	}
 	
+	/**
+	 * Getter for retrieving the path to the coördinate-file
+	 * @return The path to the file containing the coördinates
+	 */
 	public Path getPath() {
 		return this.path;
 	}
 	
+	/**
+	 * Method that reads the coördinate-file and returns a list of vectors
+	 * @return List of vectors containing the coördinates of the blocks to be added
+	 * @throws IOException
+	 */
 	public List<Vector> getCoordinates() throws IOException {
 		List<Vector> coordinates = new ArrayList<Vector>();
 		List<String> coordinateStrings = new ArrayList<String>();
@@ -86,5 +98,8 @@ public class Parser {
 		
 	}
 	
+	/**
+	 * Variable storing the path to the text file containing the coördinates
+	 */
 	private final Path path;
 }

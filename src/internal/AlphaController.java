@@ -7,6 +7,8 @@ import Autopilot.AutopilotOutputs;
 import static java.lang.Math.PI;
 import static java.lang.Math.abs;
 
+import java.util.List;
+
 /**
  * Created by Martijn on 7/12/2017.
  * controller for AOA different from 30
@@ -137,6 +139,13 @@ public class AlphaController extends AutoPilotController {
         this.setThrustOut(controlOutputs, xPosition, yPosition);
 
         String controlString = "Control action ";
+        
+        List<Vector> cubesPictuur = APCamera.getCubesInPicture();
+        if (cubesPictuur.isEmpty()){
+        	this.stopTurn(controlOutputs, xPosition, yPosition);
+        	this.stopAscendDescend(controlOutputs, xPosition, yPosition);
+        	this.startTurnRight(controlOutputs, 100, 0);
+        }
 
         // Roll
         if (xPosition > threshold) {

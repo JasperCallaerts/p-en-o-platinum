@@ -364,14 +364,59 @@ public class Window {
 		int bpp = 4; // Assuming a 32-bit display with a byte each for red, green, blue, and alpha.
 		ByteBuffer buffer = BufferUtils.createByteBuffer(WIDTH * HEIGHT * bpp);
 		GL11.glReadPixels(0, 0, WIDTH, HEIGHT, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, buffer );
-
 		byte[] imageByteArray = new byte[WIDTH*HEIGHT*bpp];
 		buffer.get(imageByteArray);
 
 		BufferedImage image = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB);
 
-		byte[] rescaledArray = rescale(imageByteArray, WIDTH, CAMERA_WIDTH, HEIGHT, CAMERA_HEIGHT, bpp);
+		
+		/*
+		String format = "PNG";
+    	File file = new File("orginalTestImage.png");
+    	BufferedImage testImage = new BufferedImage(WIDTH, HEIGHT, 1);
+    	
+		for(int x = 0; x < WIDTH; x++)
+		{
+			for(int y = 0; y < HEIGHT; y++)
+			{
+				//System.out.println(x+" : "+y);
+				int i = (x + (WIDTH * y)) * bpp;
+				//System.out.println("byte: "+imageByteArray[i]);
+				int r = (imageByteArray[i])& 0xFF;
+				int g = (imageByteArray[i + 1]) & 0xFF;
+				int b =(imageByteArray[i+2])& 0xFF;
+				
+				image.setRGB(x, HEIGHT - (y + 1), (0xFF << 24) | (r << 16) | (g << 8) | b);
+			}
+		}
+		try {
+			ImageIO.write(testImage, format, file);
+		} catch (IOException e) { e.printStackTrace(); }
+		*/
+		
+		/*
+		step += 1;
+		String diagnosis = "";
+		int prevRow = 0;
+		if(step >= 100 && step <= 110) {
+			for (int i = 0; i < WIDTH * HEIGHT * bpp; i += 4) {
+				if (imageByteArray[i] != -1 || imageByteArray[i + 1] != -1 || imageByteArray[i + 1] != -1) {
+					if (prevRow != i / WIDTH)
+						diagnosis += "\n\n";
+					diagnosis += imageByteArray[i] + "; " + imageByteArray[i + 1] + "; " + imageByteArray[i + 2] + "   ";
+				}
 
+				prevRow = i / WIDTH;
+			}
+
+			PrintWriter printerOutput = new PrintWriter("frame" + (step-100) + ".txt");
+			printerOutput.print(diagnosis);
+			printerOutput.close();
+		}
+
+		System.out.println(imageByteArray[0] + ";" + imageByteArray[1] +";" +  imageByteArray[2] + ";" + imageByteArray[3]);*/
+
+		byte[] rescaledArray = rescale(imageByteArray, WIDTH, CAMERA_WIDTH, HEIGHT, CAMERA_HEIGHT, bpp);
 		return rescaledArray;
 	}
 
