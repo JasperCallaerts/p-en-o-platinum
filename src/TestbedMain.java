@@ -475,7 +475,7 @@ public class TestbedMain implements Runnable{
         return flightRecorder;
     }
 
-    private void setFlightRecorder(FlightRecorder flightRecorder) {
+    public void setFlightRecorder(FlightRecorder flightRecorder) {
         if(this.getFlightRecorder() != null)
             throw new IllegalStateException(ALREADY_RECORDING);
         this.flightRecorder = flightRecorder;
