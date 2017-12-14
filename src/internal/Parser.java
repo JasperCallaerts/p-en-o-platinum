@@ -15,9 +15,9 @@ import java.util.stream.Stream;
  * @author Anthony Rathe
  *
  */
-public class BlockCoordinatesParser {
+public class Parser {
 	
-	public BlockCoordinatesParser(String path) {
+	public Parser(String path) {
 		
 		this.path = Paths.get(path);
 		
@@ -47,6 +47,38 @@ public class BlockCoordinatesParser {
 			}
 			coordinateStream.close();
 			return coordinates;
+		}catch (NoSuchFileException exception){
+			throw new IllegalArgumentException("The given file path does not exist.", exception);
+		}
+		
+		
+	}
+	
+	public List<Vector> getBlockData() throws IOException {
+		List<Vector> blockData = new ArrayList<Vector>();
+		List<String> dataStrings = new ArrayList<String>();
+		try {
+			Stream<String> dataStream = Files.lines(getPath(), StandardCharsets.UTF_8);
+			dataStream.forEach(dataStrings::add);
+			try {
+				for (String dataString : dataStrings) {
+					String[] splitString = dataString.split("\\s+");
+					float xValue = Float.parseFloat(splitString[0]);
+					float yValue = Float.parseFloat(splitString[1]);
+					float zValue = Float.parseFloat(splitString[2]);
+					blockData.add(new Vector(xValue, yValue, zValue));
+					
+					float hValue = Float.parseFloat(splitString[3]);
+					float sValue = Float.parseFloat(splitString[4]);
+					float vValue = Float.parseFloat(splitString[5]);
+					blockData.add(new Vector(hValue, sValue, vValue));
+				}
+			}catch(Exception exception) {
+				dataStream.close();
+				throw new IOException("Something was wrong with the given coordinates file: ", exception);
+			}
+			dataStream.close();
+			return blockData;
 		}catch (NoSuchFileException exception){
 			throw new IllegalArgumentException("The given file path does not exist.", exception);
 		}

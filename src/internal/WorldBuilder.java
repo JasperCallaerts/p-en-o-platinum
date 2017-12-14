@@ -23,17 +23,18 @@ public class WorldBuilder {
     		world = this.getWorldGenerator().createWorld();
     	}
     	else {
-    	    BlockCoordinatesParser parser = new BlockCoordinatesParser(this.getPredefDirectory());
-    		List<Vector> positions = parser.getCoordinates();
-    		List<Vector> colors = this.getWorldGenerator().colorGenerator(positions.size());
-    		for (int i = 0 ; i < positions.size(); i++) {
-    			Vector position = positions.get(i);
-    			Vector color = colors.get(i);
-    			Block block = new Block(position);
-            	Cube cube = new Cube(position.convertToVector3f(), color.convertToVector3f());
-            	cube.setSize(1f);
-            	block.setAssocatedCube(cube);
-            	world.addWorldObject(block);
+    	    Parser parser = new Parser(this.getPredefDirectory());
+    		//List<Vector> positions = parser.getCoordinates();
+    		//List<Vector> colors = this.getWorldGenerator().colorGenerator(positions.size());
+            List<Vector> data = parser.getBlockData();
+            for (int i = 0 ; i < data.size(); i += 2) {
+                Vector position = data.get(i);
+                Vector color = data.get(i+1);
+                Block block = new Block(position);
+                Cube cube = new Cube(position.convertToVector3f(), color.convertToVector3f());
+                cube.setSize(1f);
+                block.setAssocatedCube(cube);
+                world.addWorldObject(block);
     		}
     	}
         
