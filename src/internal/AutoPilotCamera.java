@@ -52,38 +52,8 @@ public class AutoPilotCamera {
      * @param imageByteArray the byte array containing the information for the cubes
      */
     public void loadNewImage(byte[] imageByteArray){
-    	//FOR DEBUGGING
-    	//save an image
-    	//FileUtils.writeByteArrayToFile(new File("pathname"), myByteArray)
-    	/*String format = "PNG";
-    	File file = new File("testImage.png");
-    	int WIDTH = this.getNbColumns();
-    	int HEIGHT = this.getNbRows();
-    	int bpp = 3;
-    	BufferedImage image = new BufferedImage(WIDTH, HEIGHT, 1);
-    	//System.out.println(imageByteArray[]);
-		for(int x = 0; x < WIDTH; x++)
-		{
-			for(int y = 0; y < HEIGHT; y++)
-			{
-				//System.out.println(x+" : "+y);
-				int i = (x + (WIDTH * y)) * bpp;
-				//System.out.println("byte: "+imageByteArray[i]);
-				int r = (imageByteArray[i])& 0xFF;
-				int g = (imageByteArray[i + 1]) & 0xFF;
-				int b =(imageByteArray[i+2])& 0xFF;
-				
-				image.setRGB(x, HEIGHT - (y + 1), (0xFF << 24) | (r << 16) | (g << 8) | b);
-			}
-		}
-		try {
-			ImageIO.write(image, format, file);
-		} catch (IOException e) { e.printStackTrace(); }
-		*/
-    	//END FOR DEBUGGING
-    	
-    	
-    	
+
+        // check if the new image is possible
         if(!canHaveAsImageArray(imageByteArray))
             throw new IllegalArgumentException(INCOMPATIBLE_SIZE);
         CameraImage newImage = this.convertToCameraImage(imageByteArray, this.getNbRows(), this.getNbColumns());
@@ -92,15 +62,105 @@ public class AutoPilotCamera {
         List<Vector> cubesInPicture = this.getAllCubeCenters();
         //System.out.println(cubesInPicture);
         this.setCubesInPicture(cubesInPicture);
+    }
 
+    /**
+     * Method that based on the camera input locates all the centers of different colored cubes ordered by
+     * on screen size
+     * @return a ordered list containing the on screen location of the cube (y and x value) and the size
+     * (nb pixels) of the cube on screen, ordered by on screen size
+     */
+    public List<Vector> getAllCubeCenters(){
+        CameraImage currentImage = this.getCameraImage();
+        // first get the center coordinates
+        Map<Coordinates, Vector> cubeCenterMap = getDifferentCubeMap(currentImage);
+
+        // then get the ordered list, small to large
+        List<Vector> orderedList = new ArrayList<>(cubeCenterMap.values());
+        orderedList.sort(new Comparator<Vector>() {
+            @Override
+            public int compare(Vector o1, Vector o2) {
+                return -(int) Math.signum(o1.getzValue() - o2.getzValue());
+            }
+        });
+
+        return orderedList;
 
     }
 
+    /**
+     * method that returns a map containing the different cubes (HS values) and their respective center coordinates
+     * @param currentImage the image to process
+     * @return a map containing different HS values (representing different cubes) with a corresponding vector
+     * (y and x location, z size)
+     */
+    private Map<Coordinates, Vector> getDifferentCubeMap(CameraImage currentImage) {
+        // the map containing all the different cubes (keys are HS values, vector contains the mean position
+        // and the onscreen size (z value)
+        Map<Coordinates, Vector> colorCenter =  new HashMap<>();
+
+        for(int i = 0; i !=this.getNbRows(); i++){
+            for(int j = 0; j!= this.getNbColumns(); j++) {
+                // first convert the current pixel
+                Pixel currentPixel = currentImage.getElementAtIndex(i, j);
+                float[] HSVPixel = currentPixel.convertToHSV();
+                float H = HSVPixel[0];
+                float S = HSVPixel[1];
+                float V = HSVPixel[2];
+
+
+                // H can be NaN
+                if (Float.isNaN(H)) {
+                    H = 0.0f;
+                }
+                //if it is a white pixel ignore it
+                if( H == 0.0f &&S == 0.0f&&V==1.0f)
+                    continue;
+
+                //generate a coordinates object
+                Coordinates HS = new Coordinates(H, S);
+
+                // get the vector if there was already a valid entry
+                Vector entry = colorCenter.get(HS);
+
+                // if the HS value is not yet part of the map, add it
+                if (entry == null) {
+                    colorCenter.put(HS, new Vector(i, j, 1.0f));
+                    //if it is already present, calculate the new mean value for the position
+                }else{
+                    // first load the old values for the entry
+                    // the i mean is the mean of the rows, corresponding to the y values
+                    float oldIMean = entry.getxValue();
+                    // the j mean is the mean of the columns, corresponding to the x values
+                    float oldJMean = entry.getyValue();
+                    float oldSize = entry.getzValue();
+
+                    //calculate the new mean
+                    float iNumerator = oldIMean*oldSize + i;
+                    float jNumerator = oldJMean*oldSize + j;
+
+                    // add one for the new mean size
+                    float denominator = oldSize + 1;
+
+                    Vector newMean = new Vector(iNumerator/denominator, jNumerator/denominator, denominator);
+
+                    colorCenter.put(HS, newMean);
+                }
+            }
+        }
+        return colorCenter;
+    }
+
+    /**
+     * Get the mean of the center coordinates of the N biggest on screen cubes, if there are less than N cubes
+     * on screen, return all onscreen coordinates
+     * @param nbOfCubes the amount of cubes involved in the mean
+     * @return the mean coordinates of the N closest cubes, if there are less than N cubes on screen
+     * return the mean of all cubes on screen. Vector layout: (x-coord, y-coord, size)
+     * @throws NoCubeException thrown if no cube was found
+     */
     public Vector getCenterOfNCubes(int nbOfCubes) throws NoCubeException {
         List<Vector> cubesInPicture = this.getCubesInPicture();
-//        System.out.println("nb of cubes in the picture: " + cubesInPicture.size());
-//        System.out.println("cubes in picture: " + cubesInPicture);
-        //first check if there are any cubes, if not return the center
 
         if(cubesInPicture.size() == 0){
             throw new NoCubeException();
@@ -130,160 +190,8 @@ public class AutoPilotCamera {
         // account for the offsets
         return new Vector(centerVector.getxValue() - xOffset, - centerVector.getyValue() + yOffset, centerVector.getzValue());
 
-        /*if(cubesInPicture.size()==0)
-            return new Vector();
-
-        //then try to take the mean of the specified amount of cubes (weighted mean)
-        float totalPixels = 0;
-        Coordinates sumCoordinates = new Coordinates(0,0);
-        //initialize a counter, break the loop if the counter is equal to the amount of cubes
-        int counter = 0;
-        for(Vector currentCube: cubesInPicture){
-            if(counter == nbOfCubes)
-                break;
-            Coordinates currentWeightedCoord = new Coordinates(currentCube.getyValue(), currentCube.getxValue())
-                    .scalarMult(currentCube.getzValue());
-            sumCoordinates = sumCoordinates.sum(currentWeightedCoord);
-            totalPixels += currentCube.getzValue();
-            counter++;
-        }
-
-        //after the sum is completed return the weighted average
-        Coordinates weightedCoord = sumCoordinates.scalarMult(1.0f/totalPixels);
-        return new Vector(weightedCoord.getXCoordinate(), weightedCoord.getYCoordinate(), totalPixels);*/
     }
 
-
-
-    //Todo adjust pixel classes such that the HSV values are correct!!!!!!!!!!!!!!!
-    /**
-     * locates all the cubes of a different color and returns them in order of size for each color
-     * @return a list containing vectors where the x and y coordinates indicate the position on the screen
-     *         and the z value contains the size of the cubes, the list is ordered from large
-     */
-    public List<Vector> locateCubes(){
-        //coordinate is the H & S value of the pixel, the Coordinates in the list are the
-        //coordinates of the pixels with the specific H & S values of the key
-        HashMap<Coordinates ,List<Coordinates>> cubeMap = new HashMap<>();
-        //System.out.println("identifying different cubes");
-        findColoredPixels(cubeMap);
-        //System.out.println("Sets of pixels" + cubeMap);
-
-        //first two elements of the vector contain the x and the y position, the third the size of the cube
-        HashMap<Coordinates, Vector> cubeCenterMap = new HashMap<>();
-
-        //System.out.println("Calculating the mean of the cubes");
-        calculateMeanCubes(cubeMap, cubeCenterMap);
-
-
-        List <Vector> cubeOrderedList = new ArrayList<>();
-        //System.out.println("sorting the cubes to size");
-        cubeOrderedList.addAll(cubeCenterMap.values());
-        cubeOrderedList.sort(new Comparator<Vector>() {
-            /**
-             * the list needs to be ordered from large to small so if V1 is larger than V2 it needs to
-             * return a negative integer (normal sort is from small to large so we need to invert it)
-             * @param v1 the first vector
-             * @param v2 the second vector
-             * @return -1 if V1 > V2, 0 if V1 == V2, 1 if V1 < V2
-             */
-            @Override
-            public int compare(Vector v1, Vector v2) {
-                //the z value will be always an integer value in this case
-                return (int)(Math.signum(-v1.getzValue() + v2.getzValue()));
-            }
-        });
-        //System.out.println("Positions of the cubes: " + cubeOrderedList);
-        return cubeOrderedList;
-
-    }
-
-    /**
-     * Calculates the mean coordinate of every different colored cube that is present in the cube map
-     * @param cubeMap the map containing the pixels of one specific color of cube
-     * @param cubeCenterMap the coordinates are the HSV values, the Vector contains for the
-     *                      x and y values the mean position of one color cube, the z position is the
-     *                      size of the given cube (the size = nb of pixels)
-     */
-    private void calculateMeanCubes(Map<Coordinates, List<Coordinates>> cubeMap, Map<Coordinates, Vector> cubeCenterMap){
-
-        //the offsets needed for the transformation of the coordinates
-        float xOffset = this.getNbColumns()/2.0f;
-        float yOffset = this.getNbRows()/2.0f;
-        
-
-        //get the different colors
-        for(Coordinates color: cubeMap.keySet()){
-            //use the extracted key to get the list containing the pixels
-            Coordinates colorSum = new Coordinates(0,0);
-            List<Coordinates> currentColorList = cubeMap.get(color);
-            for(Coordinates colorPos: currentColorList){
-                //sum all the pixels
-            	colorPos = new Coordinates(colorPos.getXCoordinate()-xOffset, -colorPos.getYCoordinate()+yOffset);
-                colorSum = colorSum.sum(colorPos);
-            }
-            //the amount of colorPixels
-            int nbColorPixels = currentColorList.size();
-            //rescale the result to get the mean
-            colorSum = colorSum.scalarMult(1.0f/nbColorPixels);
-
-            //put the results in the map
-            //the coordinates also need to be transformed for the autopilot, (0,0) is the middle of the screen
-            cubeCenterMap.put(color, new Vector(colorSum.getXCoordinate(),
-                    colorSum.getYCoordinate(), nbColorPixels));
-        }
-    }
-
-    /**
-     * Finds all colored pixels and stores them in the provided cubemap
-     * @param cubeMap the keys are the colors of the cube and the list contains the coordinates
-     *                of the pixels with the same color
-     */
-    private void findColoredPixels(Map<Coordinates, List<Coordinates>> cubeMap){
-
-        int nbRows = this.getNbRows();
-        int nbColumns = this.getNbColumns();
-
-        CameraImage cameraImage = this.getCameraImage();
-
-        Coordinates zeroCoord = new Coordinates(0.0f, 0.0f);
-
-        for(int i = 0; i != nbRows; i++){
-            for(int j = 0;  j!= nbColumns; j++){
-                Pixel currentPixel = cameraImage.getElementAtIndex(i, j);
-                float[] HSVPixel = currentPixel.convertToHSV();
-                float H = HSVPixel[0];
-                if(Float.isNaN(H))
-                    H = 0.0f;
-                float S = HSVPixel[1];
-                //System.out.println("H value:" +  H + " , S value:" + S);
-
-                Coordinates key = new Coordinates(H, S);
-
-                //check if it is not just a background pixel
-                if(key.equals(zeroCoord))
-                    continue; // if it is a zero coord just goto the next iteration
-
-                if(cubeMap.get(key) == null){
-                    //the j values are the x coordinates and the i values are the y coordinates
-                    Coordinates listValue = new Coordinates(j, i);
-                    //create the list to store same colored pixels
-                    List<Coordinates>  value = new ArrayList<>();
-                    //add the current value to the list
-                    value.add(listValue);
-                    //add the list as value to the map
-                    cubeMap.put(key, value);
-                }else{
-                    //get the list of the corresponding color
-                    List<Coordinates> values = cubeMap.get(key);
-                    //add the new pixel with the corresponding color
-                    values.add(new Coordinates(j, i));
-                }
-            }
-        }
-
-        //at the end of the for loop all te pixels are iterated and the cube map is filled with all the visible cubes
-    }
 
     /**
      * A private class of immutable Coordinates
@@ -543,73 +451,5 @@ public class AutoPilotCamera {
     public final static String ILLEGAL_SIZE = "The byte array cannot be converted to a 2D pixel array";
     public final static String INCOMPATIBLE_SIZE = "the sample size is not a multiple of the dimensions of the array";
 
-    public List<Vector> getAllCubeCenters(){
-        CameraImage currentImage = this.getCameraImage();
-        // first get the center coordinates
-        Map<Coordinates, Vector> cubeCenterMap = getDifferentCubeMap(currentImage);
 
-        // then get the ordered list, small to large
-        List<Vector> orderedList = new ArrayList<>(cubeCenterMap.values());
-        orderedList.sort(new Comparator<Vector>() {
-            @Override
-            public int compare(Vector o1, Vector o2) {
-                return -(int) Math.signum(o1.getzValue() - o2.getzValue());
-            }
-        });
-
-        return orderedList;
-
-    }
-
-    private Map<Coordinates, Vector> getDifferentCubeMap(CameraImage currentImage) {
-        Map<Coordinates, Vector> colorCenter =  new HashMap<>();
-
-
-        for(int i = 0; i !=this.getNbRows(); i++){
-            for(int j = 0; j!= this.getNbColumns(); j++) {
-                Pixel currentPixel = currentImage.getElementAtIndex(i, j);
-                float[] HSVPixel = currentPixel.convertToHSV();
-                float H = HSVPixel[0];
-                float S = HSVPixel[1];
-                float V = HSVPixel[2];
-
-
-                // H can be NaN
-                if (Float.isNaN(H)) {
-                    H = 0.0f;
-                }
-                //if it is a white pixel ignore it
-                if( H == 0.0f &&S == 0.0f&&V==1.0f)
-                    continue;
-
-                Coordinates HS = new Coordinates(H, S);
-
-                Vector entry = colorCenter.get(HS);
-
-                // if the HS value is not yet part of the map, add it
-                if (entry == null) {
-                    colorCenter.put(HS, new Vector(i, j, 1.0f));
-                //if it is already present, calculate the new mean value for the position
-                }else{
-                    // first load the old values for the entry
-                    float oldIMean = entry.getxValue();
-                    float oldJMean = entry.getyValue();
-                    float oldSize = entry.getzValue();
-
-                    //calculate the new mean
-                    float iNumerator = oldIMean*oldSize + i;
-                    float jNumerator = oldJMean*oldSize + j;
-
-                    float denominator = oldSize + 1;
-
-                    Vector newMean = new Vector(iNumerator/denominator, jNumerator/denominator, denominator);
-
-                    colorCenter.put(HS, newMean);
-                }
-            }
-        }
-        //System.out.println("HS value and position on screen: " + colorCenter);
-        //System.out.println("Encountered colors: " + HSVSet);
-        return colorCenter;
-    }
 }

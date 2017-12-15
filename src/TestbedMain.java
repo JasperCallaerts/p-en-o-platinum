@@ -19,28 +19,33 @@ import java.net.Socket;
 public class TestbedMain implements Runnable{
 
     /**
-     * Initialize the main method for the testbed
-     * see old mainloop for more info
-     * predefMode is only used for demos (may be ignored later on)
+     * Constructor for a testbed main loop, special configurations (eg for demo)
+     * @param connectionName the name of the connection (here localhost)
+     * @param connectionPort the port where the connection goes throught
+     * @param showAllWidows flag to show all the GUI windows or just the primal one
+     * @param controllerMode the controller mode (Alpha or Beta mode, specified in the GUI)
+     * @param predefMode specifies if the testbed runs a predefined world or not
+     * @param predefWorldDirect specifies the directory of the txt file that contains the configuration of the world
      */
-    public TestbedMain(String connectionName, int connectionPort, boolean showAllWidows, String demoMode, boolean predefMode, String predefWorldDirect) {
+    public TestbedMain(String connectionName, int connectionPort, boolean showAllWidows, String controllerMode, boolean predefMode, String predefWorldDirect) {
+        //used to configure the testbed
         this.setConnectionName(connectionName);
         this.setConnectionPort(connectionPort);
         this.showAllWindows = showAllWidows;
-        this.setDemoMode(demoMode);
+        this.setControllerMode(controllerMode);
         this.setPredefMode(predefMode);
         this.setPredefWorldDirect(predefWorldDirect);
     }
 
     /**
      * Constructor for the testbed main, sets the configuration needed for a standard flight
-     * @param connectionName
-     * @param connectionPort
-     * @param showAllWindows
-     * @param demoMode
+     * @param connectionName the name of the connection mainly for the
+     * @param connectionPort the port which trough to connect
+     * @param showAllWindows show all the GUI windows or just a single one
+     * @param controllerMode the mode for the controller (alpha or beta, use the PhysX defined modes)
      */
-    public TestbedMain(String connectionName, int connectionPort, boolean showAllWindows, String demoMode){
-        this(connectionName, connectionPort, showAllWindows, demoMode, false, "");
+    public TestbedMain(String connectionName, int connectionPort, boolean showAllWindows, String controllerMode){
+        this(connectionName, connectionPort, showAllWindows, controllerMode, false, "");
     }
 
     /**
@@ -120,14 +125,19 @@ public class TestbedMain implements Runnable{
      * @throws IOException
      */
     private void initTestbedServer() throws IOException {
+        // first setup the server
         ServerSocket testbedServer = new ServerSocket(this.getConnectionPort());
+        // listen for connection
         Socket testbedClientSocket = testbedServer.accept();
+        // initialize the streams
         DataInputStream inputStream = new DataInputStream(testbedClientSocket.getInputStream());
         DataOutputStream outputStream = new DataOutputStream(testbedClientSocket.getOutputStream());
-        
+
+        // set the sockets
         this.setTestbedServerSocket(testbedServer);
         this.setTestbedClientSocket(testbedClientSocket);
-        
+
+        // set the streams
         this.setInputStream(inputStream);
         this.setOutputStream(outputStream);
         
@@ -247,7 +257,7 @@ public class TestbedMain implements Runnable{
         }
 
         // configure the world note that the drone object is part of the world instance (and not a static as before)
-        this.setWorld(worldBuilder.createWorld(this.getDemoMode()));
+        this.setWorld(worldBuilder.createWorld(this.getControllerMode()));
         this.setDrone(worldBuilder.getDrone());
         // only in use for diagnostics
         this.getDrone().addFlightRecorder(this.getFlightRecorder());
@@ -307,11 +317,6 @@ public class TestbedMain implements Runnable{
             this.getGraphics().makeTextWindow();
     }
 
-
-
-    public AutopilotConfig getConfig() {
-        return drone.getAutopilotConfig();
-    }
 
 
     /**
@@ -387,6 +392,10 @@ public class TestbedMain implements Runnable{
         this.world = world;
     }
 
+    public AutopilotConfig getConfig() {
+        return drone.getAutopilotConfig();
+    }
+
     private Graphics getGraphics() {
         return graphics;
     }
@@ -435,14 +444,6 @@ public class TestbedMain implements Runnable{
         this.droneView = droneView;
     }
 
-    private Window getPersonView() {
-        return personView;
-    }
-
-    private void setPersonView(Window personView) {
-        this.personView = personView;
-    }
-
     private Window getTopDownView() {
         return topDownView;
     }
@@ -481,12 +482,12 @@ public class TestbedMain implements Runnable{
         this.flightRecorder = flightRecorder;
     }
 
-    private String getDemoMode() {
-        return demoMode;
+    private String getControllerMode() {
+        return controllerMode;
     }
 
-    private void setDemoMode(String demoMode) {
-        this.demoMode = demoMode;
+    private void setControllerMode(String controllerMode) {
+        this.controllerMode = controllerMode;
     }
 
     private boolean isPredefMode() {
@@ -551,7 +552,6 @@ public class TestbedMain implements Runnable{
 
     private Window droneCam;
     private Window droneView;
-    private Window personView;
     private Window topDownView;
     private Window chaseView;
     private Window sideView;
@@ -560,7 +560,7 @@ public class TestbedMain implements Runnable{
     private int connectionPort;
     private boolean showAllWindows;
     private FlightRecorder flightRecorder;
-    private String demoMode;
+    private String controllerMode;
     private boolean predefMode;
     private String predefWorldDirect;
 
