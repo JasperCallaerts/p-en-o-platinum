@@ -18,7 +18,7 @@ public class AccuracyMain {
     public static void main(String args[]){
         int nbSuccesses = 0;
         for(int i = 0; i !=nbTests; i++) {
-            TestbedMain testbed = new TestbedMain(CONNECTION_NAME, CONNECTION_PORT+i, true, MODE);
+            TestbedMain testbed = new TestbedMain(CONNECTION_NAME, CONNECTION_PORT+i, MODE);
             AutopilotMain autopilot = new AutopilotMain(CONNECTION_NAME, CONNECTION_PORT+i, new AutoPilot(MODE));
             ExecutorService executorTestbed = Executors.newSingleThreadExecutor();
             Future futureTest = executorTestbed.submit(testbed);

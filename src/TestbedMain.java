@@ -31,6 +31,7 @@ public class TestbedMain implements Runnable{
         //used to configure the testbed
         this.setConnectionName(connectionName);
         this.setConnectionPort(connectionPort);
+        this.showWindows = true;
         this.showAllWindows = showAllWidows;
         this.setControllerMode(controllerMode);
         this.setPredefMode(predefMode);
@@ -46,6 +47,28 @@ public class TestbedMain implements Runnable{
      */
     public TestbedMain(String connectionName, int connectionPort, boolean showAllWindows, String controllerMode){
         this(connectionName, connectionPort, showAllWindows, controllerMode, false, "");
+    }
+    
+    /**
+     * Constructor for a testbed main loop, special configurations (eg for demo)
+     * @param showWindows show windows or not
+     */
+    public TestbedMain(String connectionName, int connectionPort, String controllerMode, boolean predefMode, String predefWorldDirect) {
+    	this.setConnectionName(connectionName);
+        this.setConnectionPort(connectionPort);
+        this.showWindows = false;
+        this.setControllerMode(controllerMode);
+        this.setPredefMode(predefMode);
+        this.setPredefWorldDirect(predefWorldDirect);
+    }
+    
+    /**
+     * Constructor for the testbed main, sets the configuration needed for a standard flight
+     * @param showWindows show windows or not
+     */
+    public TestbedMain(String connectionName, int connectionPort, String controllerMode){
+        this(connectionName, connectionPort, controllerMode, false, "");
+        this.showWindows = false;
     }
 
     /**
@@ -226,9 +249,9 @@ public class TestbedMain implements Runnable{
      * Updates the simulation time with the time added needed for one cycle in the simulation
      */
     private void updateSimulationTime() {
-        float prevTime = this.getSimulationTime();
-        float newTime = prevTime + TIME_STEP * STEPS_PER_CYCLE;
-        this.setSimulationTime(newTime);
+    	float prevTime = this.getSimulationTime();
+    	float newTime = prevTime + TIME_STEP * STEPS_PER_CYCLE;
+    	this.setSimulationTime(newTime);
     }
 
     /**
@@ -236,9 +259,9 @@ public class TestbedMain implements Runnable{
      * @throws InterruptedException
      */
     private void framerateControl() throws InterruptedException {
-        long timeLeft = (long) (FRAME_MILLIS - Time.timeSinceLastUpdate());
-        if (timeLeft > 0)
-            Thread.sleep(timeLeft);
+    	long timeLeft = (long) (FRAME_MILLIS - Time.timeSinceLastUpdate());
+    	if (timeLeft > 0)
+    		Thread.sleep(timeLeft);
     }
 
     /**
@@ -246,56 +269,59 @@ public class TestbedMain implements Runnable{
      * @throws IOException just java things
      */
     private void initWorld() throws IOException {
-        // drone builder covers all the stuff involving building the drone, adjust parameters there
-        WorldBuilder worldBuilder = new WorldBuilder();
+    	// drone builder covers all the stuff involving building the drone, adjust parameters there
+    	WorldBuilder worldBuilder = new WorldBuilder();
 
-        // if the simulation is run in predefined mode
-        // generate the predefined world instead of the random one
-        if(this.isPredefMode()){
-            worldBuilder.setPredefWorld(true);
-            worldBuilder.setPredefDirectory(this.getPredefWorldDirect());
-        }
+    	// if the simulation is run in predefined mode
+    	// generate the predefined world instead of the random one
+    	if(this.isPredefMode()){
+    		worldBuilder.setPredefWorld(true);
+    		worldBuilder.setPredefDirectory(this.getPredefWorldDirect());
+    	}
 
-        // configure the world note that the drone object is part of the world instance (and not a static as before)
-        this.setWorld(worldBuilder.createWorld(this.getControllerMode()));
-        this.setDrone(worldBuilder.getDrone());
-        // only in use for diagnostics
-        this.getDrone().addFlightRecorder(this.getFlightRecorder());
+    	// configure the world note that the drone object is part of the world instance (and not a static as before)
+    	this.setWorld(worldBuilder.createWorld(this.getControllerMode()));
+    	this.setDrone(worldBuilder.getDrone());
+    	// only in use for diagnostics
+    	this.getDrone().addFlightRecorder(this.getFlightRecorder());
     }
 
     /**
      * Generates the graphics of the drone and adds all the windows to the graphics object
      */
     private void generateGraphics(){
-        // initialize graphics capabilities
-        this.setGraphics(new Graphics());
+    	// initialize graphics capabilities
+    	this.setGraphics(new Graphics());
 
-        // Cube needs graphics to be able to initialize cubes
-        Cube.setGraphics(this.getGraphics());
+    	// Cube needs graphics to be able to initialize cubes
+    	Cube.setGraphics(this.getGraphics());
 
-        this.setDroneCam(new Window(200, 200, 0.5f, 0.4f, "bytestream window", new Vector3f(1.0f, 1.0f, 1.0f), false));
+    	this.setDroneCam(new Window(200, 200, 0.5f, 0.4f, "bytestream window", new Vector3f(1.0f, 1.0f, 1.0f), false));
 
-        // if we only want to show part of the windows, this flag is set in the main loop
-        if(this.getShowAllWindows()) {
-            this.setDroneView(new Window(960, 510, 0.0f, 0.05f, "Drone view", new Vector3f(1.0f, 1.0f, 1.0f), true));
-            this.setTopDownView(new Window(960, 510, 1f, 0.05f, "Top down view", new Vector3f(1.0f, 1.0f, 1.0f), true));
-            this.setSideView(new Window(960, 510, 1f, 1f, "Side view", new Vector3f(1.0f, 1.0f, 1.0f), true));
-            this.setChaseView(new Window(960, 510, 0f, 1f, "Chase view", new Vector3f(1.0f, 1.0f, 1.0f), true));
-        } else {
-            this.setDroneView(new Window(960, 510, 0.0f, 0.05f, "Drone view", new Vector3f(1.0f, 1.0f, 1.0f), true));
+    	// if we only want to show part of the windows, this flag is set in the main loop
+    	if(this.getShowWindows()) {
+    		if(this.getShowAllWindows()) {
+    			this.setDroneView(new Window(960, 510, 0.0f, 0.05f, "Drone view", new Vector3f(1.0f, 1.0f, 1.0f), true));
+    			this.setTopDownView(new Window(960, 510, 1f, 0.05f, "Top down view", new Vector3f(1.0f, 1.0f, 1.0f), true));
+    			this.setSideView(new Window(960, 510, 1f, 1f, "Side view", new Vector3f(1.0f, 1.0f, 1.0f), true));
+    			this.setChaseView(new Window(960, 510, 0f, 1f, "Chase view", new Vector3f(1.0f, 1.0f, 1.0f), true));
+    		} else {
+    			this.setDroneView(new Window(960, 510, 0.0f, 0.05f, "Drone view", new Vector3f(1.0f, 1.0f, 1.0f), true));
+    		}
+    	}
 
-        }
 
-
-        // add the windows to graphics
-        this.getGraphics().addWindow("bytestream window", this.getDroneCam());
-        this.getGraphics().addWindow("Drone view", this.getDroneView());
-        //only needed for demo
-        if(this.getShowAllWindows()) {
-            this.getGraphics().addWindow("Top down view", this.getTopDownView());
-            this.getGraphics().addWindow("Side view", this.getSideView());
-            this.getGraphics().addWindow("Chase view", this.getChaseView());
-        }
+    	// add the windows to graphics
+    	this.getGraphics().addWindow("bytestream window", this.getDroneCam());
+    	if(this.getShowWindows()) {
+    		this.getGraphics().addWindow("Drone view", this.getDroneView());
+    		//only needed for demo
+    		if(this.getShowAllWindows()) {
+    			this.getGraphics().addWindow("Top down view", this.getTopDownView());
+    			this.getGraphics().addWindow("Side view", this.getSideView());
+    			this.getGraphics().addWindow("Chase view", this.getChaseView());
+    		}
+    	}
     }
 
     /**
@@ -304,17 +330,19 @@ public class TestbedMain implements Runnable{
     private void initWindows(){
         // Initialize the windows
         this.getDroneCam().initWindow(this.getWorld(), Settings.DRONE_CAM);
-        this.getDroneView().initWindow(this.getWorld(), Settings.DRONE_CAM);
-
-        if(this.getShowAllWindows()) {
-            this.getTopDownView().initWindow(this.getWorld(), Settings.DRONE_TOP_DOWN_CAM);
-            this.getChaseView().initWindow(this.getWorld(), Settings.DRONE_CHASE_CAM);
-            this.getSideView().initWindow(this.getWorld(), Settings.DRONE_SIDE_CAM);
+        if(this.getShowWindows()) {
+	        this.getDroneView().initWindow(this.getWorld(), Settings.DRONE_CAM);
+	
+	        if(this.getShowAllWindows()) {
+	            this.getTopDownView().initWindow(this.getWorld(), Settings.DRONE_TOP_DOWN_CAM);
+	            this.getChaseView().initWindow(this.getWorld(), Settings.DRONE_CHASE_CAM);
+	            this.getSideView().initWindow(this.getWorld(), Settings.DRONE_SIDE_CAM);
+	        }
+	
+	        // create the switch when in single window mode
+	        if (!this.getShowAllWindows())
+	            this.getGraphics().makeTextWindow();
         }
-
-        // create the switch when in single window mode
-        if (!this.getShowAllWindows())
-            this.getGraphics().makeTextWindow();
     }
 
 
@@ -471,6 +499,10 @@ public class TestbedMain implements Runnable{
     private boolean getShowAllWindows() {
         return showAllWindows;
     }
+    
+    private boolean getShowWindows() {
+    	return showWindows;
+    }
 
     private FlightRecorder getFlightRecorder() {
         return flightRecorder;
@@ -559,6 +591,7 @@ public class TestbedMain implements Runnable{
     private String connectionName;
     private int connectionPort;
     private boolean showAllWindows;
+    private boolean showWindows;
     private FlightRecorder flightRecorder;
     private String controllerMode;
     private boolean predefMode;
