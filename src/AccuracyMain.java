@@ -10,8 +10,8 @@ import java.util.concurrent.*;
 public class AccuracyMain {
     public final static String CONNECTION_NAME = "localhost";
     public final static int CONNECTION_PORT = 21212;
-    public final static String MODE = PhysXEngine.BETA_MODE;
-    public final static int nbTests = 5;
+    public final static String MODE = PhysXEngine.ALPHA_MODE;
+    public final static int nbTests = 200;
     public final static int timeout = 40;
 
 
@@ -53,8 +53,9 @@ public class AccuracyMain {
             executorTestbed.shutdown();
 
             nbSuccesses += 1;
+            int nbTestsDone = i+1;
 
-            System.out.println("Nb of Succesful Runs: " + nbSuccesses + "/" + i);
+            System.out.println("Nb of Succesful Runs: " + nbSuccesses + "/" + nbTestsDone);
 
         }
     }

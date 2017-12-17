@@ -34,29 +34,12 @@ public class Input {
     private Vector3f look = new Vector3f(0, 0, -1);
 
     Input(Settings setting) {
-    	switch (setting) {
-    	case DRONE_TOP_DOWN_CAM: 
-    		position = new Vector3f(0f, 150f, -0f);
-    		yaw = (float) Math.PI/2;
-    		pitch = (float) -Math.PI/2;
-    		break;
-    	case DRONE_SIDE_CAM: 
-    		position = new Vector3f(150f, 0f, -0f);
-    		yaw = (float) Math.PI/2;
-    		pitch = 0;
-    		break;
-    	default: position = new Vector3f();
-    		break;
-    	}
     	
-    	right = new Vector3f((float) Math.cos(yaw), 0, (float) -Math.sin(yaw));
-		up = new Vector3f((float) (Math.sin(pitch)*Math.sin(yaw)), (float) Math.cos(pitch), (float) (Math.sin(pitch)*Math.cos(yaw)));
-		look = up.cross(right);
+    	updateView(setting);
     	
-    	mouse = new Mouse(GLFW.glfwGetCurrentContext());
+    	updateVectors();
     	
-    	
-    	
+    	mouse = new Mouse(GLFW.glfwGetCurrentContext()); 	
     }
 
     /**
@@ -70,9 +53,7 @@ public class Input {
 		yaw = yaw - mouse.dx() * TURN_SPEED * (float)delta;
 		pitch = pitch + mouse.dy() * TURN_SPEED * (float)delta;
 
-		right = new Vector3f((float) Math.cos(yaw), 0, (float) -Math.sin(yaw));
-		up = new Vector3f((float) (Math.sin(pitch)*Math.sin(yaw)), (float) Math.cos(pitch), (float) (Math.sin(pitch)*Math.cos(yaw)));
-		look = up.cross(right);
+		updateVectors();
 		
 		Vector3f vec = new Vector3f();
         if (isKeyPressed(GLFW_KEY_UP) || isKeyPressed(GLFW_KEY_W)) {
@@ -107,35 +88,41 @@ public class Input {
 		this.yaw = yaw;
 		this.pitch = pitch;
 		
-		right = new Vector3f((float) Math.cos(yaw), 0, (float) -Math.sin(yaw));
-		up = new Vector3f((float) (Math.sin(pitch)*Math.sin(yaw)), (float) Math.cos(pitch), (float) (Math.sin(pitch)*Math.cos(yaw)));
-		look = up.cross(right);
+		updateVectors();
 		
 		return Matrix4f.viewMatrix(right, up, look, position);
 	}
 	
-public Matrix4f getViewMatrix(Settings setting) {
+	public Matrix4f getViewMatrix(Settings setting) {
 		
+		updateView(setting);
+		
+		updateVectors();
+		
+		return Matrix4f.viewMatrix(right, up, look, position);
+	}
+	
+	private void updateVectors() {
+		right = new Vector3f((float) Math.cos(yaw), 0, (float) -Math.sin(yaw));
+		up = new Vector3f((float) (Math.sin(pitch)*Math.sin(yaw)), (float) Math.cos(pitch), (float) (Math.sin(pitch)*Math.cos(yaw)));
+		look = up.cross(right);
+	}
+
+	private void updateView(Settings setting) {
 		switch (setting) {
 		case DRONE_TOP_DOWN_CAM: 
-			position = new Vector3f(0f, 130f, -120f);
+			position = new Vector3f(0f, 110f, -100f);
 			yaw = (float) Math.PI/2;
 			pitch = (float) -Math.PI/2;
 			break;
 		case DRONE_SIDE_CAM: 
-			position = new Vector3f(130f, 0f, -120f);
+			position = new Vector3f(110f, 0f, -100f);
 			yaw = (float) Math.PI/2;	
 			pitch = 0;
 			break;
 		default: position = new Vector3f();
 			break;
 		}
-		
-		right = new Vector3f((float) Math.cos(yaw), 0, (float) -Math.sin(yaw));
-		up = new Vector3f((float) (Math.sin(pitch)*Math.sin(yaw)), (float) Math.cos(pitch), (float) (Math.sin(pitch)*Math.cos(yaw)));
-		look = up.cross(right);
-		
-		return Matrix4f.viewMatrix(right, up, look, position);
 	}
 	
 	static boolean isKeyPressed(int keyCode) {
